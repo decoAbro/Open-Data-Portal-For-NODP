@@ -187,7 +187,7 @@ export default function TableUploadTracker({
       }
 
       // Validate file size (10MB limit)
-      if (file.size > 10 * 1024 * 1024) {
+      if (file.size > 100 * 1024 * 1024) {
         throw new Error("File size must be less than 10MB")
       }
 
