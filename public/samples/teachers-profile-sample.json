@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "table_name": "Teachers",
+    "version": "1.0",
+    "census_year": "2023",
+    "province": "Punjab",
+    "generated_date": "2023-06-15T11:45:00Z"
+  },
+  "data": [
+    {
+      "teacher_id": "PB-T-001-2023",
+      "institution_id": "PB-001-2023",
+      "personal_info": {
+        "name": "Aisha Khan",
+        "gender": "Female

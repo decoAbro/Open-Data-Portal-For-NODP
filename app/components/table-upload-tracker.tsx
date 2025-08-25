@@ -1,0 +1,778 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { Upload, CheckCircle, FileJson, AlertCircle, BarChart3, Eye } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { getTablesList, getTableUploadsByUsername, addTableUploadRecord, getCurrentYear } from "../utils/storage"
+
+interface TableUploadTrackerProps {
+  username: string
+  password: string
+  hasUploadPermission: boolean
+  hasUploaded: boolean
+  uploadDeadline: string | null
+}
+
+interface InstitutionSummary {
+  totalInstitutions: number
+  byLevel: { [key: string]: number }
+  byGender: {
+    boysInstitution: number
+    girlsInstitution: number
+    mixInstitution: number
+    notReported: number
+    others: number
+  }
+  byLocation: { [key: string]: number }
+}
+
+export default function TableUploadTracker({
+  username,
+  password,
+  hasUploadPermission,
+  hasUploaded,
+  uploadDeadline,
+}: TableUploadTrackerProps) {
+  const [uploadedTables, setUploadedTables] = useState<string[]>([])
+  const [dataNotAvailableTables, setDataNotAvailableTables] = useState<string[]>([])
+  const [selectedTable, setSelectedTable] = useState<string | null>(null)
+  const [showUploadDialog, setShowUploadDialog] = useState(false)
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState("")
+  const [isClient, setIsClient] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [parsedJsonData, setParsedJsonData] = useState<any>(null)
+  const [institutionSummary, setInstitutionSummary] = useState<InstitutionSummary | null>(null)
+
+  const tables = getTablesList()
+  const currentYear = getCurrentYear()
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isClient) return
+
+    // Load uploaded tables for this user
+    const userUploads = getTableUploadsByUsername(username)
+    const uploadedTableNames = userUploads
+      .filter((upload) => upload.year === currentYear)
+      .map((upload) => upload.tableName)
+    setUploadedTables(uploadedTableNames)
+
+    // Load data not available tables for this user
+    const dataNotAvailableRecords = JSON.parse(localStorage.getItem("pie-portal-data-not-available") || "[]")
+    const userDataNotAvailable = dataNotAvailableRecords
+      .filter((record: any) => record.username === username && record.year === currentYear)
+      .map((record: any) => record.tableName)
+    setDataNotAvailableTables(userDataNotAvailable)
+  }, [isClient, username, currentYear])
+
+  // Calculate progress (uploaded + data not available = completed)
+  const completedTables = uploadedTables.length + dataNotAvailableTables.length
+  const progress = tables.length > 0 ? (completedTables / tables.length) * 100 : 0
+
+  // Analyze Institution data for preview
+  const analyzeInstitutionData = (data: any[]): InstitutionSummary => {
+    // Level ID mappings
+    const levelMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Pre-Primary",
+      "2": "Mosque",
+      "3": "Primary",
+      "4": "Middle/Elementary",
+      "5": "High/Secondary",
+      "6": "Higher Secondary",
+      "7": "Inter. College",
+      "8": "Degree College",
+      "9": "General University",
+      "10": "Industrial School",
+      "11": "Village Workshop",
+      "12": "Postgraduate Colleges",
+      "13": "Other Colleges",
+    }
+
+    // Gender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Boys Institution",
+      "2": "Girls Institution",
+      "3": "Mix Institution",
+    }
+
+    // Location ID mappings
+    const locationMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Rural",
+      "2": "Urban",
+    }
+
+    const summary: InstitutionSummary = {
+      totalInstitutions: data.length,
+      byLevel: {},
+      byGender: {
+        boysInstitution: 0,
+        girlsInstitution: 0,
+        mixInstitution: 0,
+        notReported: 0,
+        others: 0,
+      },
+      byLocation: {},
+    }
+
+    data.forEach((institution) => {
+      // Count by Level_Id with proper mapping
+      const levelId = String(institution.level_Id || institution.Level_Id || "Unknown")
+      const levelLabel = levelMappings[levelId] || `Unknown Level (${levelId})`
+      summary.byLevel[levelLabel] = (summary.byLevel[levelLabel] || 0) + 1
+
+      // Count by Gender_Id with proper mapping
+      const genderId = String(institution.gender_Id || institution.Gender_Id || "Unknown")
+      if (genderId === "1") {
+        summary.byGender.boysInstitution++
+      } else if (genderId === "2") {
+        summary.byGender.girlsInstitution++
+      } else if (genderId === "3") {
+        summary.byGender.mixInstitution++
+      } else if (genderId === "0") {
+        summary.byGender.notReported++
+      } else {
+        summary.byGender.others++
+      }
+
+      // Count by Location_Id with proper mapping
+      const locationId = String(institution.location_Id || institution.Location_Id || "Unknown")
+      const locationLabel = locationMappings[locationId] || `Unknown Location (${locationId})`
+      summary.byLocation[locationLabel] = (summary.byLocation[locationLabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Handle file selection and validation
+  const handleFileSelection = async (tableName: string, file: File) => {
+    setUploadError("")
+
+    try {
+      // Check upload permissions first
+      if (!hasUploadPermission) {
+        throw new Error(
+          "You don't have permission to upload data. Please wait for the administrator to open an upload window.",
+        )
+      }
+
+      if (hasUploaded) {
+        throw new Error("You have already uploaded data for this window.")
+      }
+
+      // Check if deadline has passed
+      if (uploadDeadline) {
+        const deadline = new Date(uploadDeadline)
+        const now = new Date()
+        if (now > deadline) {
+          throw new Error("Upload deadline has passed. The upload window is now closed.")
+        }
+      }
+
+      // Validate file type
+      if (!file.name.endsWith(".json")) {
+        throw new Error("Please select a JSON file")
+      }
+
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error("File size must be less than 10MB")
+      }
+
+      // Read and parse JSON
+      const fileContent = await file.text()
+      let jsonData
+
+      try {
+        jsonData = JSON.parse(fileContent)
+      } catch (error) {
+        throw new Error("Invalid JSON file format")
+      }
+
+      // Validate that JSON contains the expected table
+      if (!jsonData[tableName]) {
+        throw new Error(`JSON file must contain data for table "${tableName}"`)
+      }
+
+      // Validate that data is an array
+      if (!Array.isArray(jsonData[tableName])) {
+        throw new Error(`Data for table "${tableName}" must be an array`)
+      }
+
+      const recordCount = jsonData[tableName].length
+
+      if (recordCount === 0) {
+        throw new Error(`Table "${tableName}" cannot be empty`)
+      }
+
+      // Store file and parsed data for preview
+      setSelectedFile(file)
+      setParsedJsonData(jsonData)
+
+      // If it's Institution table, analyze the data
+      if (tableName === "Institutions") {
+        const summary = analyzeInstitutionData(jsonData[tableName])
+        setInstitutionSummary(summary)
+      }
+
+      // Close upload dialog and show preview dialog
+      setShowUploadDialog(false)
+      setShowPreviewDialog(true)
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Upload failed")
+    }
+  }
+
+  // Handle confirmed upload
+  const handleConfirmedUpload = async () => {
+    if (!selectedFile || !parsedJsonData || !selectedTable) return
+
+    setUploading(true)
+    setUploadError("")
+
+    try {
+      // Simulate API call to upload data
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jsonData: parsedJsonData,
+          username,
+          password,
+          tableName: selectedTable,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(errorText || "Upload failed")
+      }
+
+      // Record successful upload
+      addTableUploadRecord({
+        username,
+        tableName: selectedTable,
+        filename: selectedFile.name,
+        uploadDate: new Date().toISOString(),
+        fileSize: `${Math.round(selectedFile.size / 1024)} KB`,
+        year: currentYear,
+        status: "success",
+        recordCount: parsedJsonData[selectedTable].length,
+      })
+
+      // Update local state
+      setUploadedTables((prev) => [...prev, selectedTable])
+
+      // Close dialogs and reset state
+      setShowPreviewDialog(false)
+      setSelectedTable(null)
+      setSelectedFile(null)
+      setParsedJsonData(null)
+      setInstitutionSummary(null)
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Upload failed")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  // Handle upload rejection
+  const handleUploadRejection = () => {
+    setShowPreviewDialog(false)
+    setShowUploadDialog(true)
+    setSelectedFile(null)
+    setParsedJsonData(null)
+    setInstitutionSummary(null)
+    setUploadError("")
+  }
+
+  // Handle data not available notification
+  const handleDataNotAvailable = (tableName: string) => {
+    // Record that this user doesn't have data for this table
+    const dataNotAvailableRecord = {
+      id: Date.now(),
+      username,
+      tableName,
+      year: currentYear,
+      timestamp: new Date().toISOString(),
+      status: "data_not_available",
+    }
+
+    // Store in data not available records
+    const existingRecords = JSON.parse(localStorage.getItem("pie-portal-data-not-available") || "[]")
+
+    // Remove any existing record for this user/table/year combination
+    const filteredRecords = existingRecords.filter(
+      (record: any) => !(record.username === username && record.tableName === tableName && record.year === currentYear),
+    )
+
+    // Add the new record
+    filteredRecords.push(dataNotAvailableRecord)
+    localStorage.setItem("pie-portal-data-not-available", JSON.stringify(filteredRecords))
+
+    // Send notification to admin
+    const notification = {
+      id: Date.now() + 1, // Different ID from the record
+      username,
+      tableName,
+      message: `User ${username} reports that data is not available for table: ${tableName}`,
+      timestamp: new Date().toISOString(),
+      type: "data_not_available",
+      read: false,
+    }
+
+    const existingNotifications = JSON.parse(localStorage.getItem("pie-portal-notifications") || "[]")
+    existingNotifications.push(notification)
+    localStorage.setItem("pie-portal-notifications", JSON.stringify(existingNotifications))
+
+    // Update local state
+    setDataNotAvailableTables((prev) => [...prev, tableName])
+
+    // Show success message to user
+    alert(`Notification sent to admin: Data not available for ${tableName}`)
+  }
+
+  // Download sample file
+  const downloadSample = (tableName: string) => {
+    // Create sample data structure
+    const sampleData = {
+      [tableName]: [
+        {
+          id: 1,
+          census_year: Number.parseInt(currentYear),
+          // Add more sample fields based on table type
+          ...(tableName === "Institutions" && {
+            Inst_Id: "INST001",
+            institution_name: "Sample School",
+            level_Id: 1,
+            gender_Id: 1,
+            location_Id: 1,
+            district: "Sample District",
+            tehsil: "Sample Tehsil",
+          }),
+          ...(tableName === "Teachers Profile" && {
+            teacher_name: "Sample Teacher",
+            qualification: "Masters",
+            experience_years: 5,
+          }),
+          // Add more table-specific sample fields as needed
+        },
+      ],
+    }
+
+    const blob = new Blob([JSON.stringify(sampleData, null, 2)], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `${tableName.toLowerCase().replace(/\s+/g, "-")}-sample.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  if (!isClient) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="bg-blue-50">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-blue-700">Table Upload Progress - Year {currentYear}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm font-medium">
+                Overall Progress: {completedTables} of {tables.length} tables completed
+                <span className="text-xs text-gray-500 ml-2">
+                  ({uploadedTables.length} uploaded, {dataNotAvailableTables.length} data not available)
+                </span>
+              </div>
+              <div className="text-sm font-medium">{Math.round(progress)}%</div>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </div>
+
+          {progress === 100 && (
+            <Alert className="mb-6 bg-green-50 border-green-200">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                Congratulations! You have completed all {tables.length} tables ({uploadedTables.length} uploaded,{" "}
+                {dataNotAvailableTables.length} marked as data not available).
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {!hasUploadPermission && (
+            <Alert className="mb-6 border-amber-200 bg-amber-50">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-800">
+                Upload window is currently closed. Please wait for the administrator to open an upload window before you
+                can upload data.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {hasUploaded && (
+            <Alert className="mb-6 border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                You have already uploaded data for this window. If you need to make changes, please contact the
+                administrator.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="rounded-md border">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Table Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {tables.map((tableName, index) => {
+                  const isUploaded = uploadedTables.includes(tableName)
+                  const isDataNotAvailable = dataNotAvailableTables.includes(tableName)
+
+                  return (
+                    <tr
+                      key={tableName}
+                      className={isUploaded ? "bg-green-50" : isDataNotAvailable ? "bg-orange-50" : ""}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{tableName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {isUploaded ? (
+                          <Badge className="bg-green-100 text-green-800 border-0">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Uploaded
+                          </Badge>
+                        ) : isDataNotAvailable ? (
+                          <Badge className="bg-orange-100 text-orange-800 border-0">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Data Not Available
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Pending
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="flex items-center space-x-2">
+                          <Dialog
+                            open={showUploadDialog && selectedTable === tableName}
+                            onOpenChange={(open) => {
+                              if (!open) {
+                                setShowUploadDialog(false)
+                                setSelectedTable(null)
+                                setUploadError("")
+                              }
+                            }}
+                          >
+                            <DialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                className="text-xs h-8"
+                                disabled={isUploaded || isDataNotAvailable || !hasUploadPermission || hasUploaded}
+                                onClick={() => {
+                                  setSelectedTable(tableName)
+                                  setShowUploadDialog(true)
+                                  setUploadError("")
+                                }}
+                              >
+                                <Upload className="h-3 w-3 mr-1" />
+                                {isUploaded ? "Uploaded" : "Upload"}
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Upload {tableName} Data</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4 py-4">
+                                {uploadError && (
+                                  <Alert variant="destructive">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertDescription>{uploadError}</AlertDescription>
+                                  </Alert>
+                                )}
+
+                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                  <FileJson className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                                  <p className="text-sm text-gray-600 mb-2">Select your JSON file for {tableName}</p>
+                                  <input
+                                    type="file"
+                                    accept=".json"
+                                    className="hidden"
+                                    id={`file-upload-list-${tableName}`}
+                                    onChange={(e) => {
+                                      if (e.target.files && e.target.files[0]) {
+                                        handleFileSelection(tableName, e.target.files[0])
+                                      }
+                                    }}
+                                    disabled={uploading}
+                                  />
+                                  <label htmlFor={`file-upload-list-${tableName}`}>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="mx-auto bg-transparent"
+                                      disabled={uploading}
+                                      asChild
+                                    >
+                                      <span>{uploading ? "Processing..." : "Select File"}</span>
+                                    </Button>
+                                  </label>
+                                </div>
+
+                                <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-800">
+                                  <p className="font-medium mb-1">Requirements:</p>
+                                  <ul className="list-disc list-inside space-y-1">
+                                    <li>File must be in JSON format</li>
+                                    <li>Maximum file size: 10MB</li>
+                                    <li>Must contain data for "{tableName}" table</li>
+                                    <li>Data must include census_year: {currentYear}</li>
+                                    <li>
+                                      <Button
+                                        variant="link"
+                                        size="sm"
+                                        className="h-auto p-0 text-blue-600"
+                                        onClick={() => downloadSample(tableName)}
+                                      >
+                                        Download sample file
+                                      </Button>
+                                    </li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs h-8 text-red-600 border-red-200 hover:bg-red-50 bg-transparent"
+                            disabled={isUploaded || isDataNotAvailable || !hasUploadPermission}
+                            onClick={() => handleDataNotAvailable(tableName)}
+                          >
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Data Not Available
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Data Preview Dialog */}
+      <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Eye className="h-5 w-5 mr-2" />
+              Data Preview - {selectedTable}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {uploadError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{uploadError}</AlertDescription>
+              </Alert>
+            )}
+
+            {selectedFile && (
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h3 className="font-medium text-blue-900 mb-2">File Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-blue-700 font-medium">Filename:</span>
+                    <span className="ml-2 text-blue-800">{selectedFile.name}</span>
+                  </div>
+                  <div>
+                    <span className="text-blue-700 font-medium">File Size:</span>
+                    <span className="ml-2 text-blue-800">{Math.round(selectedFile.size / 1024)} KB</span>
+                  </div>
+                  <div>
+                    <span className="text-blue-700 font-medium">Table:</span>
+                    <span className="ml-2 text-blue-800">{selectedTable}</span>
+                  </div>
+                  <div>
+                    <span className="text-blue-700 font-medium">Total Records:</span>
+                    <span className="ml-2 text-blue-800">
+                      {parsedJsonData && selectedTable ? parsedJsonData[selectedTable].length : 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Institution-specific summary */}
+            {selectedTable === "Institutions" && institutionSummary && (
+              <div className="space-y-4">
+                <h3 className="font-medium text-gray-900 flex items-center">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Data Summary
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* By Level */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Level ID</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.byLevel).map(([levelId, count]) => (
+                          <div key={levelId} className="flex justify-between text-sm">
+                            <span className="text-gray-600">Level {levelId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Gender */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Gender</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Boys Institution:</span>
+                          <span className="font-medium">{institutionSummary.byGender.boysInstitution}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Girls Institution:</span>
+                          <span className="font-medium">{institutionSummary.byGender.girlsInstitution}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Mix Institution:</span>
+                          <span className="font-medium">{institutionSummary.byGender.mixInstitution}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Not Reported:</span>
+                          <span className="font-medium">{institutionSummary.byGender.notReported}</span>
+                        </div>
+                        {institutionSummary.byGender.others > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Others:</span>
+                            <span className="font-medium">{institutionSummary.byGender.others}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Location */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Location ID</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {Object.entries(institutionSummary.byLocation).map(([locationId, count]) => (
+                          <div key={locationId} className="flex justify-between text-sm">
+                            <span className="text-gray-600">Location {locationId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-green-900 mb-2">Summary</h4>
+                  <p className="text-sm text-green-800">
+                    Total of <strong>{institutionSummary.totalInstitutions}</strong> institutions will be uploaded. The
+                    data includes {Object.keys(institutionSummary.byLevel).length} different education levels,
+                    {institutionSummary.byGender.boysInstitution +
+                      institutionSummary.byGender.girlsInstitution +
+                      institutionSummary.byGender.mixInstitution +
+                      institutionSummary.byGender.notReported +
+                      institutionSummary.byGender.others}{" "}
+                    institutions by gender distribution, and {Object.keys(institutionSummary.byLocation).length}{" "}
+                    different location types.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Generic summary for other tables */}
+            {selectedTable !== "Institutions" && parsedJsonData && selectedTable && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-900 mb-2">Data Summary</h3>
+                <p className="text-sm text-gray-700">
+                  Ready to upload <strong>{parsedJsonData[selectedTable].length}</strong> records for {selectedTable}{" "}
+                  table.
+                </p>
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex justify-end space-x-3 pt-4 border-t">
+              <Button variant="outline" onClick={handleUploadRejection} disabled={uploading}>
+                Cancel & Select Different File
+              </Button>
+              <Button onClick={handleConfirmedUpload} disabled={uploading} className="bg-green-600 hover:bg-green-700">
+                {uploading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Confirm & Upload Data
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}

@@ -1,0 +1,97 @@
+{
+  "metadata": {
+    "table_name": "Institutions",
+    "version": "1.0",
+    "census_year": "2023",
+    "province": "Punjab",
+    "generated_date": "2023-06-15T10:30:00Z"
+  },
+  "data": [
+    {
+      "institution_id": "PB-001-2023",
+      "name": "Government High School Lahore",
+      "type": "High School",
+      "sector": "Public",
+      "location": {
+        "district": "Lahore",
+        "tehsil": "Lahore City",
+        "address": "123 Main Road, Lahore",
+        "coordinates": {
+          "latitude": 31.5204,
+          "longitude": 74.3587
+        }
+      },
+      "established_year": 1985,
+      "principal_name": "Muhammad Ahmed",
+      "contact_info": {
+        "phone": "+92-42-12345678",
+        "email": "ghs_lahore@example.edu.pk",
+        "website": "http://www.ghslahore.edu.pk"
+      },
+      "facilities": {
+        "classrooms": 24,
+        "labs": 3,
+        "library": true,
+        "playground": true,
+        "computer_lab": true,
+        "internet_access": true
+      },
+      "enrollment": {
+        "total_students": 850,
+        "male_students": 450,
+        "female_students": 400
+      },
+      "staff": {
+        "teaching_staff": 45,
+        "non_teaching_staff": 15
+      },
+      "medium_of_instruction": ["Urdu", "English"],
+      "levels_offered": ["Primary", "Middle", "High"],
+      "shifts": ["Morning"],
+      "last_updated": "2023-05-20T09:15:30Z"
+    },
+    {
+      "institution_id": "PB-002-2023",
+      "name": "Punjab College Gulberg",
+      "type": "College",
+      "sector": "Private",
+      "location": {
+        "district": "Lahore",
+        "tehsil": "Gulberg",
+        "address": "45 College Road, Gulberg III, Lahore",
+        "coordinates": {
+          "latitude": 31.5104,
+          "longitude": 74.3487
+        }
+      },
+      "established_year": 1995,
+      "principal_name": "Fatima Khan",
+      "contact_info": {
+        "phone": "+92-42-98765432",
+        "email": "info@punjabcollege.edu.pk",
+        "website": "http://www.punjabcollege.edu.pk"
+      },
+      "facilities": {
+        "classrooms": 35,
+        "labs": 5,
+        "library": true,
+        "playground": true,
+        "computer_lab": true,
+        "internet_access": true
+      },
+      "enrollment": {
+        "total_students": 1200,
+        "male_students": 650,
+        "female_students": 550
+      },
+      "staff": {
+        "teaching_staff": 60,
+        "non_teaching_staff": 25
+      },
+      "medium_of_instruction": ["English"],
+      "levels_offered": ["Intermediate", "Bachelors"],
+      "shifts": ["Morning", "Evening"],
+      "last_updated": "2023-05-18T14:30:45Z"
+    }
+  ]
+}
