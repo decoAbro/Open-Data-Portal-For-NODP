@@ -21,13 +21,7 @@ interface TableUploadTrackerProps {
 interface InstitutionSummary {
   totalInstitutions: number
   byLevel: { [key: string]: number }
-  byGender: {
-    boysInstitution: number
-    girlsInstitution: number
-    mixInstitution: number
-    notReported: number
-    others: number
-  }
+  byGender: { [key: string]: number }
   byLocation: { [key: string]: number }
 }
 
@@ -117,39 +111,24 @@ export default function TableUploadTracker({
     const summary: InstitutionSummary = {
       totalInstitutions: data.length,
       byLevel: {},
-      byGender: {
-        boysInstitution: 0,
-        girlsInstitution: 0,
-        mixInstitution: 0,
-        notReported: 0,
-        others: 0,
-      },
+      byGender: {},
       byLocation: {},
     }
 
     data.forEach((institution) => {
       // Count by Level_Id with proper mapping
       const levelId = String(institution.level_Id || institution.Level_Id || "Unknown")
-      const levelLabel = levelMappings[levelId] || `Unknown Level (${levelId})`
+      const levelLabel = levelMappings[levelId] || `Unknown Level Id (${levelId})`
       summary.byLevel[levelLabel] = (summary.byLevel[levelLabel] || 0) + 1
 
       // Count by Gender_Id with proper mapping
       const genderId = String(institution.gender_Id || institution.Gender_Id || "Unknown")
-      if (genderId === "1") {
-        summary.byGender.boysInstitution++
-      } else if (genderId === "2") {
-        summary.byGender.girlsInstitution++
-      } else if (genderId === "3") {
-        summary.byGender.mixInstitution++
-      } else if (genderId === "0") {
-        summary.byGender.notReported++
-      } else {
-        summary.byGender.others++
-      }
+      const genderLabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.byGender[genderLabel] = (summary.byGender[genderLabel] || 0) + 1
 
       // Count by Location_Id with proper mapping
       const locationId = String(institution.location_Id || institution.Location_Id || "Unknown")
-      const locationLabel = locationMappings[locationId] || `Unknown Location (${locationId})`
+      const locationLabel = locationMappings[locationId] || `Unknown Location Id (${locationId})`
       summary.byLocation[locationLabel] = (summary.byLocation[locationLabel] || 0) + 1
     })
 
@@ -664,7 +643,7 @@ export default function TableUploadTracker({
                       <div className="space-y-2">
                         {Object.entries(institutionSummary.byLevel).map(([levelId, count]) => (
                           <div key={levelId} className="flex justify-between text-sm">
-                            <span className="text-gray-600">Level {levelId}:</span>
+                            <span className={`${levelId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{levelId}:</span>
                             <span className="font-medium">{count}</span>
                           </div>
                         ))}
@@ -679,28 +658,12 @@ export default function TableUploadTracker({
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Boys Institution:</span>
-                          <span className="font-medium">{institutionSummary.byGender.boysInstitution}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Girls Institution:</span>
-                          <span className="font-medium">{institutionSummary.byGender.girlsInstitution}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Mix Institution:</span>
-                          <span className="font-medium">{institutionSummary.byGender.mixInstitution}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Not Reported:</span>
-                          <span className="font-medium">{institutionSummary.byGender.notReported}</span>
-                        </div>
-                        {institutionSummary.byGender.others > 0 && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Others:</span>
-                            <span className="font-medium">{institutionSummary.byGender.others}</span>
+                        {Object.entries(institutionSummary.byGender).map(([genderId, count]) => (
+                          <div key={genderId} className="flex justify-between text-sm">
+                            <span className={`${genderId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{genderId}:</span>
+                            <span className="font-medium">{count}</span>
                           </div>
-                        )}
+                        ))}
                       </div>
                     </CardContent>
                   </Card>
@@ -714,7 +677,7 @@ export default function TableUploadTracker({
                       <div className="space-y-2 max-h-32 overflow-y-auto">
                         {Object.entries(institutionSummary.byLocation).map(([locationId, count]) => (
                           <div key={locationId} className="flex justify-between text-sm">
-                            <span className="text-gray-600">Location {locationId}:</span>
+                            <span className={`${locationId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{locationId}:</span>
                             <span className="font-medium">{count}</span>
                           </div>
                         ))}
@@ -728,12 +691,8 @@ export default function TableUploadTracker({
                   <p className="text-sm text-green-800">
                     Total of <strong>{institutionSummary.totalInstitutions}</strong> institutions will be uploaded. The
                     data includes {Object.keys(institutionSummary.byLevel).length} different education levels,
-                    {institutionSummary.byGender.boysInstitution +
-                      institutionSummary.byGender.girlsInstitution +
-                      institutionSummary.byGender.mixInstitution +
-                      institutionSummary.byGender.notReported +
-                      institutionSummary.byGender.others}{" "}
-                    institutions by gender distribution, and {Object.keys(institutionSummary.byLocation).length}{" "}
+                    {Object.keys(institutionSummary.byGender).length} gender categories, 
+                    and {Object.keys(institutionSummary.byLocation).length}{" "}
                     different location types.
                   </p>
                 </div>
