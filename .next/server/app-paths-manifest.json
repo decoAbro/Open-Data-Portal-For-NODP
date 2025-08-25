@@ -1,1 +1,6 @@
-{}
+{
+  "/api/test-connection/route": "app/api/test-connection/route.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/api/census-years/route": "app/api/census-years/route.js",
+  "/page": "app/page.js"
+}
