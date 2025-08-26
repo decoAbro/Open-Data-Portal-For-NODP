@@ -13,8 +13,9 @@ const config = {
 
 // Create the upload window table if it doesn't exist
 export async function ensureUploadWindowTable() {
+  let pool: sql.ConnectionPool | undefined;
   try {
-    await sql.connect(config);
+    pool = await new sql.ConnectionPool(config).connect();
     
     const createTableQuery = `
       IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UploadWindow]') AND type in (N'U'))
@@ -30,20 +31,23 @@ export async function ensureUploadWindowTable() {
       END
     `;
     
-    await sql.query(createTableQuery);
+    await pool.request().query(createTableQuery);
   } catch (error) {
     console.error('Error ensuring upload window table exists:', error);
   } finally {
-    await sql.close();
+    if (pool) {
+      await pool.close();
+    }
   }
 }
 
 // Get current upload window state
 export async function getUploadWindowState() {
+  let pool: sql.ConnectionPool | undefined;
   try {
-    await sql.connect(config);
+    pool = await new sql.ConnectionPool(config).connect();
     
-    const result = await sql.query`
+    const result = await pool.request().query`
       SELECT TOP 1 
         isOpen,
         deadline,
@@ -82,7 +86,9 @@ export async function getUploadWindowState() {
       lastUpdated: new Date().toISOString()
     };
   } finally {
-    await sql.close();
+    if (pool) {
+      await pool.close();
+    }
   }
 }
 
@@ -93,14 +99,15 @@ export async function updateUploadWindowState(state: {
   message?: string;
   year?: string;
 }) {
+  let pool: sql.ConnectionPool | undefined;
   try {
-    await sql.connect(config);
+    pool = await new sql.ConnectionPool(config).connect();
     
     // Convert deadline string to Date object if it exists
     const deadlineDate = state.deadline ? new Date(state.deadline) : null;
     
     // Use request to properly handle parameter types
-    const request = new sql.Request();
+    const request = pool.request();
     request.input('isOpen', sql.Bit, state.isOpen);
     request.input('deadline', sql.DateTime, deadlineDate);
     request.input('message', sql.NVarChar(500), state.message || '');
@@ -116,6 +123,8 @@ export async function updateUploadWindowState(state: {
     console.error('Error updating upload window state:', error);
     return false;
   } finally {
-    await sql.close();
+    if (pool) {
+      await pool.close();
+    }
   }
 }
