@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Upload, CheckCircle, FileJson, AlertCircle, BarChart3, Eye } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   getTablesList,
@@ -43,6 +44,12 @@ export default function TableUploadTracker({
   const [dataNotAvailableTables, setDataNotAvailableTables] = useState<string[]>([])
   const [selectedTable, setSelectedTable] = useState<string | null>(null)
   const [showUploadDialog, setShowUploadDialog] = useState(false)
+  const [showNotification, setShowNotification] = useState(false)
+  const [notificationContent, setNotificationContent] = useState<{
+    title: string;
+    message: React.ReactNode;
+    type: 'success' | 'error' | 'info';
+  } | null>(null)
   const [showPreviewDialog, setShowPreviewDialog] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState("")
@@ -292,6 +299,12 @@ export default function TableUploadTracker({
         throw new Error(errorText || "Upload failed")
       }
 
+      // Get the API response message
+      const responseText = await response.text();
+      
+      // Store the complete response without any filtering
+      const formattedMessage = responseText;
+      
       // Record successful upload
       addTableUploadRecord({
         username,
@@ -302,10 +315,37 @@ export default function TableUploadTracker({
         year: currentYear,
         status: "success",
         recordCount: parsedJsonData[selectedTable].length,
+        message: formattedMessage
       })
 
       // Update local state
       setUploadedTables((prev) => [...prev, selectedTable])
+      
+      // Show toast notification with a slight delay to ensure state is updated
+      // Store the complete API response, just split into lines for readability
+      const cleanedApiResponse = responseText
+        .split('.')
+        .map(sentence => sentence.trim())
+        .filter(sentence => sentence.length > 0)
+        .join('.\n');
+
+      // Show notification with formatted response
+      setNotificationContent({
+        title: "Upload Successful",
+        message: (
+          <div className="mt-2 space-y-3">
+            <div className="pb-2">
+              <p className="text-sm text-gray-700 whitespace-pre-line bg-gray-50 p-3 rounded-md border border-gray-200">
+                {responseText}
+              </p>
+            </div>
+          </div>
+        ),
+        type: 'success'
+      });
+      setShowNotification(true);
+      
+
 
       // Close dialogs and reset state
       setShowPreviewDialog(false)
@@ -314,7 +354,20 @@ export default function TableUploadTracker({
       setParsedJsonData(null)
       setInstitutionSummary(null)
     } catch (error) {
-      setUploadError(error instanceof Error ? error.message : "Upload failed")
+      const errorMessage = error instanceof Error ? error.message : "Upload failed";
+      setUploadError(errorMessage);
+      
+      // Show error toast for critical errors
+      setNotificationContent({
+        title: "Upload Error",
+        message: (
+          <p className="text-sm text-red-600">
+            {errorMessage}
+          </p>
+        ),
+        type: 'error'
+      });
+      setShowNotification(true);
     } finally {
       setUploading(false)
     }
@@ -374,7 +427,16 @@ export default function TableUploadTracker({
     setDataNotAvailableTables((prev) => [...prev, tableName])
 
     // Show success message to user
-    alert(`Notification sent to admin: Data not available for ${tableName}`)
+    setNotificationContent({
+      title: "Notification Sent",
+      message: (
+        <p className="text-sm">
+          Admin has been notified that data is not available for <strong>{tableName}</strong>.
+        </p>
+      ),
+      type: 'info'
+    });
+    setShowNotification(true);
   }
 
   // Download sample file
@@ -784,6 +846,29 @@ export default function TableUploadTracker({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Notification Dialog */}
+      <AlertDialog open={showNotification} onOpenChange={setShowNotification}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className={
+              notificationContent?.type === 'success' ? 'text-green-600' :
+              notificationContent?.type === 'error' ? 'text-red-600' :
+              'text-blue-600'
+            }>
+              {notificationContent?.title}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              {notificationContent?.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowNotification(false)}>
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

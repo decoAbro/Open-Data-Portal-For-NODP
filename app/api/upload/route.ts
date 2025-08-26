@@ -107,9 +107,8 @@ export async function POST(request: NextRequest) {
 
     // Calculate record count for response
     const recordCount = tableName ? jsonData[tableName].length : Object.keys(jsonData).length
-    const message = tableName
-      ? `Successfully uploaded ${recordCount} records for table "${tableName}" to the database.`
-      : `Successfully uploaded data with ${recordCount} tables to the database.`
+    const externalMessage = externalApiResult.trim();
+    const message = externalMessage; // Just use the external API message
 
     // Update localStorage with success status
     if (typeof window !== "undefined") {
@@ -131,7 +130,7 @@ export async function POST(request: NextRequest) {
       errorMessage: null,
     })
 
-    return new NextResponse(`${message} External API Response: ${externalApiResult}`, { status: 200 })
+    return new NextResponse(message, { status: 200 })
   } catch (error) {
     console.error("Upload error:", error)
 
@@ -154,7 +153,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (error.name === "AbortError") {
+    if (error instanceof Error && error.name === "AbortError") {
       return new NextResponse("Timeout Error: The upload request timed out. Please try again.", { status: 408 })
     }
 
