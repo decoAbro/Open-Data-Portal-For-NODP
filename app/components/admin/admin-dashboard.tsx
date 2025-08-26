@@ -89,7 +89,13 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   useEffect(() => {
     if (!isClient) return
 
-    checkWindowStatus()
+    const checkStatus = async () => {
+      const status = await getUploadWindowStatus()
+      setIsWindowOpen(status.isOpen)
+      setCurrentDeadline(status.deadline)
+    }
+
+    checkStatus()
     checkDatabaseConnection()
     const year = getCurrentYear()
     setCurrentYearState(year)
@@ -104,17 +110,17 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setUploadDeadlineTime(now.toTimeString().slice(0, 5))
 
     const interval = setInterval(() => {
-      checkWindowStatus()
+      checkStatus()
       checkDatabaseConnection()
     }, 30000) // Check every 30 seconds
 
     return () => clearInterval(interval)
   }, [isClient])
 
-  const checkWindowStatus = () => {
+  const checkWindowStatus = async () => {
     if (!isClient) return
 
-    const status = getUploadWindowStatus()
+    const status = await getUploadWindowStatus()
     setIsWindowOpen(status.isOpen)
     setCurrentDeadline(status.deadline)
   }

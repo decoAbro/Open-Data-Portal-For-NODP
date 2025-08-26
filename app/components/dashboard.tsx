@@ -721,7 +721,7 @@ export default function Dashboard({ userCredentials, onLogout }: DashboardProps)
               </span>
               <span className="mx-4 inline-flex items-center">
                 <Info className="h-4 w-4 mr-2" />
-                Please upload your data for {currentYear} before the deadline.
+                Please upload your data for Census Year {currentYear} before the deadline.
               </span>
             </div>
           </div>

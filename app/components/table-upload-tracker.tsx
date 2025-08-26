@@ -8,7 +8,14 @@ import { Progress } from "@/components/ui/progress"
 import { Upload, CheckCircle, FileJson, AlertCircle, BarChart3, Eye } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { getTablesList, getTableUploadsByUsername, addTableUploadRecord, getCurrentYear } from "../utils/storage"
+import {
+  getTablesList,
+  getTableUploadsByUsername,
+  addTableUploadRecord,
+  getCurrentYear,
+  getUploadWindowStatus,
+  updateUserByUsername,
+} from "../utils/storage"
 
 interface TableUploadTrackerProps {
   username: string
@@ -45,28 +52,72 @@ export default function TableUploadTracker({
   const [institutionSummary, setInstitutionSummary] = useState<InstitutionSummary | null>(null)
 
   const tables = getTablesList()
-  const currentYear = getCurrentYear()
+  const [currentYear, setCurrentYear] = useState("")
 
   useEffect(() => {
     setIsClient(true)
   }, [])
 
+  // Initial setup
   useEffect(() => {
     if (!isClient) return
 
-    // Load uploaded tables for this user
-    const userUploads = getTableUploadsByUsername(username)
-    const uploadedTableNames = userUploads
-      .filter((upload) => upload.year === currentYear)
-      .map((upload) => upload.tableName)
-    setUploadedTables(uploadedTableNames)
+    const setInitialYear = async () => {
+      // First try to get the year from the server
+      const status = await getUploadWindowStatus();
+      if (status.year) {
+        setCurrentYear(status.year);
+      } else {
+        // Fall back to local storage if server doesn't have a year set
+        setCurrentYear(getCurrentYear());
+      }
+    };
 
-    // Load data not available tables for this user
-    const dataNotAvailableRecords = JSON.parse(localStorage.getItem("pie-portal-data-not-available") || "[]")
-    const userDataNotAvailable = dataNotAvailableRecords
-      .filter((record: any) => record.username === username && record.year === currentYear)
-      .map((record: any) => record.tableName)
-    setDataNotAvailableTables(userDataNotAvailable)
+    setInitialYear();
+  }, [isClient])
+
+  useEffect(() => {
+    if (!isClient || !currentYear) return
+
+    const loadData = async () => {
+      // Load uploaded tables for this user
+      const userUploads = getTableUploadsByUsername(username)
+      const uploadedTableNames = userUploads
+        .filter((upload) => upload.year === currentYear)
+        .map((upload) => upload.tableName)
+      setUploadedTables(uploadedTableNames)
+
+      // Load data not available tables for this user
+      const dataNotAvailableRecords = JSON.parse(localStorage.getItem("pie-portal-data-not-available") || "[]")
+      const userDataNotAvailable = dataNotAvailableRecords
+        .filter((record: any) => record.username === username && record.year === currentYear)
+        .map((record: any) => record.tableName)
+      setDataNotAvailableTables(userDataNotAvailable)
+
+      // Check upload window status from server
+      const windowStatus = await getUploadWindowStatus();
+      if (windowStatus.year && windowStatus.year !== currentYear) {
+        // Year has changed, update local state
+        setCurrentYear(windowStatus.year);
+      }
+      
+      // Update permissions based on window status
+      if (!windowStatus.isOpen) {
+        updateUserByUsername(username, { uploadPermission: false, uploadDeadline: undefined });
+      } else {
+        updateUserByUsername(username, { 
+          uploadPermission: true, 
+          uploadDeadline: windowStatus.deadline || undefined 
+        });
+      }
+    }
+
+    loadData();
+
+    // Set up polling to check upload window status
+    const intervalId = setInterval(loadData, 30000); // Check every 30 seconds
+
+    return () => clearInterval(intervalId);
   }, [isClient, username, currentYear])
 
   // Calculate progress (uploaded + data not available = completed)
@@ -308,10 +359,11 @@ export default function TableUploadTracker({
       id: Date.now() + 1, // Different ID from the record
       username,
       tableName,
-      message: `User ${username} reports that data is not available for table: ${tableName}`,
+      message: `User ${username} reports that data is not available for table: ${tableName} (Census Year: ${currentYear})`,
       timestamp: new Date().toISOString(),
       type: "data_not_available",
       read: false,
+      year: currentYear // Add the year to the notification
     }
 
     const existingNotifications = JSON.parse(localStorage.getItem("pie-portal-notifications") || "[]")

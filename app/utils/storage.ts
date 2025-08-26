@@ -18,6 +18,7 @@ export interface Notification {
   type?: "upload_window" | "general" | "table_reminder"
   deadline?: string
   tableName?: string
+  year: string  // Make year required instead of optional
 }
 
 export interface UploadRecord {
@@ -458,150 +459,177 @@ export function setCurrentYear(year: string) {
 }
 
 // Admin functions for managing upload windows
-export function openUploadWindow(deadline: string, message: string, year: string) {
+export async function openUploadWindow(deadline: string, message: string, year: string) {
   if (!isClient) return
 
-  const deadlineDate = new Date(deadline)
-  const now = new Date()
-
-  // Update all users with upload permission and deadline
-  const users = getUsers()
-  const updatedUsers = users.map((user) => {
-    return {
-      ...user,
-      uploadPermission: true,
-      uploadDeadline: deadline,
-      hasUploaded: false, // Reset upload status for new window
-    }
-  })
-  localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers))
-
-  // Set the current year for validation
-  setCurrentYear(year)
-
-  // Store census year information in database
-  storeCensusYearInDatabase(year, deadline, message)
-
-  // Send notification to all users
-  users.forEach((user) => {
-    addNotification({
-      username: user.username,
-      message: `${message} Upload deadline: ${deadlineDate.toLocaleString()} for year ${year} data.`,
-      date: now.toLocaleString(),
-      read: false,
-      type: "upload_window",
-      deadline,
-    })
-  })
-}
-
-// Function to store census year information in database
-async function storeCensusYearInDatabase(censusYear: string, deadline: string, message: string) {
   try {
-    const response = await fetch("/api/census-years", {
+    // Update upload window state in the database
+    const response = await fetch("/api/upload-window", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        censusYear,
+        isOpen: true,
         deadline,
         message,
-        adminUser: "admin",
+        year,
       }),
-    })
+    });
 
-    if (response.ok) {
-      console.log(`Census year ${censusYear} stored in database successfully`)
-    } else {
-      console.error("Failed to store census year in database")
+    if (!response.ok) {
+      throw new Error('Failed to update upload window state');
     }
+
+    const deadlineDate = new Date(deadline);
+    const now = new Date();
+
+    // Update all users with upload permission and deadline
+    const users = getUsers();
+    const updatedUsers = users.map((user) => ({
+      ...user,
+      uploadPermission: true,
+      uploadDeadline: deadline,
+      hasUploaded: false, // Reset upload status for new window
+    }));
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers));
+
+    // Set the current year for validation
+    setCurrentYear(year);
+
+    // Send notification to all users
+    users.forEach((user) => {
+      addNotification({
+        username: user.username,
+        message: `${message} Upload deadline: ${deadlineDate.toLocaleString()} for year ${year} data.`,
+        date: now.toLocaleString(),
+        read: false,
+        type: "upload_window",
+        deadline,
+        year,
+      });
+    });
+
+    return true;
   } catch (error) {
-    console.error("Error storing census year in database:", error)
+    console.error('Error opening upload window:', error);
+    return false;
   }
 }
 
-export function closeUploadWindow() {
+export async function closeUploadWindow() {
   if (!isClient) return
 
-  const users = getUsers()
-  const updatedUsers = users.map((user) => {
-    return {
+  try {
+    // Get current state before closing
+    const currentState = await getUploadWindowStatus();
+    const year = currentState.year || getCurrentYear();
+    
+    // Update upload window state in the database
+    const response = await fetch("/api/upload-window", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        isOpen: false,
+        year, // Keep the same year when closing
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update upload window state');
+    }
+
+    // Set current year in local storage to maintain consistency
+    setCurrentYear(year);
+
+    const users = getUsers();
+    const updatedUsers = users.map((user) => ({
       ...user,
       uploadPermission: false,
       uploadDeadline: undefined,
-    }
-  })
-  localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers))
+    }));
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers));
 
-  // Send notification about window closure to all users
-  users.forEach((user) => {
-    addNotification({
-      username: user.username,
-      message: "The upload window has been closed. No further uploads are allowed at this time.",
-      date: new Date().toLocaleString(),
-      read: false,
-      type: "general",
-    })
-  })
+    // Send notification about window closure to all users, including the year
+    users.forEach((user) => {
+      addNotification({
+        username: user.username,
+        message: `The upload window for census year ${year} has been closed. No further uploads are allowed at this time.`,
+        date: new Date().toLocaleString(),
+        read: false,
+        type: "general",
+        year, // Include year in notification
+      });
+    });
+
+    return true;
+  } catch (error) {
+    console.error('Error closing upload window:', error);
+    return false;
+  }
 }
 
-// Check if upload deadline has passed
-export function checkUploadDeadlines() {
-  if (!isClient) return
+// Check if upload deadline has passed and sync with server state
+export async function checkUploadDeadlines() {
+  if (!isClient) return;
 
-  const users = getUsers()
-  const now = new Date()
-  let hasExpiredUsers = false
+  try {
+    // Get current upload window state from server
+    const response = await fetch("/api/upload-window");
+    if (!response.ok) {
+      throw new Error('Failed to get upload window state');
+    }
 
-  const updatedUsers = users.map((user) => {
-    if (user.uploadDeadline && user.uploadPermission) {
-      const deadline = new Date(user.uploadDeadline)
-      if (now > deadline) {
-        hasExpiredUsers = true
+    const serverState = await response.json();
+    
+    const users = getUsers();
+    const now = new Date();
+    let hasExpiredUsers = false;
+
+    const updatedUsers = users.map((user) => {
+      // If server shows window is closed or deadline has passed
+      if (!serverState.isOpen || (serverState.deadline && new Date(serverState.deadline) < now)) {
+        hasExpiredUsers = true;
         return {
           ...user,
           uploadPermission: false,
           uploadDeadline: undefined,
-        }
+        };
       }
-    }
-    return user
-  })
+      return user;
+    });
 
-  if (hasExpiredUsers) {
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers))
+    if (hasExpiredUsers) {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers));
+    }
+  } catch (error) {
+    console.error('Error checking upload deadlines:', error);
   }
 }
 
 export function markUserHasUploaded(username: string) {
-  updateUserByUsername(username, { hasUploaded: true, uploadPermission: false })
+  updateUserByUsername(username, { hasUploaded: true, uploadPermission: false });
 }
 
-// Get upload window status
-export function getUploadWindowStatus() {
-  if (!isClient) return { isOpen: false, deadline: null, year: null }
-
+// Get upload window status from server
+export async function getUploadWindowStatus() {
   try {
-    const users = getUsers()
-    const usersWithPermission = users.filter((user) => user.uploadPermission && user.uploadDeadline)
-
-    if (usersWithPermission.length === 0) {
-      return { isOpen: false, deadline: null, year: null }
+    const response = await fetch("/api/upload-window");
+    if (!response.ok) {
+      throw new Error('Failed to get upload window state');
     }
 
-    // Get the deadline (assuming all users have the same deadline)
-    const deadline = usersWithPermission[0].uploadDeadline
-    const year = getCurrentYear()
-
+    const serverState = await response.json();
     return {
-      isOpen: true,
-      deadline,
-      year,
-    }
+      isOpen: serverState.isOpen,
+      deadline: serverState.deadline,
+      year: serverState.year
+    };
   } catch (error) {
-    console.error("Error getting upload window status:", error)
-    return { isOpen: false, deadline: null, year: null }
+    console.error('Error getting upload window status:', error);
+    return { isOpen: false, deadline: null, year: null };
   }
 }
 
@@ -639,13 +667,17 @@ export function sendTableReminder(username: string, tableName: string) {
   const user = getUserByUsername(username)
   if (!user) return
 
+  // Get current year for reminder
+  const currentYear = getCurrentYear();
+
   addNotification({
     username: username,
-    message: `REMINDER: Please upload data for the "${tableName}" table. This data is required for the current reporting period.`,
+    message: `REMINDER: Please upload data for the "${tableName}" table. This data is required for census year ${currentYear}.`,
     date: new Date().toLocaleString(),
     read: false,
     type: "table_reminder",
     tableName: tableName,
+    year: currentYear,
   })
 }
 

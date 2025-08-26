@@ -23,6 +23,7 @@ import {
   getDataNotAvailableByUsername,
   getUploadHistory,
   getCurrentYear,
+  getUploadWindowStatus,
 } from "../utils/storage"
 
 interface UserDashboardOverviewProps {
@@ -38,10 +39,40 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
   const [showPreviewDialog, setShowPreviewDialog] = useState(false)
 
   const tables = getTablesList()
-  const currentYear = getCurrentYear()
+  const [currentYear, setCurrentYear] = useState("")
 
   useEffect(() => {
     setIsClient(true)
+  }, [])
+
+  // Initial setup
+  useEffect(() => {
+    if (!isClient) return
+
+    const setInitialYear = async () => {
+      // First try to get the year from the server
+      const status = await getUploadWindowStatus();
+      if (status.year) {
+        setCurrentYear(status.year);
+      } else {
+        // Fall back to local storage if server doesn't have a year set
+        setCurrentYear(getCurrentYear());
+      }
+    };
+
+    setInitialYear();
+  }, [isClient])
+
+  // Get the census year from the server
+  useEffect(() => {
+    const fetchWindowStatus = async () => {
+      const status = await getUploadWindowStatus();
+      if (status.year) {
+        setCurrentYear(status.year);
+      }
+    };
+
+    fetchWindowStatus();
   }, [])
 
   useEffect(() => {
