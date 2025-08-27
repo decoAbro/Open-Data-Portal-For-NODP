@@ -35,6 +35,7 @@ interface InstitutionSummary {
   bySector: { [key: string]: number }
   bySchoolCommittee: { [key: string]: number }
   byMedium: { [key: string]: number }
+  byShift: { [key: string]: number }
 }
 
 export default function TableUploadTracker({
@@ -211,6 +212,14 @@ export default function TableUploadTracker({
       "9": "Urdu and English",
     }
 
+    // Shift ID mappings
+    const ShiftMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Morning",
+      "2": "Evening",
+      "3": "Both",
+    }
+
     const summary: InstitutionSummary = {
       totalInstitutions: data.length,
       byLevel: {},
@@ -219,7 +228,8 @@ export default function TableUploadTracker({
       ByFunctionalStatus: {},
       bySector: {},
       bySchoolCommittee: {},
-      byMedium: {}
+      byMedium: {},
+      byShift: {}
     }
 
     data.forEach((institution) => {
@@ -257,6 +267,11 @@ export default function TableUploadTracker({
       const mediumId = String(institution.medium_Id || institution.Medium_Id || "Unknown")
       const mediumLabel = mediumMappings[mediumId] || `Unknown Medium Id (${mediumId})`
       summary.byMedium[mediumLabel] = (summary.byMedium[mediumLabel] || 0) + 1
+
+      // Count by Shift_Id with proper mapping
+      const shiftId = String(institution.shift_Id || institution.Shift_Id || "Unknown")
+      const shiftLabel = ShiftMappings[shiftId] || `Unknown Shift Id (${shiftId})`
+      summary.byShift[shiftLabel] = (summary.byShift[shiftLabel] || 0) + 1
     })
 
     return summary
@@ -977,6 +992,29 @@ export default function TableUploadTracker({
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* By Shift */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Shift</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.byShift)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([shift, count]) => (
+                          <div key={shift} className="flex justify-between text-sm">
+                            <span className={`${shift.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{shift}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 <div className="bg-green-50 p-4 rounded-lg">
@@ -989,7 +1027,8 @@ export default function TableUploadTracker({
                     {Object.keys(institutionSummary.ByFunctionalStatus).length} functional status types,
                     {Object.keys(institutionSummary.bySector).length} different sectors,
                     {Object.keys(institutionSummary.bySchoolCommittee).length} school committee statuses,
-                    and {Object.keys(institutionSummary.byMedium).length} different mediums of instruction.
+                    {Object.keys(institutionSummary.byMedium).length} different mediums of instruction,
+                    and {Object.keys(institutionSummary.byShift).length} shift types.
                   </p>
                 </div>
               </div>
