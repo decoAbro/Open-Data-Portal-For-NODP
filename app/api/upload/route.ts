@@ -205,15 +205,15 @@ async function storeUploadRecord({
 
     await pool.request().query(createTableQuery)
 
-    // Get current census year
-    const censusYearQuery = `
-      SELECT TOP 1 census_year 
-      FROM census_years 
-      WHERE is_current = 1 
-      ORDER BY created_date DESC
+    // Get current census year from the UploadWindow table since that's what's currently active
+    const windowQuery = `
+      SELECT TOP 1 year
+      FROM UploadWindow
+      WHERE isOpen = 1
+      ORDER BY lastUpdated DESC
     `
-    const censusYearResult = await pool.request().query(censusYearQuery)
-    const currentCensusYear = censusYearResult.recordset[0]?.census_year || new Date().getFullYear().toString()
+    const windowResult = await pool.request().query(windowQuery)
+    const currentCensusYear = windowResult.recordset[0]?.year
 
     // Insert upload record
     const insertQuery = `
@@ -238,6 +238,11 @@ async function storeUploadRecord({
       .input("errorMessage", sql.NVarChar, errorMessage)
       .input("censusYear", sql.NVarChar, currentCensusYear)
       .query(insertQuery)
+
+    if (!currentCensusYear) {
+      console.error("No active upload window found. Census year could not be determined.")
+      throw new Error("No active upload window found")
+    }
 
     console.log(`Upload record stored for user: ${username}, status: ${status}`)
   } catch (dbError) {
