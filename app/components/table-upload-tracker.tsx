@@ -31,6 +31,9 @@ interface InstitutionSummary {
   byLevel: { [key: string]: number }
   byGender: { [key: string]: number }
   byLocation: { [key: string]: number }
+  ByFunctionalStatus: { [key: string]: number }
+  bySector: { [key: string]: number }
+  bySchoolCommittee: { [key: string]: number }
 }
 
 export default function TableUploadTracker({
@@ -166,11 +169,41 @@ export default function TableUploadTracker({
       "2": "Urban",
     }
 
+    // Functional Status ID mappings
+    const StatusMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Functional",
+      "2": "Non-Functional",
+      "3": "Closed",
+      "4": "Merged",
+      "5": "Shifted",
+      "6": "Denationalized",
+      "7": "Consolidated",
+    }
+
+    // Sector ID mappings
+    const SectorMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Public",
+      "2": "Other Public",
+      "3": "Private",
+    }
+
+    // School Committee ID mappings
+    const committeeMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Yes (PTA/PTC/SMC etc.)",
+      "2": "No",
+    }
+
     const summary: InstitutionSummary = {
       totalInstitutions: data.length,
       byLevel: {},
       byGender: {},
       byLocation: {},
+      ByFunctionalStatus: {},
+      bySector: {},
+      bySchoolCommittee: {}
     }
 
     data.forEach((institution) => {
@@ -188,6 +221,21 @@ export default function TableUploadTracker({
       const locationId = String(institution.location_Id || institution.Location_Id || "Unknown")
       const locationLabel = locationMappings[locationId] || `Unknown Location Id (${locationId})`
       summary.byLocation[locationLabel] = (summary.byLocation[locationLabel] || 0) + 1
+
+      // Count by Status_Id with proper mapping
+      const FunctionalStatus_Id = String(institution.FunctionalStatus_Id || institution.FunctionalStatus_Id || "Unknown")
+      const statusLabel = StatusMappings[FunctionalStatus_Id] || `Unknown Functional Status Id (${FunctionalStatus_Id})`
+      summary.ByFunctionalStatus[statusLabel] = (summary.ByFunctionalStatus[statusLabel] || 0) + 1
+
+      // Count by Sector_Id with proper mapping
+      const sectorId = String(institution.sector_Id || institution.Sector_Id || "Unknown")
+      const sectorLabel = SectorMappings[sectorId] || `Unknown Sector Id (${sectorId})`
+      summary.bySector[sectorLabel] = (summary.bySector[sectorLabel] || 0) + 1
+
+      // Count by SchoolCommittee_Id with proper mapping
+      const committeeId = String(institution.schoolCommittee_Id || institution.SchoolCommittee_Id || "Unknown")
+      const committeeLabel = committeeMappings[committeeId] || `Unknown School Committee Id (${committeeId})`
+      summary.bySchoolCommittee[committeeLabel] = (summary.bySchoolCommittee[committeeLabel] || 0) + 1
     })
 
     return summary
@@ -798,6 +846,57 @@ export default function TableUploadTracker({
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* By Status */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Functional Status</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {Object.entries(institutionSummary.ByFunctionalStatus).map(([ByFunctionalStatus, count]) => (
+                          <div key={ByFunctionalStatus} className="flex justify-between text-sm">
+                            <span className={`${ByFunctionalStatus.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{ByFunctionalStatus}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Sector */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Sector</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {Object.entries(institutionSummary.bySector).map(([sector, count]) => (
+                          <div key={sector} className="flex justify-between text-sm">
+                            <span className={`${sector.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{sector}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By School Committee */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By School Committee</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {Object.entries(institutionSummary.bySchoolCommittee).map(([committee, count]) => (
+                          <div key={committee} className="flex justify-between text-sm">
+                            <span className={`${committee.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{committee}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 <div className="bg-green-50 p-4 rounded-lg">
@@ -805,9 +904,11 @@ export default function TableUploadTracker({
                   <p className="text-sm text-green-800">
                     Total of <strong>{institutionSummary.totalInstitutions}</strong> institutions will be uploaded. The
                     data includes {Object.keys(institutionSummary.byLevel).length} different education levels,
-                    {Object.keys(institutionSummary.byGender).length} gender categories, 
-                    and {Object.keys(institutionSummary.byLocation).length}{" "}
-                    different location types.
+                    {Object.keys(institutionSummary.byGender).length} gender categories,
+                    {Object.keys(institutionSummary.byLocation).length} different location types,
+                    {Object.keys(institutionSummary.ByFunctionalStatus).length} functional status types,
+                    {Object.keys(institutionSummary.bySector).length} different sectors,
+                    and {Object.keys(institutionSummary.bySchoolCommittee).length} school committee statuses.
                   </p>
                 </div>
               </div>
