@@ -34,6 +34,7 @@ interface InstitutionSummary {
   ByFunctionalStatus: { [key: string]: number }
   bySector: { [key: string]: number }
   bySchoolCommittee: { [key: string]: number }
+  byMedium: { [key: string]: number }
 }
 
 export default function TableUploadTracker({
@@ -196,6 +197,20 @@ export default function TableUploadTracker({
       "2": "No",
     }
 
+    // Medium ID mappings
+    const mediumMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Urdu",
+      "2": "English",
+      "3": "Arabic",
+      "4": "Sindhi",
+      "5": "Pushto",
+      "6": "Punjabi",
+      "7": "Balochi",
+      "8": "Others",
+      "9": "Urdu and English",
+    }
+
     const summary: InstitutionSummary = {
       totalInstitutions: data.length,
       byLevel: {},
@@ -203,7 +218,8 @@ export default function TableUploadTracker({
       byLocation: {},
       ByFunctionalStatus: {},
       bySector: {},
-      bySchoolCommittee: {}
+      bySchoolCommittee: {},
+      byMedium: {}
     }
 
     data.forEach((institution) => {
@@ -236,6 +252,11 @@ export default function TableUploadTracker({
       const committeeId = String(institution.schoolCommittee_Id || institution.SchoolCommittee_Id || "Unknown")
       const committeeLabel = committeeMappings[committeeId] || `Unknown School Committee Id (${committeeId})`
       summary.bySchoolCommittee[committeeLabel] = (summary.bySchoolCommittee[committeeLabel] || 0) + 1
+
+      // Count by Medium_Id with proper mapping
+      const mediumId = String(institution.medium_Id || institution.Medium_Id || "Unknown")
+      const mediumLabel = mediumMappings[mediumId] || `Unknown Medium Id (${mediumId})`
+      summary.byMedium[mediumLabel] = (summary.byMedium[mediumLabel] || 0) + 1
     })
 
     return summary
@@ -897,6 +918,23 @@ export default function TableUploadTracker({
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* By Medium */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Medium</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {Object.entries(institutionSummary.byMedium).map(([medium, count]) => (
+                          <div key={medium} className="flex justify-between text-sm">
+                            <span className={`${medium.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{medium}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 <div className="bg-green-50 p-4 rounded-lg">
@@ -908,7 +946,8 @@ export default function TableUploadTracker({
                     {Object.keys(institutionSummary.byLocation).length} different location types,
                     {Object.keys(institutionSummary.ByFunctionalStatus).length} functional status types,
                     {Object.keys(institutionSummary.bySector).length} different sectors,
-                    and {Object.keys(institutionSummary.bySchoolCommittee).length} school committee statuses.
+                    {Object.keys(institutionSummary.bySchoolCommittee).length} school committee statuses,
+                    and {Object.keys(institutionSummary.byMedium).length} different mediums of instruction.
                   </p>
                 </div>
               </div>
