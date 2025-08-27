@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify(jsonData),
       // Add timeout to prevent hanging
-      signal: AbortSignal.timeout(30000), // 30 second timeout
+      signal: AbortSignal.timeout(1000000), // 30 second timeout
     })
 
     console.log("External API response status:", externalApiResponse.status)

@@ -110,14 +110,14 @@ const initialUsers: UserData[] = [
 // Initial tables list
 const initialTables = [
   "Institutions",
-  "Teachers_profile",
+  "Teachers_Profile",
   "EnrolAgeWise",
   "Facilities",
   "ICT_Facilities",
-  "Institutions_Attack",
+  "Institution_Attack",
   "Institution_Security",
   "Non_Teachers_Profile",
-  "Institutions_Otherfacilities",
+  "Institutions_OtherFacilities",
   "Enrolment_ECEExperience",
   "Enrolment_Refugee",
   "Enrolment_Religion",
