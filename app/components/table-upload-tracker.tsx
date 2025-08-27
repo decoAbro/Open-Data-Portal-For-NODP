@@ -37,6 +37,7 @@ interface InstitutionSummary {
   byMedium: { [key: string]: number }
   byShift: { [key: string]: number }
   byKind: { [key: string]: number }
+  byManagement: { [key: string]: number }
 }
 
 export default function TableUploadTracker({
@@ -238,6 +239,166 @@ export default function TableUploadTracker({
       "12": "Distance Learning",
     }
 
+    // Management ID mappings
+    const managementMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "School Education Department, Government of Punjab ",
+      "2": "School Education Department, Government of Balochistan",
+      "3": "Elementary & Secondary Education Department, Government of AJ&K",
+      "4": "School Education Department, Government of Gilgit Baltistan",
+      "5": "School Education and Literacy Department, Government of Sindh",
+      "6": "Elementary and Secondary Education Department, Government of KPK",
+      "7": "Federal Directorate of Education, Islamabad",
+      "8": "AJ&K Private Schools Regulatory Authority, Government of AJ&K ",
+      "9": "Sindh Directorate of Private Institutions, Government of Sindh",
+      "10": "KPK Private Schools Regulatory Authority, Government of KP",
+      "11": "Private Educational Institutions Regulatory Authority (PEIRA), Islamabad",
+      "12": "Higher Education Department, KPK, Peshawar",
+      "13": "Higher Education Regulatory Authority, Peshawar",
+      "14": "Colleges, Higher & Technical Education Department Balochistan, Quetta",
+      "15": "Higher Education Department Punjab, Lahore",
+      "16": "Colleges Education Department Sindh, Karachi",
+      "17": "Directorate of Colleges GB, Gilgit",
+      "18": "Higher Education Department, Muzaffarabad",
+      "19": "National Vocational and Technical Training Commission",
+      "20": "Higher Education Commission, Islamabad",
+      "21": "Wafaq-ul-Madaris Al-Arabiya Pakistan, Multan",
+      "22": "Wafaq-ul-Madaris Al-Shiya, Pakistan",
+      "23": "Tanzeem Al-Madaris Ahl-e-Sunnat, Jamia Anwar ul Uloom, Lahore",
+      "24": "Wafaq-ul-Madaris, Jamia Salfia, Shaikhupra, Faislabad",
+      "25": "Rabta Tul Madaris Al Islamia Pakistan, Multan Road, Lahore",
+      "26": "Ittehad-ul-Madaris Al Arbia, Pakistan Mardan",
+      "27": "Nizam Ul Madaris Pakistan, Lahore",
+      "28": "Majma Ul Madaris Taleem Al Kitab wal Hikmata, Lahore",
+      "29": "Wafaq Ul Madaris Al Islamia Al Rizvia, Pakistan, Lahore",
+      "30": "Ittehad Al Madaris Al Islamia, Pakistan, Karachi",
+      "31": "Jamia Dar Ul Aloom Karachi",
+      "32": "Al Jamia Al Ashrafia, Lahore, Pakistan",
+      "33": "Jamia Saddiquia Karachi, Karachi",
+      "34": "Jamia Taleemat Islamia, Faisalabad",
+      "35": "Dar Ul Uloom Muhammadia Ghousia, Sargodha",
+      "36": "Tahreeke Minhaj Ul Quran (College of Sharia) Lahore",
+      "37": "Jamia Al Rasheed, Karachi",
+      "38": "Dar Ul Uloom Jamia Naeemia, Lahore",
+      "39": "Jamia Al Madina (Faizan -e- Madina) Global Islamic Centre, International Madni Markaz, Karachi",
+      "40": "Jamia Al Darasat Al Islamia, Karachi",
+      "41": "Jamia Al Uloom Al Islamia (Bannoria) Karachi",
+      "42": "Ittehad Ul Madaris Al Arbia Pakistan Lahore",
+      "43": "Majma Al Uloom Al Islamia, Karachi",
+      "44": "Board of Islamic Education, Bahawalpur",
+      "45": "Kinz Ul Madaris Global Madni Markaz, Faizan E Madina, Karachi",
+      "46": "Dar Ul Uloom Haqania, Akora Khattak, Nowshera, KP",
+      "47": "Directorate General of Religious Education (DGRE)",
+      "48": "National Education Foundation, Islamabad",
+      "49": "Punjab Education Foundation",
+      "50": "Sindh Education Foundation, Karachi",
+      "51": "Balochistan Education Foundation, Quetta",
+      "52": "KP Elementary and Secondary Education Foundation, Peshawar",
+      "53": "Punjab Literacy and NFBE Department, Lahore",
+      "54": "Directorate of Basic Education Community Schools, Islamabad",
+      "55": "National Commission for Human Development",
+      "56": "Directorate General of Special Education, Islamabad",
+      "57": "Special Education Department, Punjab, Lahore",
+      "58": "Department for Empowerment of Persons with Disabilities, Government of Sindh, Karachi",
+      "59": "Social Welfare Department, Government of KPK",
+      "60": "Social Welfare and Special Education, Government of Gilgit Baltistan",
+      "61": "Social Welfare and Special Education, Government of AJ&K",
+      "62": "Social Welfare, Special Education and Human Rights Department, Quetta, Balochistan",
+      "63": "Quaid-e-Azam Academy for Educational Development (QAED) Punjab, Lahore",
+      "64": "Sindh Teacher Education Development Authority (STEDA), Karachi",
+      "65": "Directorate of Professional Development (DPD) KP, Peshawar",
+      "66": "Provincial Institution for Teacher Education (PITE) Balochistan, Quetta",
+      "67": "Teacher Training Institution AJ&K, Muzaffarabad",
+      "68": "Federal Govt. Educational Institutions (C/G) Directorate, Rawalpindi Cantt.",
+      "69": "Divisional Public School & Inter Colleges, Rawalpindi",
+      "70": "Divisional Public School & Inter Colleges, Sargodha",
+      "71": "Quaid-e-Azam, Divisional Public School & College, Gujranwala",
+      "72": "Divisional Public School & Inter Colleges, Faisalabad",
+      "73": "Divisional Public School & Inter Colleges, Lahore",
+      "74": "Divisional Public School & Inter Colleges, Sahiwal",
+      "75": "Divisional Public School & Inter Colleges, DG Khan",
+      "76": "Divisional Public School & Inter Colleges, Multan",
+      "77": "Divisional Public School & Inter Colleges, Bahawalpur",
+      "78": "Overseas Pakistanis Foundation, Islamabad",
+      "79": "Pakistan Railways, Lahore",
+      "80": "Pakistan Steel, Karachi",
+      "81": "Pakistan Water & Power Development Authority (WAPDA)",
+      "82": "Pakistan Atomic Energy Commission, Islamabad",
+      "83": "Pakistan Ordnance Factories POF, Wah Cantt",
+      "84": "Danish Schools and Centres of Excellence",
+      "85": "Bahria Foundation, Karachi",
+      "86": "Pakistan Airforce (PAF)",
+      "87": "National Police Foundation, Islamabad",
+      "88": "Telecom Foundation, Islamabad",
+      "89": "Pakistan Bait-ul-Mall, Islamabad",
+      "90": "Pakistan Rangers, Karachi ",
+      "91": "Pakistan Navy, Karachi",
+      "92": "Fauji Foundation Schools System",
+      "93": "Army Public School & Colleges System Secretariat (APSACS), Rawalpindi",
+      "94": "Mines Mineral Development Department, Govt. Sindh, Karachi",
+      "95": "Minerals Development Department, Government of Khyber Pakhtunkhwa, Civil Secretariat, Peshawar",
+      "96": "Mines & Minerals Development Department, Government of Balochistan, Quetta",
+      "97": "Mines & Minerals Department, Government of Punjab, Lahore",
+      "98": "Directorate of Mines & Minerals, Government of Gilgit-Baltistan, Gilgit",
+      "99": "Merged Areas Education Foundation, KP",
+      "100": "Alternate Learning Pathways-Project Implementation Unit (ALP-PIU), KP",
+      "101": "Private Education Providers Registration Information System (PEPRIS), School Education Department, Punjab",
+      "102": "Directorate of Literacy & Non-Formal Education, Sindh",
+      "103": "Literacy & Non-Formal Basic Education Department, Punjab",
+      "104": "Directorate of Literacy & Non-Formal Education, Balochistan",
+      "111": "Divisional Public School & Inter College",
+      "112": "Cadet College Choa Saiden shah Chakwal",
+      "113": "Cadet College Fateh Jhang",
+      "114": "Cadet College Kallar Kahar",
+      "115": "Cadet College Kohat",
+      "116": "Cadet College Petaro",
+      "117": "Cadet College Larkana",
+      "118": "Baqai Cadet College Karachi",
+      "119": "Govt. Cadet College Pano Akil",
+      "120": "Kernal Sher Khan Cadet College KSKCC Swabi",
+      "121": "Cadet College Sargodha",
+      "122": "Cadet College Ghotki Sindh",
+      "123": "Shaheed Benazir Bhutto Girls Cadet College Larkana",
+      "124": "Rangers Cadet College Chakri Rawalpindi",
+      "125": "Cadet College Karampur Kashmore",
+      "126": "Cadet College Mirpur",
+      "127": "Cadet College Muzaffarabad (AJ&K)",
+      "128": "Cadet College Hassanabdal",
+      "129": "Cadet College Okara",
+      "130": "Wapda Cadet College Tarbela",
+      "131": "Cadet College Skardu",
+      "132": "Pakistan Scouts cadet College Batrasi Mansehra",
+      "133": "Cadet College Spinkai",
+      "134": "Cadet College Mastung",
+      "135": "Muhammadian Cadet College Mohmand Gat",
+      "136": "Cadet College Faisalabad",
+      "137": "Cadet College Esakhel, Mianwali",
+      "138": "Cadet College Hub",
+      "139": "Cadet College Rawalpindi",
+      "140": "Cadet College Khushab",
+      "141": "Cadet College Khairpur",
+      "142": "Cadet College Razmak North Waziristan",
+      "143": "Cadet College Swat",
+      "144": "Girls Cadet College Quetta",
+      "145": "Sheikha Fatima Bint Mubarak Girls Cadet College Turbat",
+      "146": "Cadet College Awaran",
+      "147": "Pakistan Steel Cadet College Steel Town, Bin Qasim Karachi",
+      "148": "Cadet College Palandri",
+      "149": "The Sies Cadet College Kakul Abbottabad",
+      "150": "Cadet College Pishin",
+      "151": "School Education Department, Government of Balochistan",
+      "152": "School Education Department, Government of Gilgit Baltistan",
+      "153": "Others",
+      "154": "Allama Iqbal Open University (AIOU)",
+      "155": "Independent Madaris",
+      "156": "Kinz-UL-Madaris Jhang Rd, Faisalabad",
+      "157": "Sir Syed Educational Institutions",
+      "158": "Punjab Workers Welfare Fund",
+      "159": "Punjab Education Initiatives Management Authority (PEIMA)",
+      "160": "Wafaq-ul-Madaris-al-Salafia",
+      "161": "Education Support Project Secondary Education Department Government of Balochistan",
+    }
+
     const summary: InstitutionSummary = {
       totalInstitutions: data.length,
       byLevel: {},
@@ -248,7 +409,8 @@ export default function TableUploadTracker({
       bySchoolCommittee: {},
       byMedium: {},
       byShift: {},
-      byKind: {}
+      byKind: {},
+      byManagement: {}
     }
 
     data.forEach((institution) => {
@@ -296,6 +458,11 @@ export default function TableUploadTracker({
       const kindId = String(institution.kind_Id || institution.Kind_Id || "Unknown")
       const kindLabel = kindMappings[kindId] || `Unknown Kind Id (${kindId})`
       summary.byKind[kindLabel] = (summary.byKind[kindLabel] || 0) + 1
+
+      // Count by Management_Id with proper mapping
+      const managementId = String(institution.management_Id || institution.Management_Id || "Unknown")
+      const managementLabel = managementMappings[managementId] || `Unknown Management Id (${managementId})`
+      summary.byManagement[managementLabel] = (summary.byManagement[managementLabel] || 0) + 1
     })
 
     return summary
@@ -1062,6 +1229,29 @@ export default function TableUploadTracker({
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* By Management */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Management</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.byManagement)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([management, count]) => (
+                          <div key={management} className="flex justify-between text-sm">
+                            <span className={`${management.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{management}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 <div className="bg-green-50 p-4 rounded-lg">
@@ -1076,7 +1266,8 @@ export default function TableUploadTracker({
                     {Object.keys(institutionSummary.bySchoolCommittee).length} school committee statuses,
                     {Object.keys(institutionSummary.byMedium).length} different mediums of instruction,
                     {Object.keys(institutionSummary.byShift).length} shift types,
-                    and {Object.keys(institutionSummary.byKind).length} kinds of institutions.
+                    {Object.keys(institutionSummary.byKind).length} kinds of institutions,
+                    and {Object.keys(institutionSummary.byManagement).length} management types.
                   </p>
                 </div>
               </div>
