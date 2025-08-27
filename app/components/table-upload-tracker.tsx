@@ -36,6 +36,7 @@ interface InstitutionSummary {
   bySchoolCommittee: { [key: string]: number }
   byMedium: { [key: string]: number }
   byShift: { [key: string]: number }
+  byKind: { [key: string]: number }
 }
 
 export default function TableUploadTracker({
@@ -220,6 +221,23 @@ export default function TableUploadTracker({
       "3": "Both",
     }
 
+    // Kind ID mappings
+    const kindMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "EMIS",
+      "2": "Private",
+      "3": "Colleges",
+      "4": "Technical and Vocation Education (TVET)",
+      "5": "Higher Education",
+      "6": "Deeni Madaris",
+      "7": "Education Foundation",
+      "8": "Non-Formal Education",
+      "9": "Special Education",
+      "10": "Teacher Training",
+      "11": "Other Public",
+      "12": "Distance Learning",
+    }
+
     const summary: InstitutionSummary = {
       totalInstitutions: data.length,
       byLevel: {},
@@ -229,7 +247,8 @@ export default function TableUploadTracker({
       bySector: {},
       bySchoolCommittee: {},
       byMedium: {},
-      byShift: {}
+      byShift: {},
+      byKind: {}
     }
 
     data.forEach((institution) => {
@@ -272,6 +291,11 @@ export default function TableUploadTracker({
       const shiftId = String(institution.shift_Id || institution.Shift_Id || "Unknown")
       const shiftLabel = ShiftMappings[shiftId] || `Unknown Shift Id (${shiftId})`
       summary.byShift[shiftLabel] = (summary.byShift[shiftLabel] || 0) + 1
+
+      // Count by Kind_Id with proper mapping
+      const kindId = String(institution.kind_Id || institution.Kind_Id || "Unknown")
+      const kindLabel = kindMappings[kindId] || `Unknown Kind Id (${kindId})`
+      summary.byKind[kindLabel] = (summary.byKind[kindLabel] || 0) + 1
     })
 
     return summary
@@ -1015,6 +1039,29 @@ export default function TableUploadTracker({
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* By Kind */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Kind</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.byKind)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([kind, count]) => (
+                          <div key={kind} className="flex justify-between text-sm">
+                            <span className={`${kind.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{kind}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 <div className="bg-green-50 p-4 rounded-lg">
@@ -1028,7 +1075,8 @@ export default function TableUploadTracker({
                     {Object.keys(institutionSummary.bySector).length} different sectors,
                     {Object.keys(institutionSummary.bySchoolCommittee).length} school committee statuses,
                     {Object.keys(institutionSummary.byMedium).length} different mediums of instruction,
-                    and {Object.keys(institutionSummary.byShift).length} shift types.
+                    {Object.keys(institutionSummary.byShift).length} shift types,
+                    and {Object.keys(institutionSummary.byKind).length} kinds of institutions.
                   </p>
                 </div>
               </div>
