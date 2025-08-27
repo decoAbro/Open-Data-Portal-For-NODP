@@ -869,7 +869,7 @@ export default function TableUploadTracker({
                       <CardTitle className="text-sm font-medium">By Location ID</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                      <div className="space-y-2">
                         {Object.entries(institutionSummary.byLocation)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
@@ -892,7 +892,7 @@ export default function TableUploadTracker({
                       <CardTitle className="text-sm font-medium">By Functional Status</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                      <div className="space-y-2">
                         {Object.entries(institutionSummary.ByFunctionalStatus)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
@@ -915,7 +915,7 @@ export default function TableUploadTracker({
                       <CardTitle className="text-sm font-medium">By Sector</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                      <div className="space-y-2">
                         {Object.entries(institutionSummary.bySector)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
@@ -938,7 +938,7 @@ export default function TableUploadTracker({
                       <CardTitle className="text-sm font-medium">By School Committee</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                      <div className="space-y-2">
                         {Object.entries(institutionSummary.bySchoolCommittee)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
@@ -961,7 +961,7 @@ export default function TableUploadTracker({
                       <CardTitle className="text-sm font-medium">By Medium</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                      <div className="space-y-2">
                         {Object.entries(institutionSummary.byMedium)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
