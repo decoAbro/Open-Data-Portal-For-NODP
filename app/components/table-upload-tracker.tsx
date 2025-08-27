@@ -824,7 +824,13 @@ export default function TableUploadTracker({
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2">
-                        {Object.entries(institutionSummary.byLevel).map(([levelId, count]) => (
+                        {Object.entries(institutionSummary.byLevel)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([levelId, count]) => (
                           <div key={levelId} className="flex justify-between text-sm">
                             <span className={`${levelId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{levelId}:</span>
                             <span className="font-medium">{count}</span>
@@ -841,7 +847,13 @@ export default function TableUploadTracker({
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2">
-                        {Object.entries(institutionSummary.byGender).map(([genderId, count]) => (
+                        {Object.entries(institutionSummary.byGender)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([genderId, count]) => (
                           <div key={genderId} className="flex justify-between text-sm">
                             <span className={`${genderId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{genderId}:</span>
                             <span className="font-medium">{count}</span>
@@ -858,7 +870,13 @@ export default function TableUploadTracker({
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {Object.entries(institutionSummary.byLocation).map(([locationId, count]) => (
+                        {Object.entries(institutionSummary.byLocation)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([locationId, count]) => (
                           <div key={locationId} className="flex justify-between text-sm">
                             <span className={`${locationId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{locationId}:</span>
                             <span className="font-medium">{count}</span>
@@ -875,7 +893,13 @@ export default function TableUploadTracker({
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {Object.entries(institutionSummary.ByFunctionalStatus).map(([ByFunctionalStatus, count]) => (
+                        {Object.entries(institutionSummary.ByFunctionalStatus)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([ByFunctionalStatus, count]) => (
                           <div key={ByFunctionalStatus} className="flex justify-between text-sm">
                             <span className={`${ByFunctionalStatus.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{ByFunctionalStatus}:</span>
                             <span className="font-medium">{count}</span>
@@ -892,7 +916,13 @@ export default function TableUploadTracker({
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {Object.entries(institutionSummary.bySector).map(([sector, count]) => (
+                        {Object.entries(institutionSummary.bySector)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([sector, count]) => (
                           <div key={sector} className="flex justify-between text-sm">
                             <span className={`${sector.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{sector}:</span>
                             <span className="font-medium">{count}</span>
@@ -909,7 +939,13 @@ export default function TableUploadTracker({
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {Object.entries(institutionSummary.bySchoolCommittee).map(([committee, count]) => (
+                        {Object.entries(institutionSummary.bySchoolCommittee)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([committee, count]) => (
                           <div key={committee} className="flex justify-between text-sm">
                             <span className={`${committee.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{committee}:</span>
                             <span className="font-medium">{count}</span>
@@ -926,7 +962,13 @@ export default function TableUploadTracker({
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {Object.entries(institutionSummary.byMedium).map(([medium, count]) => (
+                        {Object.entries(institutionSummary.byMedium)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([medium, count]) => (
                           <div key={medium} className="flex justify-between text-sm">
                             <span className={`${medium.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{medium}:</span>
                             <span className="font-medium">{count}</span>
