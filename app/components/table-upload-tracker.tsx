@@ -53,6 +53,14 @@ interface TeachersProfileSummary {
   byDifficultyCategory: { [key: string]: number }
 }
 
+interface EnrolAgeWiseSummary {
+  TotalNumberofRows: number
+  byclass: { [key: string]: number }
+  bygender: { [key: string]: number }
+  byage: { [key: string]: number }
+  byshift: { [key: string]: number }
+}
+
 export default function TableUploadTracker({
   username,
   password,
@@ -78,6 +86,7 @@ export default function TableUploadTracker({
   const [parsedJsonData, setParsedJsonData] = useState<any>(null)
   const [institutionSummary, setInstitutionSummary] = useState<InstitutionSummary | null>(null)
   const [TeachersProfileSummary, setTeachersProfileSummary] = useState<TeachersProfileSummary | null>(null)
+  const [EnrolAgeWiseSummary, setEnrolAgeWiseSummary] = useState<EnrolAgeWiseSummary | null>(null)
   const summaryRef = useRef<HTMLDivElement>(null)
   const pdfMetaRef = useRef<HTMLDivElement>(null)
 
@@ -814,6 +823,215 @@ export default function TableUploadTracker({
     return summary
   }
 
+  // Analyze EnrolAgeWise data for preview
+  const analyzeEnrolAgeWisedata = (data: any[]): EnrolAgeWiseSummary => {
+    // Class ID mappings
+    const classMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "101": "Unadmitted",
+      "102": "Kinder Garden (KG)/Montessori",
+      "103": "Nursery Class",
+      "104": "Prep/ Kachi",
+      "105": "ECE",
+      "201": "Class 1",
+      "202": "Class 2",
+      "203": "Class 3",
+      "204": "Class 4",
+      "205": "Class 5",
+      "301": "Class 6",
+      "302": "Class 7",
+      "303": "Class 8",
+      "401": "Class 9 Science Group",
+      "402": "Class 9 Arts Group",
+      "403": "Class 9 Technical Stream",
+      "404": "Class 10 Science Group",
+      "405": "Class 10 Arts Group",
+      "406": "Class 10 Technical Stream",
+      "407": "Class 9 Computer Science",
+      "408": "Class 10 Computer Science",
+      "409": "Class 9 ",
+      "410": "Class 10 ",
+      "411": "O Level 1",
+      "412": "O Level 2",
+      "501": "Class 11 Science Group",
+      "502": "Class 11 Arts Group",
+      "503": "Class 12 Science Group",
+      "504": "Class 12 Arts Group",
+      "505": "Class 11 Computer Science ",
+      "506": "Class 11 General Science",
+      "507": "Class 11 Commerce Group",
+      "508": "Class 12 Computer Science",
+      "509": "Class 12 General Science",
+      "510": "Class 12 Commerce Group",
+      "511": "Class 11",
+      "512": "Class 12",
+      "513": "A Level 1",
+      "514": "A Level 2",
+      "515": "Class 11 Premedical",
+      "516": "Class 12 Premedical",
+      "517": "Class 11 Pre_Engineering",
+      "518": "Class 12 Pre_Engineering",
+      "601": "Class 13 Science Group",
+      "602": "Class 13 Arts Group",
+      "603": "Class 14 Science Group",
+      "604": "Class 14 Arts Group",
+      "605": "B.A. Hon.1",
+      "606": "B.A. Hon.2",
+      "607": "B.A. Hon.3",
+      "608": "B.Sc. Hon.1",
+      "609": "B.Sc. Hon.2",
+      "610": "B.Sc. Hon.3",
+      "611": "Class 13",
+      "612": "Class 14",
+      "613": "B.A. Hon.4",
+      "614": "Class 13 Commerce",
+      "615": "Class 14 Commerce",
+      "616": "Class 13 Computer Science",
+      "617": "Class 14 Computer Science",
+      "618": "Class 13 General Science",
+      "619": "Class 14 General Science",
+      "620": "B.Sc. Hon. 4",
+      "621": "B. Ed",
+      "622": "Die 1St Term",
+      "623": "Die 2Nd Term",
+      "624": "B. Ed. (Part 1)",
+      "625": "B. Ed. (Part 2)",
+      "626": "Bs. Ed",
+      "627": "Bed (Hons)",
+      "628": "ADE",
+      "701": "M.A. 1",
+      "702": "M.Sc. 1",
+      "703": "M.A. 2",
+      "704": "M.Sc. 2",
+      "705": "Mcs 1",
+      "706": "Mcs 2",
+      "707": "Class 15 English",
+      "708": "Class 15 Geography",
+      "709": "Class 15 Mathematics",
+      "710": "Class 15 Mass Communication",
+      "711": "Class 15 Applied Psychology",
+      "712": "Class 15 Islamiyat",
+      "713": "Class 15 Urdu",
+      "714": "Class 15 Economics",
+      "715": "Class 15 Home Economics",
+      "716": "Class 16 English",
+      "717": "Class 16 Geography",
+      "718": "Class 16 Mathematics",
+      "719": "Class 16 Mass Communication",
+      "720": "Class 16 Applied Psychology",
+      "721": "Class 16 Islamiyat",
+      "722": "Class 16 Urdu",
+      "723": "Class 16 Economics",
+      "724": "Class 16 Home Economics",
+      "725": "M. Ed",
+      "726": "Class 15",
+      "727": "Class 16",
+      "728": "BS (YEAR 1)",
+      "729": "BS (YEAR 2)",
+      "730": "BS (YEAR 3)",
+      "731": "BS (YEAR 4)",
+      "801": "M.Phil.",
+      "901": "Ph.D.",
+      "902": "Playgroup",
+      "1001": "Ihc Courses",
+      "1005": "سال اول",
+      "1006": "سال دوم",
+      "1007": "سال سوم",
+      "1008": "سال چہارم",
+      "1009": "سال پنجم",
+      "1010": "حفظِ قرآن",
+      "1011": "تجوید و قراءت",
+    }
+
+    // Gender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Boys",
+      "2": "Girls",
+      "3": "Transgender",
+    }
+
+    // Age ID mappings
+    const ageMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Less than 3",
+      "2": "3",
+      "3": "4",
+      "4": "5",
+      "5": "6",
+      "6": "7",
+      "7": "8",
+	    "8": "9",
+      "9": "10",
+	    "10": "11",
+      "11": "12",
+      "12": "13",
+      "13": "14",
+      "14": "15",
+      "15": "16",
+      "16": "17",
+      "17": "18",
+      "18": "19",
+      "19": "20",
+      "20": "21",
+      "21": "22",
+      "22": "23",
+      "23": "24",
+      "24": "25-29",
+      "25": "30-34",
+      "26": "35-39",
+      "27": "40-44",
+      "28": "45-49",
+      "29": "50-54",
+      "30": "55-59",
+      "31": "60-64",
+      "32": "65-69",
+      "33": "70-74",
+      "34": "75-79",
+      "35": "80+",
+    }
+
+    // Shift ID mappings
+    const ShiftMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Morning",
+      "2": "Evening",
+      "3": "Both",
+    }
+
+    const summary: EnrolAgeWiseSummary = {
+      TotalNumberofRows: data.length,
+      byclass: {},
+      bygender: {},
+      byage: {},
+      byshift: {},
+    }
+
+    data.forEach((EnrolAgeWise) => {
+      // Count by Class_Id with proper mapping
+      const classId = String(EnrolAgeWise.Class_Id || EnrolAgeWise.Class_Id || "Unknown")
+      const classLabel = classMappings[classId] || `Unknown Level Id (${classId})`
+      summary.byclass[classLabel] = (summary.byclass[classLabel] || 0) + 1
+
+      // Count by Gender_Id with proper mapping
+      const genderId = String(EnrolAgeWise.gender_Id || EnrolAgeWise.Gender_Id || "Unknown")
+      const genderLabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.bygender[genderLabel] = (summary.bygender[genderLabel] || 0) + 1
+
+      // Count by Age_Id with proper mapping
+      const ageId = String(EnrolAgeWise.Age_Id || EnrolAgeWise.Age_Id || "Unknown")
+      const ageLabel = ageMappings[ageId] || `Unknown Location Id (${ageId})`
+      summary.byage[ageLabel] = (summary.byage[ageLabel] || 0) + 1
+
+      // Count by Shift_Id with proper mapping
+      const shiftId = String(EnrolAgeWise.Shift_Id || EnrolAgeWise.Shift_Id || "Unknown")
+      const shiftLabel = ShiftMappings[shiftId] || `Unknown Shift Id (${shiftId})`
+      summary.byshift[shiftLabel] = (summary.byshift[shiftLabel] || 0) + 1
+    })
+
+    return summary
+  }
+
   // Handle file selection and validation
   const handleFileSelection = async (tableName: string, file: File) => {
     setUploadError("")
@@ -889,6 +1107,12 @@ export default function TableUploadTracker({
       if (tableName === "Teachers_Profile") {
         const summary = analyzeTeachersProfileData(jsonData[tableName])
         setTeachersProfileSummary(summary)
+      }
+
+      // If it's EnrolAgeWise table, analyze the data
+      if (tableName === "EnrolAgeWise") {
+        const summary = analyzeEnrolAgeWisedata(jsonData[tableName])
+        setEnrolAgeWiseSummary(summary)
       }
 
       // Close upload dialog and show preview dialog
@@ -980,6 +1204,8 @@ export default function TableUploadTracker({
       setSelectedFile(null)
       setParsedJsonData(null)
       setInstitutionSummary(null)
+      setTeachersProfileSummary(null)
+      setEnrolAgeWiseSummary(null)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Upload failed";
       setUploadError(errorMessage);
@@ -1008,6 +1234,7 @@ export default function TableUploadTracker({
     setParsedJsonData(null)
     setInstitutionSummary(null)
     setTeachersProfileSummary(null)
+    setEnrolAgeWiseSummary(null)
     setUploadError("")
   }
 
@@ -2211,8 +2438,225 @@ export default function TableUploadTracker({
               </div>
             )}
 
+            {/* EnrolAgeWise-specific summary */}
+            {selectedTable === "EnrolAgeWise" && EnrolAgeWiseSummary && (
+              <div className="space-y-4">
+                {/* PDF Meta and Summary for PDF export */}
+                <div style={{ display: 'none' }}>
+                  <div ref={pdfMetaRef}>
+                    <div className="mb-4 p-4 border-b border-gray-300">
+                      <h2 className="text-xl font-bold text-blue-900 mb-2">Enrol Age wise Data Summary Report</h2>
+                      <div className="text-sm text-gray-700">
+                        <div><strong>Generated by:</strong> {username}</div>
+                        <div><strong>Date:</strong> {new Date().toLocaleDateString()}</div>
+                        <div><strong>Time:</strong> {new Date().toLocaleTimeString()}</div>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-green-900 mb-2">Summary</h4>
+                      <p className="text-sm text-green-800">
+                        Total of <strong>{EnrolAgeWiseSummary.TotalNumberofRows}</strong> rows will be uploaded. The
+                        data includes {Object.keys(EnrolAgeWiseSummary.byclass).length} Class levels,
+                        {Object.keys(EnrolAgeWiseSummary.bygender).length} gender categories,
+                        {Object.keys(EnrolAgeWiseSummary.byage).length} different Age types,
+                        and {Object.keys(EnrolAgeWiseSummary.byshift).length} Shift types.
+                      </p>
+                    </div>
+                    {/* Full breakdown for PDF */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                      {/* By Class */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Class Id</div>
+                        {Object.entries(EnrolAgeWiseSummary.byclass)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([classId, count]) => (
+                            <div key={classId} className="flex justify-between text-sm">
+                              <span style={classId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{classId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Gender */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Gender</div>
+                        {Object.entries(EnrolAgeWiseSummary.bygender)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([genderId, count]) => (
+                            <div key={genderId} className="flex justify-between text-sm">
+                              <span style={genderId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{genderId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Age */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Age Id</div>
+                        {Object.entries(EnrolAgeWiseSummary.byage)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([ageId, count]) => (
+                            <div key={ageId} className="flex justify-between text-sm">
+                              <span style={ageId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{ageId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Shift */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Shift</div>
+                        {Object.entries(EnrolAgeWiseSummary.byshift)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([shift, count]) => (
+                            <div key={shift} className="flex justify-between text-sm">
+                              <span style={shift.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{shift}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <h3 className="font-medium text-gray-900 flex items-center">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Data Summary
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* By Class */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Class Id</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(EnrolAgeWiseSummary.byclass)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([classId, count]) => (
+                          <div key={classId} className="flex justify-between text-sm">
+                            <span className={`${classId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{classId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Gender */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Gender</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(EnrolAgeWiseSummary.bygender)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([genderId, count]) => (
+                          <div key={genderId} className="flex justify-between text-sm">
+                            <span className={`${genderId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{genderId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Age */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Age Id</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(EnrolAgeWiseSummary.byage)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([ageId, count]) => (
+                          <div key={ageId} className="flex justify-between text-sm">
+                            <span className={`${ageId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{ageId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Shift */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Shift</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(EnrolAgeWiseSummary.byshift)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([shift, count]) => (
+                          <div key={shift} className="flex justify-between text-sm">
+                            <span className={`${shift.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{shift}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="bg-green-50 p-4 rounded-lg flex flex-col md:flex-row md:items-center md:justify-between" ref={summaryRef}>
+                  <div>
+                    <h4 className="font-medium text-green-900 mb-2">Summary</h4>
+                    <p className="text-sm text-green-800">
+                      Total of <strong>{EnrolAgeWiseSummary.TotalNumberofRows}</strong> rows will be uploaded. The
+                      data includes {Object.keys(EnrolAgeWiseSummary.byclass).length} different Class levels,
+                      {Object.keys(EnrolAgeWiseSummary.bygender).length} gender categories,
+                      {Object.keys(EnrolAgeWiseSummary.byage).length} different Age Groups,
+                      and {Object.keys(EnrolAgeWiseSummary.byshift).length} Shift Types.
+                    </p>
+                  </div>
+                  <Button
+                    className="mt-4 md:mt-0 md:ml-6 rounded-lg shadow font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 py-2 transition-colors duration-200 hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                    onClick={() => {
+                      if (pdfMetaRef.current) {
+                        downloadElementAsPDF(pdfMetaRef.current, `EnrolAgeWise-Data-Summary.pdf`)
+                      }
+                    }}
+                  >
+                    Download Data Summary as PDF
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Generic summary for other tables */}
-            {selectedTable !== "Institutions" && "Teachers_Profile" && parsedJsonData && selectedTable && (
+            {selectedTable !== "Institutions" && "Teachers_Profile" && "EnrolAgeWise" && parsedJsonData && selectedTable && (
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium text-gray-900 mb-2">Data Summary</h3>
                 <p className="text-sm text-gray-700">
