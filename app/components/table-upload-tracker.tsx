@@ -41,6 +41,18 @@ interface InstitutionSummary {
   byManagement: { [key: string]: number }
 }
 
+interface TeachersProfileSummary {
+  totalTeachers: number
+  byGender: { [key: string]: number }
+  byBasicPayScale: { [key: string]: number }
+  byAcademicQualification: { [key: string]: number }
+  byProfessionalQualification: { [key: string]: number }
+  byDesignation: { [key: string]: number }
+  byNatureOfService: { [key: string]: number }
+  byDifficultyType: { [key: string]: number }
+  byDifficultyCategory: { [key: string]: number }
+}
+
 export default function TableUploadTracker({
   username,
   password,
@@ -65,6 +77,7 @@ export default function TableUploadTracker({
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [parsedJsonData, setParsedJsonData] = useState<any>(null)
   const [institutionSummary, setInstitutionSummary] = useState<InstitutionSummary | null>(null)
+  const [TeachersProfileSummary, setTeachersProfileSummary] = useState<TeachersProfileSummary | null>(null)
   const summaryRef = useRef<HTMLDivElement>(null)
   const pdfMetaRef = useRef<HTMLDivElement>(null)
 
@@ -471,6 +484,336 @@ export default function TableUploadTracker({
     return summary
   }
 
+  // Analyze Teachers_Profile data for preview
+  const analyzeTeachersProfileData = (data: any[]): TeachersProfileSummary => {
+    
+    // TeacherGender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Male",
+      "2": "Female",
+      "3": "Transgender",
+    }
+
+    // TeacherBasicPayScale ID mappings
+    const basicpayscaleMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "BPS 1",
+      "2": "BPS 2",
+      "3": "BPS 3",
+      "4": "BPS 4",
+      "5": "BPS 5",
+      "6": "BPS 6",
+      "7": "BPS 7",
+      "8": "BPS 8",
+      "9": "BPS 9",
+      "10": "BPS 10",
+      "11": "BPS 11",
+      "12": "BPS 12",
+      "13": "BPS 13",
+      "14": "BPS 14",
+      "15": "BPS 15",
+      "16": "BPS 16",
+      "17": "BPS 17",
+      "18": "BPS 18",
+      "19": "BPS 19",
+      "20": "BPS 20",
+      "21": "BPS 21",
+      "22": "BPS 22",
+      "23": "Others",
+    }
+
+    // TeacherAcademicQualification ID mappings
+    const academicqualificationMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Middle",
+      "2": "Matric",
+      "3": "F.A / F.Sc.",
+      "4": "B.A / B.Sc.",
+      "5": "M.A / M.Sc.",
+      "6": "M.Phil.",
+      "7": "Ph.D.",
+      "8": "BCS/MCS/BIT/MIT",
+      "9": "MBBS/ BDS",
+      "10": "MBA",
+      "11": "FCPS/FRCP/MRCP/MCPS",
+      "12": "M.D",
+      "13": "B. Com",
+      "14": "M.Com",
+      "15": "Others",
+    }
+
+    // TeacherProfessionalQualification ID mappings
+    const professionalqualificationMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "P.T.C",
+      "2": "C.T",
+      "3": "B.Ed.",
+      "4": "M.ED",
+      "5": "Un-Trained",
+      "6": "B.S.Ed.",
+      "7": "MS Ed.",
+      "8": "M. Phil Education",
+      "9": "DM/DIE/JDPE/SDPE/MPE",
+      "10": "Arabic",
+      "11": "ECE",
+      "12": "ADE",
+      "13": "PTAC",
+      "14": "Physical Diploma",
+      "15": "Others",
+    }
+
+    // TeacherDesignation ID mappings
+    const designationMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Principal",
+      "2": "Vice Principal",
+      "3": "Senior Subject Specialist (English)",
+      "4": "Senior Subject Specialist (Urdu)",
+      "5": "Senior Subject Specialist (Islamiyat)",
+      "6": "Senior Subject Specialist (Pak Study)",
+      "7": "Senior Subject Specialist (Civics)",
+      "8": "Senior Subject Specialist (History)",
+      "9": "Senior Subject Specialist (Economics)",
+      "10": "Senior Subject Specialist (Statistics)",
+      "11": "Senior Subject Specialist (Pashto)",
+      "12": "Senior Subject Specialist (Home Economics)",
+      "13": "Senior Subject Specialist (Maths)",
+      "14": "Senior Subject Specialist (Physics)",
+      "15": "Senior Subject Specialist (Chemistry)",
+      "16": "Senior Subject Specialist (Biology)",
+      "17": "Senior Subject Specialist (General)",
+      "18": "Subject Specialist (English)",
+      "19": "Subject Specialist (Urdu)",
+      "20": "Subject Specialist (Islamiyat)",
+      "21": "Subject Specialist (Pak Study)",
+      "22": "Subject Specialist (Civics)",
+      "23": "Subject Specialist (History)",
+      "24": "Subject Specialist (Economics)",
+      "25": "Subject Specialist (Statistics)",
+      "26": "Subject Specialist (Pashto)",
+      "27": "Subject Specialist (Home Economics)",
+      "28": "Subject Specialist (Maths)",
+      "29": "Subject Specialist (Physics)",
+      "30": "Subject Specialist (Chemistry)",
+      "31": "Subject Specialist (Biology)",
+      "32": "Subject Specialist (General)",
+      "33": "Subject Specialist (Arabic)",
+      "34": "Subject Specialist (Auditing)",
+      "35": "Subject Specialist (Business Administration)",
+      "36": "Subject Specialist (Business Communication)",
+      "37": "Subject Specialist (Education)",
+      "38": "Subject Specialist (General History)",
+      "39": "Subject Specialist (Geography)",
+      "40": "Subject Specialist (Geology)",
+      "41": "Subject Specialist (Finance)",
+      "42": "Subject Specialist (Health and Physical Education)",
+      "43": "Subject Specialist (Islamic History)",
+      "44": "Subject Specialist (International Relations)",
+      "45": "Subject Specialist (Library Science)",
+      "46": "Subject Specialist (Mass Communication)",
+      "47": "Subject Specialist (Philosophy)",
+      "48": "Subject Specialist (Psychology)",
+      "49": "Subject Specialist (Public Administration)",
+      "50": "Subject Specialist (Sindhi)",
+      "51": "Subject Specialist (Sociology)",
+      "52": "Subject Specialist (Social Work)",
+      "53": "Subject Specialist (Statistics)",
+      "54": "Subject Specialist (Special Education)",
+      "55": "Subject Specialist (Urdu)",
+      "56": "Subject Specialist (Bio Chemistry)",
+      "57": "Subject Specialist (Botany)",
+      "58": "Subject Specialist (Genetics)",
+      "59": "Subject Specialist (Micro Biology)",
+      "60": "Subject Specialist (Zoology)",
+      "61": "Subject Specialist (Computer Science)",
+      "62": "Subject Specialist (Information Technology)",
+      "63": "Librarian",
+      "64": "Instructor Physical Education",
+      "65": "Senior Instructor Physical Education",
+      "66": "Chief Instructor Physical Education",
+      "67": "Head Master/Mistress",
+      "68": "Secondary School Teacher (General)",
+      "69": "Secondary School Teacher (Biology)",
+      "70": "Secondary School Teacher (Chemistry)",
+      "71": "Secondary School Teacher (Math)",
+      "72": "Secondary School Teacher (Physics)",
+      "73": "Secondary School Teacher (Information Technology)",
+      "74": "Secondary School Teacher (Arts)",
+      "75": "Secondary School Teacher (Computer Science)",
+      "76": "Senior Certificate Teacher",
+      "77": "Certificate Teacher",
+      "78": "Senior Physical Education Teacher",
+      "79": "Physical Education Teacher",
+      "80": "Senior Drawing Master",
+      "81": "Drawing Master",
+      "82": "Senior Arabic Teacher",
+      "83": "Arabic Teacher",
+      "84": "Senior Theology Teacher",
+      "85": "Theology Teacher",
+      "86": "Senior Qari / Qaria",
+      "87": "Qari / Qaria",
+      "88": "Certified Teacher (Information Technology)",
+      "89": "Primary School Head Teacher", 
+      "90": "Senior Primary School Teacher",
+      "91": "Primary School Teacher",
+      "92": "Elementary Teacher",
+      "93": "Imam",
+      "94": "Hostel Superintendent",
+      "95": "Assistant",
+      "96": "Senior Clerk",
+      "97": "Junior Clerk",
+      "98": "Store Keeper",
+      "99": "Assistant Store Keeper",
+      "100": "Senior Lab Assistant",
+      "101": "Lab Assistant",
+      "102": "Lab Attendant",
+      "103": "Driver",
+      "104": "Naib Qasid",
+      "105": "Cook",
+      "106": "Baheshti",
+      "107": "Work Inspector",
+      "108": "Assistant Work Inspector",
+      "109": "Work Shop Attendant",
+      "110": "Bearer",
+      "111": "Mali",
+      "112": "Mai/Caller",
+      "113": "Chowkidar",
+      "114": "Sweeper",
+      "115": "ESE (Arts)",
+      "116": "ESE (Science)",
+      "117": "Elementary School Teacher (Arabic)",
+      "118": "Elementary School Teacher (Drawing)",
+      "119": "Elementary School Teacher (English)",
+      "120": "Elementary School Teacher (General Arts)",
+      "121": "Elementary School Teacher (Science)",
+      "122": "Elementary School Teacher (Urdu)",
+      "123": "SESE (Physical Education)",
+      "124": "SESE (Science)",
+      "125": "SESE (Maths)",
+      "126": "Senior Head Master",
+      "127": "SSE (Science)",
+      "128": "SSE (Chemistry)",
+      "129": "SSE (Biology)",
+      "130": "Junior School Teacher",
+      "131": "High School Teacher",
+      "132": "Physical Training Instructor",
+      "133": "WIT",
+      "134": "DT",
+      "135": "ECT",
+      "136": "Non-Gov’t",
+      "137": "Band Master",
+      "138": "Subject Specialist",
+      "139": "Information Technology Teacher",
+      "140": "Junior English Teacher (General)",
+      "141": "Junior English Teacher (Technical)",
+      "142": "Elementary School Teacher",
+      "143": "Lab Incharge (Information Technology)",
+      "144": "Library Assistant",
+      "145": "Superintendent",
+      "146": "Junior Elementary School Teacher",
+      "147": "Junior Vernacular Teacher",
+      "148": "Office Assistant",
+      "149": "Water Carrier",
+      "150": "Computer Operator",
+      "151": "Lab Superintendent",
+      "152": "Lab Supervisor",
+      "153": "Governess",
+      "154": "Lab Assistant (Information Technology)",
+      "155": "Senior Librarian",
+      "156": "Subject Specialist",
+      "157": "Junior English Teacher",
+      "158": "Lab Incharge (Computer)",
+      "159": "Others",
+    }
+
+    // TeacherNatureOfService ID mappings
+    const natureofserviceMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Sanctioned Permanent",
+      "2": "Filled Permanent",
+      "3": "Sanctioned Contractual",
+      "4": "Filled Contractual",
+      "5": "Vacant",
+    }
+
+    // Teacher Difficulty Type ID mappings
+    const difficultytypeMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Seeing, even when wearing glasses",
+      "2": "Hearing, even if using a hearing aid",
+      "3": "Walking or climbing steps",
+      "4": "Remembering or concentrating",
+      "5": "Hands & Arms",
+      "6": "Speech",
+    }
+
+    // Teacher Difficulty Category ID mappings
+    const difficultycategoryMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "No Difficulty",
+      "2": "Some difficulty",
+      "3": "Lot of difficulty",
+      "4": "Cannot do at all",
+    }
+
+    const summary: TeachersProfileSummary = {
+      totalTeachers: data.length,
+      byGender: {},
+      byBasicPayScale: {},
+      byAcademicQualification: {},
+      byProfessionalQualification: {},
+      byDesignation: {},
+      byNatureOfService: {},
+      byDifficultyType: {},
+      byDifficultyCategory: {}
+    }
+
+    data.forEach((Teachers_Profile) => {
+      // Count by Gender_Id with proper mapping
+      const genderId = String(Teachers_Profile.gender_Id || Teachers_Profile.Gender_Id || "Unknown")
+      const genderLabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.byGender[genderLabel] = (summary.byGender[genderLabel] || 0) + 1
+
+      // Count by BasicPayScale_Id with proper mapping
+      const BasicPayScaleId = String(Teachers_Profile.BasicPayScale_Id || Teachers_Profile.BasicPayScale_Id || "Unknown")
+      const BasicPayScaleLabel = basicpayscaleMappings[BasicPayScaleId] || `Unknown Basic Pay Scale Id (${BasicPayScaleId})`
+      summary.byBasicPayScale[BasicPayScaleLabel] = (summary.byBasicPayScale[BasicPayScaleLabel] || 0) + 1
+
+      // Count by AcademicQualification_Id with proper mapping
+      const AcademicQualificationId = String(Teachers_Profile.AcademicQualification_Id || Teachers_Profile.AcademicQualification_Id || "Unknown")
+      const academicqualificationLabel = academicqualificationMappings[AcademicQualificationId] || `Unknown Academic Qualification Id (${AcademicQualificationId})`
+      summary.byAcademicQualification[academicqualificationLabel] = (summary.byAcademicQualification[academicqualificationLabel] || 0) + 1
+
+      // Count by ProfessionalQualification_Id with proper mapping
+      const ProfessionalQualificationId = String(Teachers_Profile.ProfessionalQualification_Id || Teachers_Profile.ProfessionalQualification_Id || "Unknown")
+      const professionalqualificationLabel = professionalqualificationMappings[ProfessionalQualificationId] || `Unknown Professional Qualification Id (${ProfessionalQualificationId})`
+      summary.byProfessionalQualification[professionalqualificationLabel] = (summary.byProfessionalQualification[professionalqualificationLabel] || 0) + 1
+
+      // Count by Designation_Id with proper mapping
+      const DesignationId = String(Teachers_Profile.Designation_Id || Teachers_Profile.Designation_Id || "Unknown")
+      const designationLabel = designationMappings[DesignationId] || `Unknown Designation Id (${DesignationId})`
+      summary.byDesignation[designationLabel] = (summary.byDesignation[designationLabel] || 0) + 1
+
+      // Count by NatureOfService_Id with proper mapping
+      const natureofserviceId = String(Teachers_Profile.NatureOfService_Id || Teachers_Profile.NatureOfService_Id || "Unknown")
+      const natureofserviceLabel = natureofserviceMappings[natureofserviceId] || `Unknown Nature of Service Id (${natureofserviceId})`
+      summary.byNatureOfService[natureofserviceLabel] = (summary.byNatureOfService[natureofserviceLabel] || 0) + 1
+
+      // Count by DifficultyType_Id with proper mapping
+      const difficultytypeId = String(Teachers_Profile.DifficultyType_Id || Teachers_Profile.DifficultyType_Id || "Unknown")
+      const difficultytypeLabel = difficultytypeMappings[difficultytypeId] || `Unknown Difficulty Type Id (${difficultytypeId})`
+      summary.byDifficultyType[difficultytypeLabel] = (summary.byDifficultyType[difficultytypeLabel] || 0) + 1
+
+      // Count by DifficultyCategory_Id with proper mapping
+      const difficultycategoryId = String(Teachers_Profile.DifficultyCategory_Id || Teachers_Profile.DifficultyCategory_Id || "Unknown")
+      const kindLabel = difficultycategoryMappings[difficultycategoryId] || `Unknown Difficulty Category Id (${difficultycategoryId})`
+      summary.byDifficultyCategory[kindLabel] = (summary.byDifficultyCategory[kindLabel] || 0) + 1
+    })
+
+    return summary
+  }
+
   // Handle file selection and validation
   const handleFileSelection = async (tableName: string, file: File) => {
     setUploadError("")
@@ -540,6 +883,12 @@ export default function TableUploadTracker({
       if (tableName === "Institutions") {
         const summary = analyzeInstitutionData(jsonData[tableName])
         setInstitutionSummary(summary)
+      }
+
+      // If it's Teachers_Profile table, analyze the data
+      if (tableName === "Teachers_Profile") {
+        const summary = analyzeTeachersProfileData(jsonData[tableName])
+        setTeachersProfileSummary(summary)
       }
 
       // Close upload dialog and show preview dialog
@@ -658,6 +1007,7 @@ export default function TableUploadTracker({
     setSelectedFile(null)
     setParsedJsonData(null)
     setInstitutionSummary(null)
+    setTeachersProfileSummary(null)
     setUploadError("")
   }
 
@@ -735,7 +1085,7 @@ export default function TableUploadTracker({
             district: "Sample District",
             tehsil: "Sample Tehsil",
           }),
-          ...(tableName === "Teachers Profile" && {
+          ...(tableName === "Teachers_Profile" && {
             teacher_name: "Sample Teacher",
             qualification: "Masters",
             experience_years: 5,
@@ -1480,8 +1830,389 @@ export default function TableUploadTracker({
               </div>
             )}
 
+            {/* Teachers-specific summary */}
+            {selectedTable === "Teachers_Profile" && TeachersProfileSummary && (
+              <div className="space-y-4">
+                {/* PDF Meta and Summary for PDF export */}
+                <div style={{ display: 'none' }}>
+                  <div ref={pdfMetaRef}>
+                    <div className="mb-4 p-4 border-b border-gray-300">
+                      <h2 className="text-xl font-bold text-blue-900 mb-2">Teachers Profile Data Summary Report</h2>
+                      <div className="text-sm text-gray-700">
+                        <div><strong>Generated by:</strong> {username}</div>
+                        <div><strong>Date:</strong> {new Date().toLocaleDateString()}</div>
+                        <div><strong>Time:</strong> {new Date().toLocaleTimeString()}</div>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-green-900 mb-2">Summary</h4>
+                      <p className="text-sm text-green-800">
+                        Total of <strong>{TeachersProfileSummary.totalTeachers}</strong> Teachers will be uploaded. The
+                        data includes {Object.keys(TeachersProfileSummary.byGender).length} Gender categories,
+                        {Object.keys(TeachersProfileSummary.byBasicPayScale).length} Basic Pay Scales categories,
+                        {Object.keys(TeachersProfileSummary.byAcademicQualification).length} Different Academic Qualifications,
+                        {Object.keys(TeachersProfileSummary.byProfessionalQualification).length} Different Professional Qualifications,
+                        {Object.keys(TeachersProfileSummary.byDesignation).length} Designation Categories,
+                        {Object.keys(TeachersProfileSummary.byNatureOfService).length} Nature of Service types,
+                        {Object.keys(TeachersProfileSummary.byDifficultyType).length} different difficulty types
+                        and {Object.keys(TeachersProfileSummary.byDifficultyCategory).length} different difficulty categories.
+                      </p>
+                    </div>
+                    {/* Full breakdown for PDF */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                      {/* By Gender */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Gender Id</div>
+                        {Object.entries(TeachersProfileSummary.byGender)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([genderId, count]) => (
+                            <div key={genderId} className="flex justify-between text-sm">
+                              <span style={genderId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{genderId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Basic Pay Scale Id */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Basic Pay Scale Id</div>
+                        {Object.entries(TeachersProfileSummary.byBasicPayScale)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([BasicPayScaleId, count]) => (
+                            <div key={BasicPayScaleId} className="flex justify-between text-sm">
+                              <span style={BasicPayScaleId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{BasicPayScaleId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Academic Qualification */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Academic Qualification Id</div>
+                        {Object.entries(TeachersProfileSummary.byAcademicQualification)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([AcademicQualificationId, count]) => (
+                            <div key={AcademicQualificationId} className="flex justify-between text-sm">
+                              <span style={AcademicQualificationId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{AcademicQualificationId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Professional Qualification */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Professional Qualification</div>
+                        {Object.entries(TeachersProfileSummary.byProfessionalQualification)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([ProfessionalQualificationId, count]) => (
+                            <div key={ProfessionalQualificationId} className="flex justify-between text-sm">
+                              <span style={ProfessionalQualificationId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{ProfessionalQualificationId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Designation */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Designation</div>
+                        {Object.entries(TeachersProfileSummary.byDesignation)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([DesignationId, count]) => (
+                            <div key={DesignationId} className="flex justify-between text-sm">
+                              <span style={DesignationId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{DesignationId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Nature of Service */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Nature of Service</div>
+                        {Object.entries(TeachersProfileSummary.byNatureOfService)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([natureofserviceId, count]) => (
+                            <div key={natureofserviceId} className="flex justify-between text-sm">
+                              <span style={natureofserviceId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{natureofserviceId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Difficulty Type */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Difficulty Type</div>
+                        {Object.entries(TeachersProfileSummary.byDifficultyType)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([difficultytypeId, count]) => (
+                            <div key={difficultytypeId} className="flex justify-between text-sm">
+                              <span style={difficultytypeId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{difficultytypeId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Difficulty Category */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Difficulty Category</div>
+                        {Object.entries(TeachersProfileSummary.byDifficultyCategory)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([difficultycategoryId, count]) => (
+                            <div key={difficultycategoryId} className="flex justify-between text-sm">
+                              <span style={difficultycategoryId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{difficultycategoryId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <h3 className="font-medium text-gray-900 flex items-center">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Data Summary
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* By Gender */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Gender Id</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(TeachersProfileSummary.byGender)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([genderId, count]) => (
+                          <div key={genderId} className="flex justify-between text-sm">
+                            <span className={`${genderId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{genderId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Basic Pay Scale */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Basic Pay Scale Id</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(TeachersProfileSummary.byBasicPayScale)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([BasicPayScaleId, count]) => (
+                          <div key={BasicPayScaleId} className="flex justify-between text-sm">
+                            <span className={`${BasicPayScaleId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{BasicPayScaleId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Academic Qualification */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Academic Qualification ID</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(TeachersProfileSummary.byAcademicQualification)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([AcademicQualificationId, count]) => (
+                          <div key={AcademicQualificationId} className="flex justify-between text-sm">
+                            <span className={`${AcademicQualificationId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{AcademicQualificationId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Professional Qualification */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Professional Qualification</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(TeachersProfileSummary.byProfessionalQualification)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([ProfessionalQualificationId, count]) => (
+                          <div key={ProfessionalQualificationId} className="flex justify-between text-sm">
+                            <span className={`${ProfessionalQualificationId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{ProfessionalQualificationId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Designation */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Designation</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(TeachersProfileSummary.byDesignation)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([designationId, count]) => (
+                          <div key={designationId} className="flex justify-between text-sm">
+                            <span className={`${designationId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{designationId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Nature of Service */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Nature of Service</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(TeachersProfileSummary.byNatureOfService)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([natureofserviceId, count]) => (
+                          <div key={natureofserviceId} className="flex justify-between text-sm">
+                            <span className={`${natureofserviceId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{natureofserviceId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Difficulty type */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Difficulty type</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(TeachersProfileSummary.byDifficultyType)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([difficultytypeId, count]) => (
+                          <div key={difficultytypeId} className="flex justify-between text-sm">
+                            <span className={`${difficultytypeId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{difficultytypeId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By difficulty Category */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Difficulty Category</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(TeachersProfileSummary.byDifficultyCategory)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([difficultycategoryId, count]) => (
+                          <div key={difficultycategoryId} className="flex justify-between text-sm">
+                            <span className={`${difficultycategoryId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{difficultycategoryId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="bg-green-50 p-4 rounded-lg flex flex-col md:flex-row md:items-center md:justify-between" ref={summaryRef}>
+                  <div>
+                    <h4 className="font-medium text-green-900 mb-2">Summary</h4>
+                    <p className="text-sm text-green-800">
+                      Total of <strong>{TeachersProfileSummary.totalTeachers}</strong> Teachers will be uploaded. The
+                      data includes {Object.keys(TeachersProfileSummary.byGender).length} different Gender Types,
+                      {Object.keys(TeachersProfileSummary.byBasicPayScale).length} Basic Pay Scale categories,
+                      {Object.keys(TeachersProfileSummary.byAcademicQualification).length} different Academic Qualification,
+                      {Object.keys(TeachersProfileSummary.byProfessionalQualification).length} Professional Qualification categories,
+                      {Object.keys(TeachersProfileSummary.byDesignation).length} Designation Categories,
+                      {Object.keys(TeachersProfileSummary.byNatureOfService).length} Nature of Service types,
+                      {Object.keys(TeachersProfileSummary.byDifficultyType).length} difficulty types,
+                      and {Object.keys(TeachersProfileSummary.byDifficultyCategory).length} Difficulty categories.
+                    </p>
+                  </div>
+                  <Button
+                    className="mt-4 md:mt-0 md:ml-6 rounded-lg shadow font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 py-2 transition-colors duration-200 hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                    onClick={() => {
+                      if (pdfMetaRef.current) {
+                        downloadElementAsPDF(pdfMetaRef.current, `Teachers-Profile-Data-Summary.pdf`)
+                      }
+                    }}
+                  >
+                    Download Data Summary as PDF
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Generic summary for other tables */}
-            {selectedTable !== "Institutions" && parsedJsonData && selectedTable && (
+            {selectedTable !== "Institutions" && "Teachers_Profile" && parsedJsonData && selectedTable && (
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium text-gray-900 mb-2">Data Summary</h3>
                 <p className="text-sm text-gray-700">
