@@ -115,6 +115,7 @@ export default function TableUploadTracker({
   const [institutionSummary, setInstitutionSummary] = useState<InstitutionSummary | null>(null)
   const [TeachersProfileSummary, setTeachersProfileSummary] = useState<TeachersProfileSummary | null>(null)
   const [EnrolAgeWiseSummary, setEnrolAgeWiseSummary] = useState<EnrolAgeWiseSummary | null>(null)
+  const [FacilitiesSummary, setFacilitiesSummary] = useState<FacilitiesSummary | null>(null)
   const summaryRef = useRef<HTMLDivElement>(null)
   const pdfMetaRef = useRef<HTMLDivElement>(null)
 
@@ -1060,6 +1061,174 @@ export default function TableUploadTracker({
     return summary
   }
 
+  // Analyze Facilities data for preview
+  const analyzeFacilitiesdata = (data: any[]): FacilitiesSummary => {
+
+    // Basic Facilities ID mappings
+    const facilitiesMapping: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Available",
+      "2": "Not Available",
+      "3": "Not Applicable",
+      "4": "Not Functional",
+      "5": "Inadequate",
+    }
+    
+    const summary: FacilitiesSummary = {
+      TotalNumberofRows: data.length,
+      bywater: {},
+      byelectricity: {},
+      byboundarywall: {},
+      bytoiletstudent: {},
+      bytoiletstaff: {},
+      bytelephone: {},
+      bygas: {},
+      byinternet: {},
+      bylibrary: {},
+      byhall: {},
+      byplayground: {},
+      bycanteen: {},
+      byhostel: {},
+      bystore: {},
+      byhomeEconlab: {},
+      byzoologylab: {},
+      bybiologylab: {},
+      bycomputerlab: {},
+      bychemistrylab: {},
+      bycombinedlab: {},
+      byphysicslab: {},
+      bybotanylab: {},
+      byEMcomputers: {},
+      byEmprinter: {},
+    }
+
+
+    data.forEach((Facilities) => {
+
+      // Count by BPF_Water with proper mapping
+      const waterId = String(Facilities.BPF_Water || Facilities.BPF_Water || "Unknown")
+      const waterlabel = facilitiesMapping[waterId] || `Unknown Facilities Id (${waterId})`
+      summary.bywater[waterlabel] = (summary.bywater[waterlabel] || 0) + 1
+
+      // Count by BPF_Electricity with proper mapping
+      const electricityId = String(Facilities.BPF_Electricity || Facilities.BPF_Electricity || "Unknown")
+      const electricitylabel = facilitiesMapping[electricityId] || `Unknown Facilities Id (${electricityId})`
+      summary.byelectricity[electricitylabel] = (summary.byelectricity[electricitylabel] || 0) + 1
+
+      // Count by BPF_BoundaryWall with proper mapping
+      const boundarywallId = String(Facilities.BPF_BoundaryWall || Facilities.BPF_BoundaryWall || "Unknown")
+      const boundarywalllabel = facilitiesMapping[boundarywallId] || `Unknown Facilities Id (${boundarywallId})`
+      summary.byboundarywall[boundarywalllabel] = (summary.byboundarywall[boundarywalllabel] || 0) + 1
+
+      // Count by BPF_ToiletStudent with proper mapping
+      const toiletstudentId = String(Facilities.BPF_ToiletStudent || Facilities.BPF_ToiletStudent || "Unknown")
+      const toiletstudentlabel = facilitiesMapping[toiletstudentId] || `Unknown Facilities Id (${toiletstudentId})`
+      summary.bytoiletstudent[toiletstudentlabel] = (summary.bytoiletstudent[toiletstudentlabel] || 0) + 1
+
+      // Count by BPF_ToiletStaff with proper mapping
+      const toiletstaffId = String(Facilities.BPF_ToiletStaff || Facilities.BPF_ToiletStaff || "Unknown")
+      const toiletstaffLabel = facilitiesMapping[toiletstaffId] || `Unknown Facilities Id (${toiletstaffId})`
+      summary.bytoiletstaff[toiletstaffLabel] = (summary.bytoiletstaff[toiletstaffLabel] || 0) + 1
+
+      // Count by BPF_Telephone with proper mapping
+      const telephoneId = String(Facilities.BPF_Telephone || Facilities.BPF_Telephone || "Unknown")
+      const telephonelabel = facilitiesMapping[telephoneId] || `Unknown Facilities Id (${telephoneId})`
+      summary.bytelephone[telephonelabel] = (summary.bytelephone[telephonelabel] || 0) + 1
+
+      // Count by BPF_Gas with proper mapping
+      const gasId = String(Facilities.BPF_Gas || Facilities.BPF_Gas || "Unknown")
+      const gasLabel = facilitiesMapping[gasId] || `Unknown Facilities Id (${gasId})`
+      summary.bygas[gasLabel] = (summary.bygas[gasLabel] || 0) + 1
+
+      // Count by BF_Internet with proper mapping
+      const internetId = String(Facilities.BF_Internet || Facilities.BF_Internet || "Unknown")
+      const internetLabel = facilitiesMapping[internetId] || `Unknown Facilities Id (${internetId})`
+      summary.byinternet[internetLabel] = (summary.byinternet[internetLabel] || 0) + 1
+
+      // Count by BF_Library with proper mapping
+      const libraryId = String(Facilities.BF_Library || Facilities.BF_Library || "Unknown")
+      const libraryLabel = facilitiesMapping[libraryId] || `Unknown Facilities Id (${libraryId})`
+      summary.bylibrary[libraryLabel] = (summary.bylibrary[libraryLabel] || 0) + 1
+
+      // Count by BF_Hall with proper mapping
+      const hallId = String(Facilities.BF_Hall || Facilities.BF_Hall || "Unknown")
+      const hallLabel = facilitiesMapping[hallId] || `Unknown Facilities Id (${hallId})`
+      summary.byhall[hallLabel] = (summary.byhall[hallLabel] || 0) + 1
+
+      // Count by BF_Playground with proper mapping
+      const playgroundId = String(Facilities.BF_Playground || Facilities.BF_Playground || "Unknown")
+      const playgroundLabel = facilitiesMapping[playgroundId] || `Unknown Facilities Id (${playgroundId})`
+      summary.byplayground[playgroundLabel] = (summary.byplayground[playgroundLabel] || 0) + 1
+
+      // Count by BF_Canteen with proper mapping
+      const canteenId = String(Facilities.BF_Canteen || Facilities.BF_Canteen || "Unknown")
+      const canteenLabel = facilitiesMapping[canteenId] || `Unknown Facilities Id (${canteenId})`
+      summary.bycanteen[canteenLabel] = (summary.bycanteen[canteenLabel] || 0) + 1
+
+      // Count by BF_Hostel with proper mapping
+      const hostelId = String(Facilities.BF_Hostel || Facilities.BF_Hostel || "Unknown")
+      const hostelLabel = facilitiesMapping[hostelId] || `Unknown Facilities Id (${hostelId})`
+      summary.bywater[hostelLabel] = (summary.bywater[hostelLabel] || 0) + 1
+
+      // Count by BF_Store with proper mapping
+      const storeId = String(Facilities.BF_Store || Facilities.BF_Store || "Unknown")
+      const storelabel = facilitiesMapping[storeId] || `Unknown Facilities Id (${storeId})`
+      summary.bystore[storelabel] = (summary.bystore[storelabel] || 0) + 1
+
+      // Count by BF_HomeEcon_Lab with proper mapping
+      const HomeeconlabId = String(Facilities.BF_HomeEcon_Lab || Facilities.BF_HomeEcon_Lab || "Unknown")
+      const Homeeconlablable = facilitiesMapping[HomeeconlabId] || `Unknown Facilities Id (${HomeeconlabId})`
+      summary.byhomeEconlab[Homeeconlablable] = (summary.byhomeEconlab[Homeeconlablable] || 0) + 1
+
+      // Count by BF_Zoology_Lab with proper mapping
+      const zoologylabId = String(Facilities.BF_Zoology_Lab || Facilities.BF_Zoology_Lab || "Unknown")
+      const zoologylablabel = facilitiesMapping[zoologylabId] || `Unknown Facilities Id (${zoologylabId})`
+      summary.byzoologylab[zoologylablabel] = (summary.byzoologylab[zoologylablabel] || 0) + 1
+
+      // Count by BF_Biology_Lab with proper mapping
+      const biologylabId = String(Facilities.BF_Biology_Lab || Facilities.BF_Biology_Lab || "Unknown")
+      const biologylablabel = facilitiesMapping[biologylabId] || `Unknown Facilities Id (${biologylabId})`
+      summary.bybiologylab[biologylablabel] = (summary.bybiologylab[biologylablabel] || 0) + 1
+
+      // Count by BF_Computer_Lab with proper mapping
+      const computerlabId = String(Facilities.BF_Computer_Lab || Facilities.BF_Computer_Lab || "Unknown")
+      const computerlablabel = facilitiesMapping[computerlabId] || `Unknown Facilities Id (${computerlabId})`
+      summary.bycomputerlab[computerlablabel] = (summary.bycomputerlab[computerlablabel] || 0) + 1
+
+      // Count by BF_Chemistry_Lab with proper mapping
+      const chemistrylabId = String(Facilities.BF_Chemistry_Lab || Facilities.BF_Chemistry_Lab || "Unknown")
+      const chemistrylablabel = facilitiesMapping[chemistrylabId] || `Unknown Facilities Id (${chemistrylabId})`
+      summary.bychemistrylab[chemistrylablabel] = (summary.bychemistrylab[chemistrylablabel] || 0) + 1
+
+      // Count by BF_Combined_Lab with proper mapping
+      const combinedlabId = String(Facilities.BF_Combined_Lab || Facilities.BF_Combined_Lab || "Unknown")
+      const combinedlablabel = facilitiesMapping[combinedlabId] || `Unknown Facilities Id (${combinedlabId})`
+      summary.bywater[combinedlablabel] = (summary.bywater[combinedlablabel] || 0) + 1
+
+      // Count by BF_Physics_Lab with proper mapping
+      const physicslabId = String(Facilities.BF_Physics_Lab || Facilities.BF_Physics_Lab || "Unknown")
+      const physicslablabel = facilitiesMapping[physicslabId] || `Unknown Facilities Id (${physicslabId})`
+      summary.byphysicslab[physicslablabel] = (summary.byphysicslab[physicslablabel] || 0) + 1
+
+      // Count by BF_Botany_Lab with proper mapping
+      const botanylabId = String(Facilities.BF_Botany_Lab || Facilities.BF_Botany_Lab || "Unknown")
+      const botanylablabel = facilitiesMapping[botanylabId] || `Unknown Facilities Id (${botanylabId})`
+      summary.bybotanylab[botanylablabel] = (summary.bybotanylab[botanylablabel] || 0) + 1
+
+      // Count by EM_Computers with proper mapping
+      const computersId = String(Facilities.EM_Computers || Facilities.EM_Computers || "Unknown")
+      const computerslabel = facilitiesMapping[computersId] || `Unknown Facilities Id (${computersId})`
+      summary.byEMcomputers[computerslabel] = (summary.byEMcomputers[computerslabel] || 0) + 1
+
+      // Count by EM_Printers with proper mapping
+      const printersId = String(Facilities.EM_Printers || Facilities.EM_Printers || "Unknown")
+      const printerslabel = facilitiesMapping[printersId] || `Unknown Facilities Id (${printersId})`
+      summary.byEmprinter[printerslabel] = (summary.byEmprinter[printerslabel] || 0) + 1
+    })
+
+    return summary
+  }
+
   // Handle file selection and validation
   const handleFileSelection = async (tableName: string, file: File) => {
     setUploadError("")
@@ -1092,7 +1261,7 @@ export default function TableUploadTracker({
 
       // Validate file size (10MB limit)
       if (file.size > 100 * 1024 * 1024) {
-        throw new Error("File size must be less than 10MB")
+        throw new Error("File size must be less than 100MB")
       }
 
       // Read and parse JSON
@@ -1141,6 +1310,12 @@ export default function TableUploadTracker({
       if (tableName === "EnrolAgeWise") {
         const summary = analyzeEnrolAgeWisedata(jsonData[tableName])
         setEnrolAgeWiseSummary(summary)
+      }
+
+      // If it's Facilities table, analyze the data
+      if (tableName === "Facilities") {
+        const summary = analyzeFacilitiesdata(jsonData[tableName])
+        setFacilitiesSummary(summary)
       }
 
       // Close upload dialog and show preview dialog
@@ -1234,6 +1409,7 @@ export default function TableUploadTracker({
       setInstitutionSummary(null)
       setTeachersProfileSummary(null)
       setEnrolAgeWiseSummary(null)
+      setFacilitiesSummary(null)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Upload failed";
       setUploadError(errorMessage);
@@ -1263,6 +1439,7 @@ export default function TableUploadTracker({
     setInstitutionSummary(null)
     setTeachersProfileSummary(null)
     setEnrolAgeWiseSummary(null)
+    setFacilitiesSummary(null)
     setUploadError("")
   }
 
@@ -1538,7 +1715,7 @@ export default function TableUploadTracker({
                                   <p className="font-medium mb-1">Requirements:</p>
                                   <ul className="list-disc list-inside space-y-1">
                                     <li>File must be in JSON format</li>
-                                    <li>Maximum file size: 10MB</li>
+                                    <li>Maximum file size: 100MB</li>
                                     <li>Must contain data for "{tableName}" table</li>
                                     <li>Data must include census_year: {currentYear}</li>
                                     <li>
@@ -2674,6 +2851,483 @@ export default function TableUploadTracker({
                     onClick={() => {
                       if (pdfMetaRef.current) {
                         downloadElementAsPDF(pdfMetaRef.current, `EnrolAgeWise-Data-Summary.pdf`)
+                      }
+                    }}
+                  >
+                    Download Data Summary as PDF
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Facilities-specific summary */}
+            {selectedTable === "Facilities" && FacilitiesSummary && (
+              <div className="space-y-4">
+                {/* PDF Meta and Summary for PDF export */}
+                <div style={{ display: 'none' }}>
+                  <div ref={pdfMetaRef}>
+                    <div className="mb-4 p-4 border-b border-gray-300">
+                      <h2 className="text-xl font-bold text-blue-900 mb-2">Facilities Data Summary Report</h2>
+                      <div className="text-sm text-gray-700">
+                        <div><strong>Generated by:</strong> {username}</div>
+                        <div><strong>Date:</strong> {new Date().toLocaleDateString()}</div>
+                        <div><strong>Time:</strong> {new Date().toLocaleTimeString()}</div>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-green-900 mb-2">Summary</h4>
+                      <p className="text-sm text-green-800">
+                        Total of <strong>{FacilitiesSummary.TotalNumberofRows}</strong> rows will be uploaded. The
+                        data includes {Object.keys(FacilitiesSummary.bywater).length} water facility status,
+                        {Object.keys(FacilitiesSummary.byelectricity).length} electricity facility status,
+                        {Object.keys(FacilitiesSummary.byboundarywall).length} boundary wall status,
+                        {Object.keys(FacilitiesSummary.bytoiletstudent).length} student toilet facility status,
+                        {Object.keys(FacilitiesSummary.bytoiletstaff).length} staff toilet facility status,
+                        {Object.keys(FacilitiesSummary.bytelephone).length} telephone facility status,
+                        {Object.keys(FacilitiesSummary.bygas).length} gas facility status,
+                        {Object.keys(FacilitiesSummary.byinternet).length} internet facility status,
+                        {Object.keys(FacilitiesSummary.bylibrary).length} library facility status, 
+                        {Object.keys(FacilitiesSummary.byhall).length} Hall facility status,
+                        {Object.keys(FacilitiesSummary.byplayground).length} playground facility status,
+                        {Object.keys(FacilitiesSummary.bycanteen).length} canteen facility status,
+                        {Object.keys(FacilitiesSummary.byhostel).length} hostel facility status,
+                        {Object.keys(FacilitiesSummary.bystore).length} store facility status,
+                        {Object.keys(FacilitiesSummary.byhomeEconlab).length} home economics lab facility status,
+                        {Object.keys(FacilitiesSummary.byzoologylab).length} zoology lab facility status,
+                        {Object.keys(FacilitiesSummary.bybiologylab).length} biology lab facility status,
+                        {Object.keys(FacilitiesSummary.bycomputerlab).length} computer lab facility status,
+                        {Object.keys(FacilitiesSummary.bychemistrylab).length} chemistry lab facility status,
+                        {Object.keys(FacilitiesSummary.bycombinedlab).length} combined lab facility status,
+                        {Object.keys(FacilitiesSummary.byphysicslab).length} physics lab facility status,
+                        {Object.keys(FacilitiesSummary.bybotanylab).length} botany lab facility status,
+                        {Object.keys(FacilitiesSummary.byEMcomputers).length} computers for educational management,
+                        and {Object.keys(FacilitiesSummary.byEmprinter).length} printer for educational management.
+                      </p>
+                    </div>
+                    {/* Full breakdown for PDF */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                      {/* By Water */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Water Facility</div>
+                        {Object.entries(FacilitiesSummary.bywater)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([waterId, count]) => (
+                            <div key={waterId} className="flex justify-between text-sm">
+                              <span style={waterId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{waterId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Electricity */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Electricity Facility</div>
+                        {Object.entries(FacilitiesSummary.byelectricity)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([electricityId, count]) => (
+                            <div key={electricityId} className="flex justify-between text-sm">
+                              <span style={electricityId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{electricityId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Boundary Wall */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Location ID</div>
+                        {Object.entries(institutionSummary.byLocation)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([locationId, count]) => (
+                            <div key={locationId} className="flex justify-between text-sm">
+                              <span style={locationId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{locationId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Functional Status */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Functional Status</div>
+                        {Object.entries(institutionSummary.ByFunctionalStatus)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([ByFunctionalStatus, count]) => (
+                            <div key={ByFunctionalStatus} className="flex justify-between text-sm">
+                              <span style={ByFunctionalStatus.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{ByFunctionalStatus}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Sector */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Sector</div>
+                        {Object.entries(institutionSummary.bySector)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([sector, count]) => (
+                            <div key={sector} className="flex justify-between text-sm">
+                              <span style={sector.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{sector}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By School Committee */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By School Committee</div>
+                        {Object.entries(institutionSummary.bySchoolCommittee)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([committee, count]) => (
+                            <div key={committee} className="flex justify-between text-sm">
+                              <span style={committee.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{committee}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Medium */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Medium</div>
+                        {Object.entries(institutionSummary.byMedium)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([medium, count]) => (
+                            <div key={medium} className="flex justify-between text-sm">
+                              <span style={medium.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{medium}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Shift */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Shift</div>
+                        {Object.entries(institutionSummary.byShift)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([shift, count]) => (
+                            <div key={shift} className="flex justify-between text-sm">
+                              <span style={shift.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{shift}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Kind */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Kind</div>
+                        {Object.entries(institutionSummary.byKind)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([kind, count]) => (
+                            <div key={kind} className="flex justify-between text-sm">
+                              <span style={kind.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{kind}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Management */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Management</div>
+                        {Object.entries(institutionSummary.byManagement)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([management, count]) => (
+                            <div key={management} className="flex justify-between text-sm">
+                              <span style={management.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{management}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <h3 className="font-medium text-gray-900 flex items-center">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Data Summary
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* By Level */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Level ID</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.byLevel)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([levelId, count]) => (
+                          <div key={levelId} className="flex justify-between text-sm">
+                            <span className={`${levelId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{levelId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Gender */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Gender</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.byGender)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([genderId, count]) => (
+                          <div key={genderId} className="flex justify-between text-sm">
+                            <span className={`${genderId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{genderId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Location */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Location ID</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.byLocation)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([locationId, count]) => (
+                          <div key={locationId} className="flex justify-between text-sm">
+                            <span className={`${locationId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{locationId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Status */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Functional Status</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.ByFunctionalStatus)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([ByFunctionalStatus, count]) => (
+                          <div key={ByFunctionalStatus} className="flex justify-between text-sm">
+                            <span className={`${ByFunctionalStatus.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{ByFunctionalStatus}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Sector */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Sector</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.bySector)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([sector, count]) => (
+                          <div key={sector} className="flex justify-between text-sm">
+                            <span className={`${sector.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{sector}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By School Committee */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By School Committee</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.bySchoolCommittee)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([committee, count]) => (
+                          <div key={committee} className="flex justify-between text-sm">
+                            <span className={`${committee.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{committee}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Medium */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Medium</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.byMedium)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([medium, count]) => (
+                          <div key={medium} className="flex justify-between text-sm">
+                            <span className={`${medium.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{medium}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Shift */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Shift</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.byShift)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([shift, count]) => (
+                          <div key={shift} className="flex justify-between text-sm">
+                            <span className={`${shift.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{shift}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Kind */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Kind</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.byKind)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([kind, count]) => (
+                          <div key={kind} className="flex justify-between text-sm">
+                            <span className={`${kind.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{kind}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Management */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Management</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.byManagement)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([management, count]) => (
+                          <div key={management} className="flex justify-between text-sm">
+                            <span className={`${management.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{management}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="bg-green-50 p-4 rounded-lg flex flex-col md:flex-row md:items-center md:justify-between" ref={summaryRef}>
+                  <div>
+                    <h4 className="font-medium text-green-900 mb-2">Summary</h4>
+                    <p className="text-sm text-green-800">
+                      Total of <strong>{institutionSummary.totalInstitutions}</strong> institutions will be uploaded. The
+                      data includes {Object.keys(institutionSummary.byLevel).length} different education levels,
+                      {Object.keys(institutionSummary.byGender).length} gender categories,
+                      {Object.keys(institutionSummary.byLocation).length} different location types,
+                      {Object.keys(institutionSummary.ByFunctionalStatus).length} functional status types,
+                      {Object.keys(institutionSummary.bySector).length} different sectors,
+                      {Object.keys(institutionSummary.bySchoolCommittee).length} school committee statuses,
+                      {Object.keys(institutionSummary.byMedium).length} different mediums of instruction,
+                      {Object.keys(institutionSummary.byShift).length} shift types,
+                      {Object.keys(institutionSummary.byKind).length} kinds of institutions,
+                      and {Object.keys(institutionSummary.byManagement).length} management types.
+                    </p>
+                  </div>
+                  <Button
+                    className="mt-4 md:mt-0 md:ml-6 rounded-lg shadow font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 py-2 transition-colors duration-200 hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                    onClick={() => {
+                      if (pdfMetaRef.current) {
+                        downloadElementAsPDF(pdfMetaRef.current, `Institutions-Data-Summary.pdf`)
                       }
                     }}
                   >
