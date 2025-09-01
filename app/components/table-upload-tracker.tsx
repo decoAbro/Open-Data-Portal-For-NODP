@@ -2940,128 +2940,366 @@ export default function TableUploadTracker({
                       </div>
                       {/* By Boundary Wall */}
                       <div className="border rounded p-2">
-                        <div className="font-semibold mb-1">By Location ID</div>
-                        {Object.entries(institutionSummary.byLocation)
+                        <div className="font-semibold mb-1">By Boundary Wall Facility</div>
+                        {Object.entries(FacilitiesSummary.byboundarywall)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([locationId, count]) => (
-                            <div key={locationId} className="flex justify-between text-sm">
-                              <span style={locationId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{locationId}:</span>
+                          .map(([boundarywallId, count]) => (
+                            <div key={boundarywallId} className="flex justify-between text-sm">
+                              <span style={boundarywallId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{boundarywallId}:</span>
                               <span>{count}</span>
                             </div>
                         ))}
                       </div>
-                      {/* By Functional Status */}
+                      {/* By Toilet Student */}
                       <div className="border rounded p-2">
-                        <div className="font-semibold mb-1">By Functional Status</div>
-                        {Object.entries(institutionSummary.ByFunctionalStatus)
+                        <div className="font-semibold mb-1">By Toilet Student Facility</div>
+                        {Object.entries(FacilitiesSummary.bytoiletstudent)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([ByFunctionalStatus, count]) => (
-                            <div key={ByFunctionalStatus} className="flex justify-between text-sm">
-                              <span style={ByFunctionalStatus.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{ByFunctionalStatus}:</span>
+                          .map(([toiletstudentId, count]) => (
+                            <div key={toiletstudentId} className="flex justify-between text-sm">
+                              <span style={toiletstudentId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{toiletstudentId}:</span>
                               <span>{count}</span>
                             </div>
                         ))}
                       </div>
-                      {/* By Sector */}
+                      {/* By Toilet Staff */}
                       <div className="border rounded p-2">
-                        <div className="font-semibold mb-1">By Sector</div>
-                        {Object.entries(institutionSummary.bySector)
+                        <div className="font-semibold mb-1">By Toilet Staff Facility</div>
+                        {Object.entries(FacilitiesSummary.bytoiletstaff)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([sector, count]) => (
-                            <div key={sector} className="flex justify-between text-sm">
-                              <span style={sector.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{sector}:</span>
+                          .map(([toiletstaffId, count]) => (
+                            <div key={toiletstaffId} className="flex justify-between text-sm">
+                              <span style={toiletstaffId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{toiletstaffId}:</span>
                               <span>{count}</span>
                             </div>
                         ))}
                       </div>
-                      {/* By School Committee */}
+                      {/* By Telephone */}
                       <div className="border rounded p-2">
-                        <div className="font-semibold mb-1">By School Committee</div>
-                        {Object.entries(institutionSummary.bySchoolCommittee)
+                        <div className="font-semibold mb-1">By Telephone Facility</div>
+                        {Object.entries(FacilitiesSummary.bytelephone)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([committee, count]) => (
-                            <div key={committee} className="flex justify-between text-sm">
-                              <span style={committee.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{committee}:</span>
+                          .map(([telephoneId, count]) => (
+                            <div key={telephoneId} className="flex justify-between text-sm">
+                              <span style={telephoneId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{telephoneId}:</span>
                               <span>{count}</span>
                             </div>
                         ))}
                       </div>
-                      {/* By Medium */}
+                      {/* By Gas */}
                       <div className="border rounded p-2">
-                        <div className="font-semibold mb-1">By Medium</div>
-                        {Object.entries(institutionSummary.byMedium)
+                        <div className="font-semibold mb-1">By Gas Facility</div>
+                        {Object.entries(FacilitiesSummary.bygas)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([medium, count]) => (
-                            <div key={medium} className="flex justify-between text-sm">
-                              <span style={medium.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{medium}:</span>
+                          .map(([gasId, count]) => (
+                            <div key={gasId} className="flex justify-between text-sm">
+                              <span style={gasId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{gasId}:</span>
                               <span>{count}</span>
                             </div>
                         ))}
                       </div>
-                      {/* By Shift */}
+                      {/* By Internet */}
                       <div className="border rounded p-2">
-                        <div className="font-semibold mb-1">By Shift</div>
-                        {Object.entries(institutionSummary.byShift)
+                        <div className="font-semibold mb-1">By Internet Facility</div>
+                        {Object.entries(FacilitiesSummary.byinternet)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([shift, count]) => (
-                            <div key={shift} className="flex justify-between text-sm">
-                              <span style={shift.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{shift}:</span>
+                          .map(([internetId, count]) => (
+                            <div key={internetId} className="flex justify-between text-sm">
+                              <span style={internetId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{internetId}:</span>
                               <span>{count}</span>
                             </div>
                         ))}
                       </div>
-                      {/* By Kind */}
+                      {/* By Library */}
                       <div className="border rounded p-2">
-                        <div className="font-semibold mb-1">By Kind</div>
-                        {Object.entries(institutionSummary.byKind)
+                        <div className="font-semibold mb-1">By Library Facility</div>
+                        {Object.entries(FacilitiesSummary.bylibrary)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([kind, count]) => (
-                            <div key={kind} className="flex justify-between text-sm">
-                              <span style={kind.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{kind}:</span>
+                          .map(([libraryId, count]) => (
+                            <div key={libraryId} className="flex justify-between text-sm">
+                              <span style={libraryId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{libraryId}:</span>
                               <span>{count}</span>
                             </div>
                         ))}
                       </div>
-                      {/* By Management */}
+                      {/* By Hall */}
                       <div className="border rounded p-2">
-                        <div className="font-semibold mb-1">By Management</div>
-                        {Object.entries(institutionSummary.byManagement)
+                        <div className="font-semibold mb-1">By Hall Facility</div>
+                        {Object.entries(FacilitiesSummary.byhall)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([management, count]) => (
-                            <div key={management} className="flex justify-between text-sm">
-                              <span style={management.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{management}:</span>
+                          .map(([hallId, count]) => (
+                            <div key={hallId} className="flex justify-between text-sm">
+                              <span style={hallId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{hallId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By Playground */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Playground Facility</div>
+                        {Object.entries(FacilitiesSummary.byplayground)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([playgroundId, count]) => (
+                            <div key={playgroundId} className="flex justify-between text-sm">
+                              <span style={playgroundId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{playgroundId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By Canteen */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Canteen Facility</div>
+                        {Object.entries(FacilitiesSummary.bycanteen)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([canteenId, count]) => (
+                            <div key={canteenId} className="flex justify-between text-sm">
+                              <span style={canteenId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{canteenId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By Hostel */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Hostel Facility</div>
+                        {Object.entries(FacilitiesSummary.byhostel)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([hostelId, count]) => (
+                            <div key={hostelId} className="flex justify-between text-sm">
+                              <span style={hostelId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{hostelId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By Store */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Store Facility</div>
+                        {Object.entries(FacilitiesSummary.bystore)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([storeId, count]) => (
+                            <div key={storeId} className="flex justify-between text-sm">
+                              <span style={storeId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{storeId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By Home Economics Lab */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Home Economics Lab Facility</div>
+                        {Object.entries(FacilitiesSummary.byhomeEconlab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([HomeeconlabId, count]) => (
+                            <div key={HomeeconlabId} className="flex justify-between text-sm">
+                              <span style={HomeeconlabId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{HomeeconlabId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By Zoology Lab */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Zoology Lab Facility</div>
+                        {Object.entries(FacilitiesSummary.byzoologylab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([zoologylabId, count]) => (
+                            <div key={zoologylabId} className="flex justify-between text-sm">
+                              <span style={zoologylabId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{zoologylabId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By Biology Lab */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Biology Lab Facility</div>
+                        {Object.entries(FacilitiesSummary.bybiologylab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([biologylabId, count]) => (
+                            <div key={biologylabId} className="flex justify-between text-sm">
+                              <span style={biologylabId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{biologylabId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By Computer Lab */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Computer Lab Facility</div>
+                        {Object.entries(FacilitiesSummary.bycomputerlab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([computerlabId, count]) => (
+                            <div key={computerlabId} className="flex justify-between text-sm">
+                              <span style={computerlabId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{computerlabId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By Chemistry Lab */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Chemistry Lab Facility</div>
+                        {Object.entries(FacilitiesSummary.bychemistrylab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([chemistrylabId, count]) => (
+                            <div key={chemistrylabId} className="flex justify-between text-sm">
+                              <span style={chemistrylabId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{chemistrylabId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By Combined Lab */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Combined Lab Facility</div>
+                        {Object.entries(FacilitiesSummary.bycombinedlab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([combinedlabId, count]) => (
+                            <div key={combinedlabId} className="flex justify-between text-sm">
+                              <span style={combinedlabId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{combinedlabId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By Physics Lab */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Physics Lab Facility</div>
+                        {Object.entries(FacilitiesSummary.byphysicslab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([physicslabId, count]) => (
+                            <div key={physicslabId} className="flex justify-between text-sm">
+                              <span style={physicslabId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{physicslabId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By Botany Lab */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Botany Lab Facility</div>
+                        {Object.entries(FacilitiesSummary.bybotanylab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([botanylabId, count]) => (
+                            <div key={botanylabId} className="flex justify-between text-sm">
+                              <span style={botanylabId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{botanylabId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By EM Computers */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Computers Facility</div>
+                        {Object.entries(FacilitiesSummary.byEMcomputers)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([computersId, count]) => (
+                            <div key={computersId} className="flex justify-between text-sm">
+                              <span style={computersId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{computersId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+
+                      {/* By EM Printers */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Printers Facility</div>
+                        {Object.entries(FacilitiesSummary.byEmprinter)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([printersId, count]) => (
+                            <div key={printersId} className="flex justify-between text-sm">
+                              <span style={printersId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{printersId}:</span>
                               <span>{count}</span>
                             </div>
                         ))}
@@ -3075,22 +3313,22 @@ export default function TableUploadTracker({
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* By Level */}
+                  {/* By Water */}
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">By Level ID</CardTitle>
+                      <CardTitle className="text-sm font-medium">By Water Facility</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2">
-                        {Object.entries(institutionSummary.byLevel)
+                        {Object.entries(FacilitiesSummary.bywater)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([levelId, count]) => (
-                          <div key={levelId} className="flex justify-between text-sm">
-                            <span className={`${levelId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{levelId}:</span>
+                          .map(([waterId, count]) => (
+                          <div key={waterId} className="flex justify-between text-sm">
+                            <span className={`${waterId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{waterId}:</span>
                             <span className="font-medium">{count}</span>
                           </div>
                         ))}
@@ -3098,22 +3336,22 @@ export default function TableUploadTracker({
                     </CardContent>
                   </Card>
 
-                  {/* By Gender */}
+                  {/* By Electricity */}
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">By Gender</CardTitle>
+                      <CardTitle className="text-sm font-medium">By Electricity Facility</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2">
-                        {Object.entries(institutionSummary.byGender)
+                        {Object.entries(FacilitiesSummary.byelectricity)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([genderId, count]) => (
-                          <div key={genderId} className="flex justify-between text-sm">
-                            <span className={`${genderId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{genderId}:</span>
+                          .map(([electricityId, count]) => (
+                          <div key={electricityId} className="flex justify-between text-sm">
+                            <span className={`${electricityId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{electricityId}:</span>
                             <span className="font-medium">{count}</span>
                           </div>
                         ))}
@@ -3121,22 +3359,22 @@ export default function TableUploadTracker({
                     </CardContent>
                   </Card>
 
-                  {/* By Location */}
+                  {/* By Boundary Wall */}
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">By Location ID</CardTitle>
+                      <CardTitle className="text-sm font-medium">By Boundary Wall Facility</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2">
-                        {Object.entries(institutionSummary.byLocation)
+                        {Object.entries(FacilitiesSummary.byboundarywall)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([locationId, count]) => (
-                          <div key={locationId} className="flex justify-between text-sm">
-                            <span className={`${locationId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{locationId}:</span>
+                          .map(([boundarywallId, count]) => (
+                          <div key={boundarywallId} className="flex justify-between text-sm">
+                            <span className={`${boundarywallId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{boundarywallId}:</span>
                             <span className="font-medium">{count}</span>
                           </div>
                         ))}
@@ -3144,22 +3382,22 @@ export default function TableUploadTracker({
                     </CardContent>
                   </Card>
 
-                  {/* By Status */}
+                  {/* By Toilet Student */}
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">By Functional Status</CardTitle>
+                      <CardTitle className="text-sm font-medium">By Toilet Student Facility</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2">
-                        {Object.entries(institutionSummary.ByFunctionalStatus)
+                        {Object.entries(FacilitiesSummary.bytoiletstudent)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([ByFunctionalStatus, count]) => (
-                          <div key={ByFunctionalStatus} className="flex justify-between text-sm">
-                            <span className={`${ByFunctionalStatus.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{ByFunctionalStatus}:</span>
+                          .map(([toiletstudentId, count]) => (
+                          <div key={toiletstudentId} className="flex justify-between text-sm">
+                            <span className={`${toiletstudentId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{toiletstudentId}:</span>
                             <span className="font-medium">{count}</span>
                           </div>
                         ))}
@@ -3167,22 +3405,22 @@ export default function TableUploadTracker({
                     </CardContent>
                   </Card>
 
-                  {/* By Sector */}
+                  {/* By Toilet Staff */}
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">By Sector</CardTitle>
+                      <CardTitle className="text-sm font-medium">By Toilet Staff Facility</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2">
-                        {Object.entries(institutionSummary.bySector)
+                        {Object.entries(FacilitiesSummary.bytoiletstaff)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([sector, count]) => (
-                          <div key={sector} className="flex justify-between text-sm">
-                            <span className={`${sector.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{sector}:</span>
+                          .map(([toiletstaffId, count]) => (
+                          <div key={toiletstaffId} className="flex justify-between text-sm">
+                            <span className={`${toiletstaffId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{toiletstaffId}:</span>
                             <span className="font-medium">{count}</span>
                           </div>
                         ))}
@@ -3190,22 +3428,22 @@ export default function TableUploadTracker({
                     </CardContent>
                   </Card>
 
-                  {/* By School Committee */}
+                  {/* By Telephone */}
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">By School Committee</CardTitle>
+                      <CardTitle className="text-sm font-medium">By Telephone Facility</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2">
-                        {Object.entries(institutionSummary.bySchoolCommittee)
+                        {Object.entries(FacilitiesSummary.bytelephone)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([committee, count]) => (
-                          <div key={committee} className="flex justify-between text-sm">
-                            <span className={`${committee.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{committee}:</span>
+                          .map(([telephoneId, count]) => (
+                          <div key={telephoneId} className="flex justify-between text-sm">
+                            <span className={`${telephoneId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{telephoneId}:</span>
                             <span className="font-medium">{count}</span>
                           </div>
                         ))}
@@ -3213,22 +3451,22 @@ export default function TableUploadTracker({
                     </CardContent>
                   </Card>
 
-                  {/* By Medium */}
+                  {/* By Gas */}
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">By Medium</CardTitle>
+                      <CardTitle className="text-sm font-medium">By Gas Facility</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2">
-                        {Object.entries(institutionSummary.byMedium)
+                        {Object.entries(FacilitiesSummary.bygas)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([medium, count]) => (
-                          <div key={medium} className="flex justify-between text-sm">
-                            <span className={`${medium.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{medium}:</span>
+                          .map(([gasId, count]) => (
+                          <div key={gasId} className="flex justify-between text-sm">
+                            <span className={`${gasId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{gasId}:</span>
                             <span className="font-medium">{count}</span>
                           </div>
                         ))}
@@ -3236,22 +3474,22 @@ export default function TableUploadTracker({
                     </CardContent>
                   </Card>
 
-                  {/* By Shift */}
+                  {/* By Internet */}
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">By Shift</CardTitle>
+                      <CardTitle className="text-sm font-medium">By Internet Facility</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2">
-                        {Object.entries(institutionSummary.byShift)
+                        {Object.entries(FacilitiesSummary.byinternet)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([shift, count]) => (
-                          <div key={shift} className="flex justify-between text-sm">
-                            <span className={`${shift.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{shift}:</span>
+                          .map(([internetId, count]) => (
+                          <div key={internetId} className="flex justify-between text-sm">
+                            <span className={`${internetId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{internetId}:</span>
                             <span className="font-medium">{count}</span>
                           </div>
                         ))}
@@ -3259,22 +3497,22 @@ export default function TableUploadTracker({
                     </CardContent>
                   </Card>
 
-                  {/* By Kind */}
+                  {/* By Library */}
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">By Kind</CardTitle>
+                      <CardTitle className="text-sm font-medium">By Library Facility</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2">
-                        {Object.entries(institutionSummary.byKind)
+                        {Object.entries(FacilitiesSummary.bylibrary)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([kind, count]) => (
-                          <div key={kind} className="flex justify-between text-sm">
-                            <span className={`${kind.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{kind}:</span>
+                          .map(([libraryId, count]) => (
+                          <div key={libraryId} className="flex justify-between text-sm">
+                            <span className={`${libraryId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{libraryId}:</span>
                             <span className="font-medium">{count}</span>
                           </div>
                         ))}
@@ -3282,22 +3520,344 @@ export default function TableUploadTracker({
                     </CardContent>
                   </Card>
 
-                  {/* By Management */}
+                  {/* By Hall */}
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">By Management</CardTitle>
+                      <CardTitle className="text-sm font-medium">By Hall Facility</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-2">
-                        {Object.entries(institutionSummary.byManagement)
+                        {Object.entries(FacilitiesSummary.byhall)
                           .sort(([a], [b]) => {
                             if (a.includes('Unknown')) return -1;
                             if (b.includes('Unknown')) return 1;
                             return a.localeCompare(b);
                           })
-                          .map(([management, count]) => (
-                          <div key={management} className="flex justify-between text-sm">
-                            <span className={`${management.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{management}:</span>
+                          .map(([hallId, count]) => (
+                          <div key={hallId} className="flex justify-between text-sm">
+                            <span className={`${hallId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{hallId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Playground */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Playground Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.byplayground)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([playgroundId, count]) => (
+                          <div key={playgroundId} className="flex justify-between text-sm">
+                            <span className={`${playgroundId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{playgroundId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Canteen */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Canteen Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.bycanteen)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([canteenId, count]) => (
+                          <div key={canteenId} className="flex justify-between text-sm">
+                            <span className={`${canteenId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{canteenId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Hostel */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Hostel Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.byhostel)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([hostelId, count]) => (
+                          <div key={hostelId} className="flex justify-between text-sm">
+                            <span className={`${hostelId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{hostelId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Store */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Store Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.bystore)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([storeId, count]) => (
+                          <div key={storeId} className="flex justify-between text-sm">
+                            <span className={`${storeId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{storeId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Home Economics Lab */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Home Economics Lab Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.byhomeEconlab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([HomeeconlabId, count]) => (
+                          <div key={HomeeconlabId} className="flex justify-between text-sm">
+                            <span className={`${HomeeconlabId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{HomeeconlabId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Zoology Lab */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Zoology Lab Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.byzoologylab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([zoologylabId, count]) => (
+                          <div key={zoologylabId} className="flex justify-between text-sm">
+                            <span className={`${zoologylabId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{zoologylabId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Biology Lab */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Biology Lab Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.bybiologylab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([biologylabId, count]) => (
+                          <div key={biologylabId} className="flex justify-between text-sm">
+                            <span className={`${biologylabId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{biologylabId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Computer Lab */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Computer Lab Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.bycomputerlab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([computerlabId, count]) => (
+                          <div key={computerlabId} className="flex justify-between text-sm">
+                            <span className={`${computerlabId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{computerlabId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Chemistry Lab */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Chemistry Lab Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.bychemistrylab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([chemistrylabId, count]) => (
+                          <div key={chemistrylabId} className="flex justify-between text-sm">
+                            <span className={`${chemistrylabId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{chemistrylabId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Combined Lab */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Combined Lab Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.bycombinedlab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([combinedlabId, count]) => (
+                          <div key={combinedlabId} className="flex justify-between text-sm">
+                            <span className={`${combinedlabId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{combinedlabId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Physics Lab */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Physics Lab Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.byphysicslab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([physicslabId, count]) => (
+                          <div key={physicslabId} className="flex justify-between text-sm">
+                            <span className={`${physicslabId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{physicslabId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Botany Lab */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Botany Lab Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.bybotanylab)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([botanylabId, count]) => (
+                          <div key={botanylabId} className="flex justify-between text-sm">
+                            <span className={`${botanylabId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{botanylabId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By EM Computers */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By EM Computers Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.byEMcomputers)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([computersId, count]) => (
+                          <div key={computersId} className="flex justify-between text-sm">
+                            <span className={`${computersId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{computersId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By EM Printers */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By EM Printers Facility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(FacilitiesSummary.byEmprinter)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([printersId, count]) => (
+                          <div key={printersId} className="flex justify-between text-sm">
+                            <span className={`${printersId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{printersId}:</span>
                             <span className="font-medium">{count}</span>
                           </div>
                         ))}
@@ -3309,25 +3869,39 @@ export default function TableUploadTracker({
                 <div className="bg-green-50 p-4 rounded-lg flex flex-col md:flex-row md:items-center md:justify-between" ref={summaryRef}>
                   <div>
                     <h4 className="font-medium text-green-900 mb-2">Summary</h4>
-                    <p className="text-sm text-green-800">
-                      Total of <strong>{institutionSummary.totalInstitutions}</strong> institutions will be uploaded. The
-                      data includes {Object.keys(institutionSummary.byLevel).length} different education levels,
-                      {Object.keys(institutionSummary.byGender).length} gender categories,
-                      {Object.keys(institutionSummary.byLocation).length} different location types,
-                      {Object.keys(institutionSummary.ByFunctionalStatus).length} functional status types,
-                      {Object.keys(institutionSummary.bySector).length} different sectors,
-                      {Object.keys(institutionSummary.bySchoolCommittee).length} school committee statuses,
-                      {Object.keys(institutionSummary.byMedium).length} different mediums of instruction,
-                      {Object.keys(institutionSummary.byShift).length} shift types,
-                      {Object.keys(institutionSummary.byKind).length} kinds of institutions,
-                      and {Object.keys(institutionSummary.byManagement).length} management types.
-                    </p>
+                      <p className="text-sm text-green-800">
+                        Total of <strong>{FacilitiesSummary.TotalNumberofRows}</strong> rows will be uploaded. The
+                        data includes {Object.keys(FacilitiesSummary.bywater).length} water facility status,
+                        {Object.keys(FacilitiesSummary.byelectricity).length} electricity facility status,
+                        {Object.keys(FacilitiesSummary.byboundarywall).length} boundary wall status,
+                        {Object.keys(FacilitiesSummary.bytoiletstudent).length} student toilet facility status,
+                        {Object.keys(FacilitiesSummary.bytoiletstaff).length} staff toilet facility status,
+                        {Object.keys(FacilitiesSummary.bytelephone).length} telephone facility status,
+                        {Object.keys(FacilitiesSummary.bygas).length} gas facility status,
+                        {Object.keys(FacilitiesSummary.byinternet).length} internet facility status,
+                        {Object.keys(FacilitiesSummary.bylibrary).length} library facility status, 
+                        {Object.keys(FacilitiesSummary.byhall).length} Hall facility status,
+                        {Object.keys(FacilitiesSummary.byplayground).length} playground facility status,
+                        {Object.keys(FacilitiesSummary.bycanteen).length} canteen facility status,
+                        {Object.keys(FacilitiesSummary.byhostel).length} hostel facility status,
+                        {Object.keys(FacilitiesSummary.bystore).length} store facility status,
+                        {Object.keys(FacilitiesSummary.byhomeEconlab).length} home economics lab facility status,
+                        {Object.keys(FacilitiesSummary.byzoologylab).length} zoology lab facility status,
+                        {Object.keys(FacilitiesSummary.bybiologylab).length} biology lab facility status,
+                        {Object.keys(FacilitiesSummary.bycomputerlab).length} computer lab facility status,
+                        {Object.keys(FacilitiesSummary.bychemistrylab).length} chemistry lab facility status,
+                        {Object.keys(FacilitiesSummary.bycombinedlab).length} combined lab facility status,
+                        {Object.keys(FacilitiesSummary.byphysicslab).length} physics lab facility status,
+                        {Object.keys(FacilitiesSummary.bybotanylab).length} botany lab facility status,
+                        {Object.keys(FacilitiesSummary.byEMcomputers).length} computers for educational management,
+                        and {Object.keys(FacilitiesSummary.byEmprinter).length} printer for educational management.
+                      </p>
                   </div>
                   <Button
                     className="mt-4 md:mt-0 md:ml-6 rounded-lg shadow font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 py-2 transition-colors duration-200 hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
                     onClick={() => {
                       if (pdfMetaRef.current) {
-                        downloadElementAsPDF(pdfMetaRef.current, `Institutions-Data-Summary.pdf`)
+                        downloadElementAsPDF(pdfMetaRef.current, `Facilities-Data-Summary.pdf`)
                       }
                     }}
                   >
@@ -3338,7 +3912,7 @@ export default function TableUploadTracker({
             )}
 
             {/* Generic summary for other tables */}
-            {selectedTable !== "Institutions" && "Teachers_Profile" && "EnrolAgeWise" && parsedJsonData && selectedTable && (
+            {selectedTable !== "Institutions" && "Teachers_Profile" && "EnrolAgeWise" && "Facilities" && parsedJsonData && selectedTable && (
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium text-gray-900 mb-2">Data Summary</h3>
                 <p className="text-sm text-gray-700">
