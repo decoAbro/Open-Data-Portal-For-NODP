@@ -89,6 +89,18 @@ interface FacilitiesSummary {
   byEmprinter: { [key: string]: number }
 }
 
+interface ictfacilitiesSummary {
+  TotalNumberofRows: number
+  byfacilitiesavailable: { [key: string]: number }
+  bypedagogymaterialavailable: { [key: string]: number }
+  bymaterialforonlineuseavailable: { [key: string]: number }
+  byinternetavailableforpedagogical: { [key: string]: number }
+  bycomputersavailableforpedagogical: { [key: string]: number }
+  bytabletavailableforpedagogical: { [key: string]: number }
+  bysmartboardavailableforpedagogical: { [key: string]: number }
+  byothers: { [key: string]: number }
+}
+
 export default function TableUploadTracker({
   username,
   password,
@@ -116,6 +128,7 @@ export default function TableUploadTracker({
   const [TeachersProfileSummary, setTeachersProfileSummary] = useState<TeachersProfileSummary | null>(null)
   const [EnrolAgeWiseSummary, setEnrolAgeWiseSummary] = useState<EnrolAgeWiseSummary | null>(null)
   const [FacilitiesSummary, setFacilitiesSummary] = useState<FacilitiesSummary | null>(null)
+  const [ictfacilitiesSummary, setictfacilitiesSummary] = useState<ictfacilitiesSummary | null>(null)
   const summaryRef = useRef<HTMLDivElement>(null)
   const pdfMetaRef = useRef<HTMLDivElement>(null)
 
@@ -1229,6 +1242,75 @@ export default function TableUploadTracker({
     return summary
   }
 
+  // Analyze Other Facilities data for preview
+  const analyzeictfacilitiesData = (data: any[]): ictfacilitiesSummary => {
+
+    // Other Facilities ID mappings
+    const otherfacilitesMapping: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Yes",
+      "2": "No",
+    }
+    
+    const summary: ictfacilitiesSummary = {
+      TotalNumberofRows: data.length,
+      byfacilitiesavailable: {},
+      bypedagogymaterialavailable: {},
+      bymaterialforonlineuseavailable: {},
+      byinternetavailableforpedagogical: {},
+      bycomputersavailableforpedagogical: {},
+      bytabletavailableforpedagogical: {},
+      bysmartboardavailableforpedagogical: {},
+      byothers: {},
+    }
+
+
+    data.forEach((ICT_Facilities) => {
+
+      // Count by ICTFacilites_Available with proper mapping
+      const facilitiesavailableId = String(ICT_Facilities.ICTFacilites_Available || ICT_Facilities.ICTFacilites_Available || "Unknown")
+      const facilitiesavailablelabel = otherfacilitesMapping[facilitiesavailableId] || `Unknown Other Facilities Id (${facilitiesavailableId})`
+      summary.byfacilitiesavailable[facilitiesavailablelabel] = (summary.byfacilitiesavailable[facilitiesavailablelabel] || 0) + 1
+
+      // Count by ICTPedagogyMaterial_Available with proper mapping
+      const ictpedagogymaterialavailableId = String(ICT_Facilities.ICTPedagogyMaterial_Available || ICT_Facilities.ICTPedagogyMaterial_Available || "Unknown")
+      const ictpedagogymaterialavailablelabel = otherfacilitesMapping[ictpedagogymaterialavailableId] || `Unknown Other Facilities Id (${ictpedagogymaterialavailableId})`
+      summary.bypedagogymaterialavailable[ictpedagogymaterialavailablelabel] = (summary.bypedagogymaterialavailable[ictpedagogymaterialavailablelabel] || 0) + 1
+
+      // Count by ICTmaterial_Foronline_Use_Available with proper mapping
+      const materialforonlineuseavailableId = String(ICT_Facilities.ICTmaterial_Foronline_Use_Available || ICT_Facilities.ICTmaterial_Foronline_Use_Available || "Unknown")
+      const materialforonlineuseavailablelabel = otherfacilitesMapping[materialforonlineuseavailableId] || `Unknown Other Facilities Id (${materialforonlineuseavailableId})`
+      summary.bymaterialforonlineuseavailable[materialforonlineuseavailablelabel] = (summary.bymaterialforonlineuseavailable[materialforonlineuseavailablelabel] || 0) + 1
+
+      // Count by Internet_Available_Forpedagogical with proper mapping
+      const internetavailableforpedagogicalId = String(ICT_Facilities.Internet_Available_Forpedagogical || ICT_Facilities.Internet_Available_Forpedagogical || "Unknown")
+      const internetavailableforpedagogicallabel = otherfacilitesMapping[internetavailableforpedagogicalId] || `Unknown Other Facilities Id (${internetavailableforpedagogicalId})`
+      summary.byinternetavailableforpedagogical[internetavailableforpedagogicallabel] = (summary.byinternetavailableforpedagogical[internetavailableforpedagogicallabel] || 0) + 1
+
+      // Count by Computers_Available_Forpedagogical with proper mapping
+      const computersavailableforpedagogicalId = String(ICT_Facilities.Computers_Available_Forpedagogical || ICT_Facilities.Computers_Available_Forpedagogical || "Unknown")
+      const computersavailableforpedagogicalLabel = otherfacilitesMapping[computersavailableforpedagogicalId] || `Unknown Other Facilities Id (${computersavailableforpedagogicalId})`
+      summary.bycomputersavailableforpedagogical[computersavailableforpedagogicalLabel] = (summary.bycomputersavailableforpedagogical[computersavailableforpedagogicalLabel] || 0) + 1
+
+      // Count by Tablet_Available_Forpedagogical with proper mapping
+      const tabletavailableforpedagogicalId = String(ICT_Facilities.Tablet_Available_Forpedagogical || ICT_Facilities.Tablet_Available_Forpedagogical || "Unknown")
+      const tabletavailableforpedagogicallabel = otherfacilitesMapping[tabletavailableforpedagogicalId] || `Unknown Other Facilities Id (${tabletavailableforpedagogicalId})`
+      summary.bytabletavailableforpedagogical[tabletavailableforpedagogicallabel] = (summary.bytabletavailableforpedagogical[tabletavailableforpedagogicallabel] || 0) + 1
+
+      // Count by SmartBoard_Available_Forpedagogical with proper mapping
+      const smartboardavailableforpedagogicalId = String(ICT_Facilities.SmartBoard_Available_Forpedagogical || ICT_Facilities.SmartBoard_Available_Forpedagogical || "Unknown")
+      const smartboardavailableforpedagogicalLabel = otherfacilitesMapping[smartboardavailableforpedagogicalId] || `Unknown Other Facilities Id (${smartboardavailableforpedagogicalId})`
+      summary.bysmartboardavailableforpedagogical[smartboardavailableforpedagogicalLabel] = (summary.bysmartboardavailableforpedagogical[smartboardavailableforpedagogicalLabel] || 0) + 1
+
+      // Count by Others with proper mapping
+      const othersId = String(ICT_Facilities.Others || ICT_Facilities.Others || "Unknown")
+      const otherslabel = otherfacilitesMapping[othersId] || `Unknown Other Facilities Id (${othersId})`
+      summary.byothers[otherslabel] = (summary.byothers[otherslabel] || 0) + 1
+    })
+
+    return summary
+  }
+
   // Handle file selection and validation
   const handleFileSelection = async (tableName: string, file: File) => {
     setUploadError("")
@@ -1316,6 +1398,12 @@ export default function TableUploadTracker({
       if (tableName === "Facilities") {
         const summary = analyzeFacilitiesdata(jsonData[tableName])
         setFacilitiesSummary(summary)
+      }
+
+      // If it's ICT_Facilities table, analyze the data
+      if (tableName === "ICT_Facilities") {
+        const summary = analyzeictfacilitiesData(jsonData[tableName])
+        setictfacilitiesSummary(summary)
       }
 
       // Close upload dialog and show preview dialog
@@ -1410,6 +1498,7 @@ export default function TableUploadTracker({
       setTeachersProfileSummary(null)
       setEnrolAgeWiseSummary(null)
       setFacilitiesSummary(null)
+      setictfacilitiesSummary(null)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Upload failed";
       setUploadError(errorMessage);
@@ -1440,6 +1529,7 @@ export default function TableUploadTracker({
     setTeachersProfileSummary(null)
     setEnrolAgeWiseSummary(null)
     setFacilitiesSummary(null)
+    setictfacilitiesSummary(null)
     setUploadError("")
   }
 
@@ -3911,8 +4001,389 @@ export default function TableUploadTracker({
               </div>
             )}
 
+            {/* ICT-Facilities-specific summary */}
+            {selectedTable === "ICT_Facilities" && ictfacilitiesSummary && (
+              <div className="space-y-4">
+                {/* PDF Meta and Summary for PDF export */}
+                <div style={{ display: 'none' }}>
+                  <div ref={pdfMetaRef}>
+                    <div className="mb-4 p-4 border-b border-gray-300">
+                      <h2 className="text-xl font-bold text-blue-900 mb-2">ICT Facilities Data Summary Report</h2>
+                      <div className="text-sm text-gray-700">
+                        <div><strong>Generated by:</strong> {username}</div>
+                        <div><strong>Date:</strong> {new Date().toLocaleDateString()}</div>
+                        <div><strong>Time:</strong> {new Date().toLocaleTimeString()}</div>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-green-900 mb-2">Summary</h4>
+                      <p className="text-sm text-green-800">
+                        Total of <strong>{ictfacilitiesSummary.TotalNumberofRows}</strong> rows will be uploaded. The
+                        data includes {Object.keys(ictfacilitiesSummary.byfacilitiesavailable).length} ICT facility statuses,
+                        {Object.keys(ictfacilitiesSummary.bypedagogymaterialavailable).length} pedagogy material availability statuses,
+                        {Object.keys(ictfacilitiesSummary.bymaterialforonlineuseavailable).length} material for online use availability statuses,
+                        {Object.keys(ictfacilitiesSummary.byinternetavailableforpedagogical).length} internet availability for pedagogical use statuses,
+                        {Object.keys(ictfacilitiesSummary.bycomputersavailableforpedagogical).length} computer availability for pedagogical use statuses,
+                        {Object.keys(ictfacilitiesSummary.bytabletavailableforpedagogical).length} tablet availability for pedagogical use statuses,
+                        {Object.keys(ictfacilitiesSummary.bysmartboardavailableforpedagogical).length} smartboard availability for pedagogical use statuses,
+                        and {Object.keys(ictfacilitiesSummary.byothers).length} other ICT facility statuses.
+                      </p>
+                    </div>
+                    {/* Full breakdown for PDF */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                      {/* By ICTFacilites_Available */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By ICTFacilites Available</div>
+                        {Object.entries(ictfacilitiesSummary.byfacilitiesavailable)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([facilitiesavailableId, count]) => (
+                            <div key={facilitiesavailableId} className="flex justify-between text-sm">
+                              <span style={facilitiesavailableId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{facilitiesavailableId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By ICTPedagogyMaterial_Available */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By ICTPedagogyMaterial Available</div>
+                        {Object.entries(ictfacilitiesSummary.bypedagogymaterialavailable)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([ictpedagogymaterialavailableId, count]) => (
+                            <div key={ictpedagogymaterialavailableId} className="flex justify-between text-sm">
+                              <span style={ictpedagogymaterialavailableId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{ictpedagogymaterialavailableId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By ICTmaterial_Foronline_Use_Available */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Material For Online Use Available</div>
+                        {Object.entries(ictfacilitiesSummary.bymaterialforonlineuseavailable)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([materialforonlineuseavailableId, count]) => (
+                            <div key={materialforonlineuseavailableId} className="flex justify-between text-sm">
+                              <span style={materialforonlineuseavailableId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{materialforonlineuseavailableId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Internet_Available_Forpedagogical */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Internet Available For Pedagogical</div>
+                        {Object.entries(ictfacilitiesSummary.byinternetavailableforpedagogical)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([internetavailableforpedagogicalId, count]) => (
+                            <div key={internetavailableforpedagogicalId} className="flex justify-between text-sm">
+                              <span style={internetavailableforpedagogicalId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{internetavailableforpedagogicalId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Computers_Available_Forpedagogical */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Computers Available For Pedagogical</div>
+                        {Object.entries(ictfacilitiesSummary.bycomputersavailableforpedagogical)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([computersavailableforpedagogicalId, count]) => (
+                            <div key={computersavailableforpedagogicalId} className="flex justify-between text-sm">
+                              <span style={computersavailableforpedagogicalId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{computersavailableforpedagogicalId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Tablet_Available_Forpedagogical */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Tablet Available For Pedagogical</div>
+                        {Object.entries(ictfacilitiesSummary.bytabletavailableforpedagogical)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([tabletavailableforpedagogicalId, count]) => (
+                            <div key={tabletavailableforpedagogicalId} className="flex justify-between text-sm">
+                              <span style={tabletavailableforpedagogicalId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{tabletavailableforpedagogicalId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By SmartBoard_Available_Forpedagogical */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By SmartBoard Available For Pedagogical</div>
+                        {Object.entries(ictfacilitiesSummary.bysmartboardavailableforpedagogical)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([smartboardavailableforpedagogicalId, count]) => (
+                            <div key={smartboardavailableforpedagogicalId} className="flex justify-between text-sm">
+                              <span style={smartboardavailableforpedagogicalId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{smartboardavailableforpedagogicalId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Others */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Others</div>
+                        {Object.entries(ictfacilitiesSummary.byothers)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([othersId, count]) => (
+                            <div key={othersId} className="flex justify-between text-sm">
+                              <span style={othersId.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{othersId}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <h3 className="font-medium text-gray-900 flex items-center">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Data Summary
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* By ICTFacilites_Available */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Facilites Available</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(ictfacilitiesSummary.byfacilitiesavailable)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([facilitiesavailableId, count]) => (
+                          <div key={facilitiesavailableId} className="flex justify-between text-sm">
+                            <span className={`${facilitiesavailableId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{facilitiesavailableId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By ICTPedagogyMaterial_Available */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By PedagogyMaterial Available</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(ictfacilitiesSummary.bypedagogymaterialavailable)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([ictpedagogymaterialavailableId, count]) => (
+                          <div key={ictpedagogymaterialavailableId} className="flex justify-between text-sm">
+                            <span className={`${ictpedagogymaterialavailableId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{ictpedagogymaterialavailableId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By ICTmaterial_Foronline_Use_Available */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Material For Online Use Available</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(ictfacilitiesSummary.bymaterialforonlineuseavailable)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([materialforonlineuseavailableId, count]) => (
+                          <div key={materialforonlineuseavailableId} className="flex justify-between text-sm">
+                            <span className={`${materialforonlineuseavailableId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{materialforonlineuseavailableId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Internet_Available_Forpedagogical */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Internet Available For Pedagogical</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(ictfacilitiesSummary.byinternetavailableforpedagogical)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([internetavailableforpedagogicalId, count]) => (
+                          <div key={internetavailableforpedagogicalId} className="flex justify-between text-sm">
+                            <span className={`${internetavailableforpedagogicalId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{internetavailableforpedagogicalId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Computers_Available_Forpedagogical */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Computers Available For Pedagogical</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(ictfacilitiesSummary.bycomputersavailableforpedagogical)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([computersavailableforpedagogicalId, count]) => (
+                          <div key={computersavailableforpedagogicalId} className="flex justify-between text-sm">
+                            <span className={`${computersavailableforpedagogicalId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{computersavailableforpedagogicalId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Tablet_Available_Forpedagogical */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Tablet Available For Pedagogical</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(ictfacilitiesSummary.bytabletavailableforpedagogical)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([tabletavailableforpedagogicalId, count]) => (
+                          <div key={tabletavailableforpedagogicalId} className="flex justify-between text-sm">
+                            <span className={`${tabletavailableforpedagogicalId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{tabletavailableforpedagogicalId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By SmartBoard_Available_Forpedagogical */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By SmartBoard Available For Pedagogical</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(ictfacilitiesSummary.bysmartboardavailableforpedagogical)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([smartboardavailableforpedagogicalId, count]) => (
+                          <div key={smartboardavailableforpedagogicalId} className="flex justify-between text-sm">
+                            <span className={`${smartboardavailableforpedagogicalId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{smartboardavailableforpedagogicalId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Others */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Others</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(ictfacilitiesSummary.byothers)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([othersId, count]) => (
+                          <div key={othersId} className="flex justify-between text-sm">
+                            <span className={`${othersId.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{othersId}:</span>
+                            <span className="font-medium">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="bg-green-50 p-4 rounded-lg flex flex-col md:flex-row md:items-center md:justify-between" ref={summaryRef}>
+                  <div>
+                    <h4 className="font-medium text-green-900 mb-2">Summary</h4>
+                    <p className="text-sm text-green-800">
+                      Total of <strong>{ictfacilitiesSummary.TotalNumberofRows}</strong> rows will be uploaded. The
+                        data includes {Object.keys(ictfacilitiesSummary.byfacilitiesavailable).length} ICT facility statuses,
+                        {Object.keys(ictfacilitiesSummary.bypedagogymaterialavailable).length} pedagogy material availability statuses,
+                        {Object.keys(ictfacilitiesSummary.bymaterialforonlineuseavailable).length} material for online use availability statuses,
+                        {Object.keys(ictfacilitiesSummary.byinternetavailableforpedagogical).length} internet availability for pedagogical use statuses,
+                        {Object.keys(ictfacilitiesSummary.bycomputersavailableforpedagogical).length} computer availability for pedagogical use statuses,
+                        {Object.keys(ictfacilitiesSummary.bytabletavailableforpedagogical).length} tablet availability for pedagogical use statuses,
+                        {Object.keys(ictfacilitiesSummary.bysmartboardavailableforpedagogical).length} smartboard availability for pedagogical use statuses,
+                        and {Object.keys(ictfacilitiesSummary.byothers).length} other ICT facility statuses.
+                    </p>
+                  </div>
+                  <Button
+                    className="mt-4 md:mt-0 md:ml-6 rounded-lg shadow font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 py-2 transition-colors duration-200 hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                    onClick={() => {
+                      if (pdfMetaRef.current) {
+                        downloadElementAsPDF(pdfMetaRef.current, `ICT_Facilities-Data-Summary.pdf`)
+                      }
+                    }}
+                  >
+                    Download Data Summary as PDF
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Generic summary for other tables */}
-            {selectedTable !== "Institutions" && "Teachers_Profile" && "EnrolAgeWise" && "Facilities" && parsedJsonData && selectedTable && (
+            {selectedTable !== "Institutions" && "Teachers_Profile" && "EnrolAgeWise" && "Facilities" && "ICT_Facilities" && parsedJsonData && selectedTable && (
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium text-gray-900 mb-2">Data Summary</h3>
                 <p className="text-sm text-gray-700">
