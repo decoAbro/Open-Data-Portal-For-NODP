@@ -107,6 +107,137 @@ interface InstitutionattackSummary {
   byfirregistered: { [key: string]: number }
 }
 
+interface InstitutionSecuritySummary {
+  TotalNumberofRows: number
+  bysecurityavailable: { [key: string]: number }
+  bysecurityguardavailable: { [key: string]: number }
+  bybarbedwireavailable: { [key: string]: number }
+  byglassspikesavailable: { [key: string]: number }
+  byentranceblocksavailable: { [key: string]: number }
+  bycctvcameraavailable: { [key: string]: number }
+  bybarrieravailable: { [key: string]: number }
+}
+
+interface nonteachersProfileSummary {
+  TotalnonTeachers: number
+  bystaff: { [key: string]: number }
+  bygender: { [key: string]: number }
+  bydesignation: { [key: string]: number }
+  bybasicpayscale: { [key: string]: number }
+  bynatureofservice: { [key: string]: number }
+  bydifficultytype: { [key: string]: number }
+  bydifficultycategory: { [key: string]: number }
+} 
+
+interface InstitutionsOtherFacilitiesSummary {
+  TotalNumberofRows: number
+  byrampavailable: { [key: string]: number }
+  byspecialchildrenavailable: { [key: string]: number }
+  bydaycareroomavailable: { [key: string]: number }
+} 
+
+interface EnrolmentECEExperienceSummary {
+  TotalNumberofRows: number
+  byclass: { [key: string]: number }
+  bygender: { [key: string]: number }
+  byshift: { [key: string]: number }
+} 
+
+interface EnrolmentRefugeeSummary {
+  TotalNumberofRows: number
+  byclass: { [key: string]: number }
+  bygender: { [key: string]: number }
+  bynationality: { [key: string]: number }
+  byshift: { [key: string]: number }
+} 
+
+interface EnrolmentReligionSummary {
+  TotalNumberofRows: number
+  byclass: { [key: string]: number }
+  bygender: { [key: string]: number }
+  byreligion: { [key: string]: number }
+  byshift: { [key: string]: number }
+} 
+
+interface EnrolmentDifficultySummary {
+  TotalNumberofRows: number
+  byclass: { [key: string]: number }
+  bygender: { [key: string]: number }
+  bydifficultytype: { [key: string]: number }
+  bydifficultycategory: { [key: string]: number }
+  byshift: { [key: string]: number }
+} 
+
+interface CorporalPunishmentSummary {
+  TotalNumberofRows: number
+  bycorporalpunishment: { [key: string]: number }
+  byreportedtoauthorities: { [key: string]: number }
+} 
+
+interface BuildingSummary {
+  TotalNumberofRows: number
+  bybuildingavailability: { [key: string]: number }
+  bybuildingownership: { [key: string]: number }
+  bybuildingcondition: { [key: string]: number }
+  byconstructiontype: { [key: string]: number }
+} 
+
+interface RepeaterSummary {
+  TotalNumberofRows: number
+  byclass: { [key: string]: number }
+  bygender: { [key: string]: number }
+  byshift: { [key: string]: number }
+} 
+
+interface TeachingNonTeachingCategorySummary {
+  TotalNumberofRows: number
+  bystaff: { [key: string]: number }
+  bynatureofservice: { [key: string]: number }
+  bygender: { [key: string]: number }
+  byshift: { [key: string]: number }
+} 
+
+interface TeachingNonTeachingDesignationSummary {
+  TotalNumberofRows: number
+  bygender: { [key: string]: number }
+  bystaff: { [key: string]: number }
+  bydesignation: { [key: string]: number }
+} 
+
+interface TeachersProfessionalQualificationSummary {
+  TotalNumberofRows: number
+  bygender: { [key: string]: number }
+  byshift: { [key: string]: number }
+  byprofessionalqualification: { [key: string]: number }
+} 
+
+interface TeachersAcademicQualificationSummary {
+  TotalNumberofRows: number
+  byacademicqualification: { [key: string]: number }
+  bygender: { [key: string]: number }
+  byshift: { [key: string]: number }
+} 
+
+interface ECEFacilitiesSummary {
+  TotalNumberofRows: number
+  byeceroomsavailable: { [key: string]: number }
+  byecetrainedteacheravailable: { [key: string]: number }
+  byecematerialavailable: { [key: string]: number }
+  byecefurnitureavailable: { [key: string]: number }
+} 
+
+interface StudentProfileSummary {
+  TotalNumberofRows: number
+  bygender: { [key: string]: number }
+  byclass: { [key: string]: number }
+  bystudentstatus: { [key: string]: number }
+  bydifficultyType: { [key: string]: number }
+  bydifficultyCategory: { [key: string]: number }
+  byreligion: { [key: string]: number }
+  bynationality: { [key: string]: number }
+  byshift: { [key: string]: number }
+} 
+
 export default function TableUploadTracker({
   username,
   password,
@@ -136,6 +267,22 @@ export default function TableUploadTracker({
   const [FacilitiesSummary, setFacilitiesSummary] = useState<FacilitiesSummary | null>(null)
   const [ictfacilitiesSummary, setictfacilitiesSummary] = useState<ictfacilitiesSummary | null>(null)
   const [InstitutionattackSummary, setInstitutionattackSummary] = useState<InstitutionattackSummary | null>(null)
+  const [InstitutionSecuritySummary, setInstitutionSecuritySummary] = useState<InstitutionSecuritySummary | null>(null)
+  const [nonteachersProfileSummary, setnonteachersProfileSummary] = useState<nonteachersProfileSummary | null>(null)
+  const [InstitutionsOtherFacilitiesSummary, setInstitutionsOtherFacilitiesSummary] = useState<InstitutionsOtherFacilitiesSummary | null>(null)
+  const [EnrolmentECEExperienceSummary, setEnrolmentECEExperienceSummary] = useState<EnrolmentECEExperienceSummary | null>(null)
+  const [EnrolmentRefugeeSummary, setEnrolmentRefugeeSummary] = useState<EnrolmentRefugeeSummary | null>(null)
+  const [EnrolmentReligionSummary, setEnrolmentReligionSummary] = useState<EnrolmentReligionSummary | null>(null)
+  const [EnrolmentDifficultySummary, setEnrolmentDifficultySummary] = useState<EnrolmentDifficultySummary | null>(null)
+  const [CorporalPunishmentSummary, setCorporalPunishmentSummary] = useState<CorporalPunishmentSummary | null>(null)
+  const [BuildingSummary, setBuildingSummary] = useState<BuildingSummary | null>(null)
+  const [RepeaterSummary, setRepeaterSummary] = useState<RepeaterSummary | null>(null)
+  const [TeachingNonTeachingCategorySummary, setTeachingNonTeachingCategorySummary] = useState<TeachingNonTeachingCategorySummary | null>(null)
+  const [TeachingNonTeachingDesignationSummary, setTeachingNonTeachingDesignationSummary] = useState<TeachingNonTeachingDesignationSummary | null>(null)
+  const [TeachersProfessionalQualificationSummary, setTeachersProfessionalQualificationSummary] = useState<TeachersProfessionalQualificationSummary | null>(null)
+  const [TeachersAcademicQualificationSummary, setTeachersAcademicQualificationSummary] = useState<TeachersAcademicQualificationSummary | null>(null)
+  const [ECEFacilitiesSummary, setECEFacilitiesSummary] = useState<ECEFacilitiesSummary | null>(null)
+  const [StudentProfileSummary, setStudentProfileSummary] = useState<StudentProfileSummary | null>(null)
   const summaryRef = useRef<HTMLDivElement>(null)
   const pdfMetaRef = useRef<HTMLDivElement>(null)
 
@@ -1319,7 +1466,7 @@ export default function TableUploadTracker({
   }
 
   // Analyze Institution Attack data for preview
-  const analyzeinstitutionattackdata = (data: any[]): InstitutionattackSummary => {
+  const analyzeinstitutionattackData = (data: any[]): InstitutionattackSummary => {
 
     // Other Facilities ID mappings
     const otherfacilitesMapping: { [key: string]: string } = {
@@ -1346,6 +1493,2124 @@ export default function TableUploadTracker({
       const firregisteredId = String(Institution_Attack.FIR_Registered || Institution_Attack.FIR_Registered || "Unknown")
       const firregisteredlabel = otherfacilitesMapping[firregisteredId] || `Unknown Id (${firregisteredId})`
       summary.byfirregistered[firregisteredlabel] = (summary.byfirregistered[firregisteredlabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Institution Security data for preview
+  const analyzeinstitutionsecurityData = (data: any[]): InstitutionSecuritySummary => {
+
+    // Other Facilities ID mappings
+    const otherfacilitesMapping: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Yes",
+      "2": "No",
+    }
+    
+    const summary: InstitutionSecuritySummary = {
+      TotalNumberofRows: data.length,
+      bysecurityavailable: {},
+      bysecurityguardavailable: {},
+      bybarbedwireavailable: {},
+      byglassspikesavailable: {},
+      byentranceblocksavailable: {},
+      bycctvcameraavailable: {},
+      bybarrieravailable: {},
+    }
+
+
+    data.forEach((Institution_Security) => {
+
+      // Count by Security_Available with proper mapping
+      const securityavailableId = String(Institution_Security.Security_Available || Institution_Security.Security_Available || "Unknown")
+      const securityavailablelabel = otherfacilitesMapping[securityavailableId] || `Unknown Id (${securityavailableId})`
+      summary.bysecurityavailable[securityavailablelabel] = (summary.bysecurityavailable[securityavailablelabel] || 0) + 1
+
+      // Count by SecurityGuard_Available with proper mapping
+      const securityguardavailableId = String(Institution_Security.SecurityGuard_Available || Institution_Security.SecurityGuard_Available || "Unknown")
+      const securityguardavailablelabel = otherfacilitesMapping[securityguardavailableId] || `Unknown Id (${securityguardavailableId})`
+      summary.bysecurityguardavailable[securityguardavailablelabel] = (summary.bysecurityguardavailable[securityguardavailablelabel] || 0) + 1
+
+      // Count by BarbedWire_Available with proper mapping
+      const barbedwireavailableId = String(Institution_Security.BarbedWire_Available || Institution_Security.BarbedWire_Available || "Unknown")
+      const barbedwireavailablelabel = otherfacilitesMapping[barbedwireavailableId] || `Unknown Id (${barbedwireavailableId})`
+      summary.bybarbedwireavailable[barbedwireavailablelabel] = (summary.bybarbedwireavailable[barbedwireavailablelabel] || 0) + 1
+
+      // Count by GlassSpikes_Available with proper mapping
+      const glassspikesavailableId = String(Institution_Security.GlassSpikes_Available || Institution_Security.GlassSpikes_Available || "Unknown")
+      const glassspikesavailablelabel = otherfacilitesMapping[glassspikesavailableId] || `Unknown Id (${glassspikesavailableId})`
+      summary.byglassspikesavailable[glassspikesavailablelabel] = (summary.byglassspikesavailable[glassspikesavailablelabel] || 0) + 1
+
+      // Count by EntranceBlocks_Available with proper mapping
+      const entranceblocksavailableId = String(Institution_Security.EntranceBlocks_Available || Institution_Security.EntranceBlocks_Available || "Unknown")
+      const entranceblocksavailablelabel = otherfacilitesMapping[entranceblocksavailableId] || `Unknown Id (${entranceblocksavailableId})`
+      summary.byentranceblocksavailable[entranceblocksavailablelabel] = (summary.byentranceblocksavailable[entranceblocksavailablelabel] || 0) + 1
+
+      // Count by CCTVCamera_Available with proper mapping
+      const cctvcameraavailableId = String(Institution_Security.CCTVCamera_Available || Institution_Security.CCTVCamera_Available || "Unknown")
+      const cctvcameraavailablelabel = otherfacilitesMapping[cctvcameraavailableId] || `Unknown Id (${cctvcameraavailableId})`
+      summary.bycctvcameraavailable[cctvcameraavailablelabel] = (summary.bycctvcameraavailable[cctvcameraavailablelabel] || 0) + 1
+
+      // Count by Barrier_Available with proper mapping
+      const barrieravailableId = String(Institution_Security.Barrier_Available || Institution_Security.Barrier_Available || "Unknown")
+      const barrieravailablelabel = otherfacilitesMapping[barrieravailableId] || `Unknown Id (${barrieravailableId})`
+      summary.bybarrieravailable[barrieravailablelabel] = (summary.bybarrieravailable[barrieravailablelabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Non_Teachers_Profile data for preview
+  const analyzenonteachersprofileData = (data: any[]): nonteachersProfileSummary => {
+
+    // Staff ID mappings
+    const StaffMappings: { [key: string]: string } = {
+      "0":"Not Reported",
+      "1":"Teaching",
+      "2":"Non-Teaching",
+    }
+
+    // Gender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Boys Institution",
+      "2": "Girls Institution",
+      "3": "Mix Institution",
+    }
+
+    // TeacherDesignation ID mappings
+    const designationMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Principal",
+      "2": "Vice Principal",
+      "3": "Senior Subject Specialist (English)",
+      "4": "Senior Subject Specialist (Urdu)",
+      "5": "Senior Subject Specialist (Islamiyat)",
+      "6": "Senior Subject Specialist (Pak Study)",
+      "7": "Senior Subject Specialist (Civics)",
+      "8": "Senior Subject Specialist (History)",
+      "9": "Senior Subject Specialist (Economics)",
+      "10": "Senior Subject Specialist (Statistics)",
+      "11": "Senior Subject Specialist (Pashto)",
+      "12": "Senior Subject Specialist (Home Economics)",
+      "13": "Senior Subject Specialist (Maths)",
+      "14": "Senior Subject Specialist (Physics)",
+      "15": "Senior Subject Specialist (Chemistry)",
+      "16": "Senior Subject Specialist (Biology)",
+      "17": "Senior Subject Specialist (General)",
+      "18": "Subject Specialist (English)",
+      "19": "Subject Specialist (Urdu)",
+      "20": "Subject Specialist (Islamiyat)",
+      "21": "Subject Specialist (Pak Study)",
+      "22": "Subject Specialist (Civics)",
+      "23": "Subject Specialist (History)",
+      "24": "Subject Specialist (Economics)",
+      "25": "Subject Specialist (Statistics)",
+      "26": "Subject Specialist (Pashto)",
+      "27": "Subject Specialist (Home Economics)",
+      "28": "Subject Specialist (Maths)",
+      "29": "Subject Specialist (Physics)",
+      "30": "Subject Specialist (Chemistry)",
+      "31": "Subject Specialist (Biology)",
+      "32": "Subject Specialist (General)",
+      "33": "Subject Specialist (Arabic)",
+      "34": "Subject Specialist (Auditing)",
+      "35": "Subject Specialist (Business Administration)",
+      "36": "Subject Specialist (Business Communication)",
+      "37": "Subject Specialist (Education)",
+      "38": "Subject Specialist (General History)",
+      "39": "Subject Specialist (Geography)",
+      "40": "Subject Specialist (Geology)",
+      "41": "Subject Specialist (Finance)",
+      "42": "Subject Specialist (Health and Physical Education)",
+      "43": "Subject Specialist (Islamic History)",
+      "44": "Subject Specialist (International Relations)",
+      "45": "Subject Specialist (Library Science)",
+      "46": "Subject Specialist (Mass Communication)",
+      "47": "Subject Specialist (Philosophy)",
+      "48": "Subject Specialist (Psychology)",
+      "49": "Subject Specialist (Public Administration)",
+      "50": "Subject Specialist (Sindhi)",
+      "51": "Subject Specialist (Sociology)",
+      "52": "Subject Specialist (Social Work)",
+      "53": "Subject Specialist (Statistics)",
+      "54": "Subject Specialist (Special Education)",
+      "55": "Subject Specialist (Urdu)",
+      "56": "Subject Specialist (Bio Chemistry)",
+      "57": "Subject Specialist (Botany)",
+      "58": "Subject Specialist (Genetics)",
+      "59": "Subject Specialist (Micro Biology)",
+      "60": "Subject Specialist (Zoology)",
+      "61": "Subject Specialist (Computer Science)",
+      "62": "Subject Specialist (Information Technology)",
+      "63": "Librarian",
+      "64": "Instructor Physical Education",
+      "65": "Senior Instructor Physical Education",
+      "66": "Chief Instructor Physical Education",
+      "67": "Head Master/Mistress",
+      "68": "Secondary School Teacher (General)",
+      "69": "Secondary School Teacher (Biology)",
+      "70": "Secondary School Teacher (Chemistry)",
+      "71": "Secondary School Teacher (Math)",
+      "72": "Secondary School Teacher (Physics)",
+      "73": "Secondary School Teacher (Information Technology)",
+      "74": "Secondary School Teacher (Arts)",
+      "75": "Secondary School Teacher (Computer Science)",
+      "76": "Senior Certificate Teacher",
+      "77": "Certificate Teacher",
+      "78": "Senior Physical Education Teacher",
+      "79": "Physical Education Teacher",
+      "80": "Senior Drawing Master",
+      "81": "Drawing Master",
+      "82": "Senior Arabic Teacher",
+      "83": "Arabic Teacher",
+      "84": "Senior Theology Teacher",
+      "85": "Theology Teacher",
+      "86": "Senior Qari / Qaria",
+      "87": "Qari / Qaria",
+      "88": "Certified Teacher (Information Technology)",
+      "89": "Primary School Head Teacher", 
+      "90": "Senior Primary School Teacher",
+      "91": "Primary School Teacher",
+      "92": "Elementary Teacher",
+      "93": "Imam",
+      "94": "Hostel Superintendent",
+      "95": "Assistant",
+      "96": "Senior Clerk",
+      "97": "Junior Clerk",
+      "98": "Store Keeper",
+      "99": "Assistant Store Keeper",
+      "100": "Senior Lab Assistant",
+      "101": "Lab Assistant",
+      "102": "Lab Attendant",
+      "103": "Driver",
+      "104": "Naib Qasid",
+      "105": "Cook",
+      "106": "Baheshti",
+      "107": "Work Inspector",
+      "108": "Assistant Work Inspector",
+      "109": "Work Shop Attendant",
+      "110": "Bearer",
+      "111": "Mali",
+      "112": "Mai/Caller",
+      "113": "Chowkidar",
+      "114": "Sweeper",
+      "115": "ESE (Arts)",
+      "116": "ESE (Science)",
+      "117": "Elementary School Teacher (Arabic)",
+      "118": "Elementary School Teacher (Drawing)",
+      "119": "Elementary School Teacher (English)",
+      "120": "Elementary School Teacher (General Arts)",
+      "121": "Elementary School Teacher (Science)",
+      "122": "Elementary School Teacher (Urdu)",
+      "123": "SESE (Physical Education)",
+      "124": "SESE (Science)",
+      "125": "SESE (Maths)",
+      "126": "Senior Head Master",
+      "127": "SSE (Science)",
+      "128": "SSE (Chemistry)",
+      "129": "SSE (Biology)",
+      "130": "Junior School Teacher",
+      "131": "High School Teacher",
+      "132": "Physical Training Instructor",
+      "133": "WIT",
+      "134": "DT",
+      "135": "ECT",
+      "136": "Non-Gov’t",
+      "137": "Band Master",
+      "138": "Subject Specialist",
+      "139": "Information Technology Teacher",
+      "140": "Junior English Teacher (General)",
+      "141": "Junior English Teacher (Technical)",
+      "142": "Elementary School Teacher",
+      "143": "Lab Incharge (Information Technology)",
+      "144": "Library Assistant",
+      "145": "Superintendent",
+      "146": "Junior Elementary School Teacher",
+      "147": "Junior Vernacular Teacher",
+      "148": "Office Assistant",
+      "149": "Water Carrier",
+      "150": "Computer Operator",
+      "151": "Lab Superintendent",
+      "152": "Lab Supervisor",
+      "153": "Governess",
+      "154": "Lab Assistant (Information Technology)",
+      "155": "Senior Librarian",
+      "156": "Subject Specialist",
+      "157": "Junior English Teacher",
+      "158": "Lab Incharge (Computer)",
+      "159": "Others",
+    }
+
+    // TeacherBasicPayScale ID mappings
+    const basicpayscaleMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "BPS 1",
+      "2": "BPS 2",
+      "3": "BPS 3",
+      "4": "BPS 4",
+      "5": "BPS 5",
+      "6": "BPS 6",
+      "7": "BPS 7",
+      "8": "BPS 8",
+      "9": "BPS 9",
+      "10": "BPS 10",
+      "11": "BPS 11",
+      "12": "BPS 12",
+      "13": "BPS 13",
+      "14": "BPS 14",
+      "15": "BPS 15",
+      "16": "BPS 16",
+      "17": "BPS 17",
+      "18": "BPS 18",
+      "19": "BPS 19",
+      "20": "BPS 20",
+      "21": "BPS 21",
+      "22": "BPS 22",
+      "23": "Others",
+    }
+
+    // TeacherNatureOfService ID mappings
+    const natureofserviceMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Sanctioned Permanent",
+      "2": "Filled Permanent",
+      "3": "Sanctioned Contractual",
+      "4": "Filled Contractual",
+      "5": "Vacant",
+    }
+
+    // Teacher Difficulty Type ID mappings
+    const difficultytypeMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Seeing, even when wearing glasses",
+      "2": "Hearing, even if using a hearing aid",
+      "3": "Walking or climbing steps",
+      "4": "Remembering or concentrating",
+      "5": "Hands & Arms",
+      "6": "Speech",
+    }
+
+    // Teacher Difficulty Category ID mappings
+    const difficultycategoryMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "No Difficulty",
+      "2": "Some difficulty",
+      "3": "Lot of difficulty",
+      "4": "Cannot do at all",
+    }
+    
+    const summary: nonteachersProfileSummary = {
+      TotalnonTeachers: data.length,
+      bystaff: {},
+      bygender: {},
+      bydesignation: {},
+      bybasicpayscale: {},
+      bynatureofservice: {},
+      bydifficultytype: {},
+      bydifficultycategory: {},
+    }
+
+
+    data.forEach((Non_Teachers_Profile) => {
+
+      // Count by Staff_Id with proper mapping
+      const staffId = String(Non_Teachers_Profile.Staff_Id || Non_Teachers_Profile.Staff_Id || "Unknown")
+      const stafflabel = StaffMappings[staffId] || `Unknown Staff Id (${staffId})`
+      summary.bystaff[stafflabel] = (summary.bystaff[stafflabel] || 0) + 1
+
+      // Count by Gender_Id with proper mapping
+      const genderId = String(Non_Teachers_Profile.Gender_Id || Non_Teachers_Profile.Gender_Id || "Unknown")
+      const genderlabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.bygender[genderlabel] = (summary.bygender[genderlabel] || 0) + 1
+
+      // Count by Designation_Id with proper mapping
+      const designationId = String(Non_Teachers_Profile.Designation_Id || Non_Teachers_Profile.Designation_Id || "Unknown")
+      const designationlabel = designationMappings[designationId] || `Unknown Designation Id (${designationId})`
+      summary.bydesignation[designationlabel] = (summary.bydesignation[designationlabel] || 0) + 1
+
+      // Count by BasicPayScale_Id with proper mapping
+      const basicpayscaleId = String(Non_Teachers_Profile.BasicPayScale_Id || Non_Teachers_Profile.BasicPayScale_Id || "Unknown")
+      const basicpayscalelabel = basicpayscaleMappings[basicpayscaleId] || `Unknown Basic Pay Scale Id (${basicpayscaleId})`
+      summary.bybasicpayscale[basicpayscalelabel] = (summary.bybasicpayscale[basicpayscalelabel] || 0) + 1
+
+      // Count by NatureOfService_Id with proper mapping
+      const natureofserviceId = String(Non_Teachers_Profile.NatureOfService_Id || Non_Teachers_Profile.NatureOfService_Id || "Unknown")
+      const natureofservicelabel = natureofserviceMappings[natureofserviceId] || `Unknown Nature Of Service Id (${natureofserviceId})`
+      summary.bynatureofservice[natureofservicelabel] = (summary.bynatureofservice[natureofservicelabel] || 0) + 1
+
+      // Count by DifficultyType_Id with proper mapping
+      const difficultytypeId = String(Non_Teachers_Profile.DifficultyType_Id || Non_Teachers_Profile.DifficultyType_Id || "Unknown")
+      const difficultytypelabel = difficultytypeMappings[difficultytypeId] || `Unknown Difficulty Type Id (${difficultytypeId})`
+      summary.bydifficultytype[difficultytypelabel] = (summary.bydifficultytype[difficultytypelabel] || 0) + 1
+
+      // Count by DifficultyCategory_Id with proper mapping
+      const difficultycategoryId = String(Non_Teachers_Profile.DifficultyCategory_Id || Non_Teachers_Profile.DifficultyCategory_Id || "Unknown")
+      const difficultycategorylabel = difficultycategoryMappings[difficultycategoryId] || `Unknown Difficulty Category Id (${difficultycategoryId})`
+      summary.bydifficultycategory[difficultycategorylabel] = (summary.bydifficultycategory[difficultycategorylabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Institution OtherFacilities data for preview
+  const analyzeinstitutionOtherfacillitiesData = (data: any[]): InstitutionsOtherFacilitiesSummary => {
+
+    // Other Facilities ID mappings
+    const otherfacilitesMapping: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Yes",
+      "2": "No",
+    }
+    
+    const summary: InstitutionsOtherFacilitiesSummary = {
+      TotalNumberofRows: data.length,
+      byrampavailable: {},
+      byspecialchildrenavailable: {},
+      bydaycareroomavailable: {},
+    }
+
+
+    data.forEach((Institutions_OtherFacilities) => {
+
+      // Count by Ramp_Available with proper mapping
+      const institutionsotherfacilitiesId = String(Institutions_OtherFacilities.Ramp_Available || Institutions_OtherFacilities.Ramp_Available || "Unknown")
+      const institutionsotherfacilitieslabel = otherfacilitesMapping[institutionsotherfacilitiesId] || `Unknown Id (${institutionsotherfacilitiesId})`
+      summary.byrampavailable[institutionsotherfacilitieslabel] = (summary.byrampavailable[institutionsotherfacilitieslabel] || 0) + 1
+
+      // Count by TLM_Specialchildren_Available with proper mapping
+      const specialchildrenavailableId = String(Institutions_OtherFacilities.TLM_Specialchildren_Available || Institutions_OtherFacilities.TLM_Specialchildren_Available || "Unknown")
+      const specialchildrenavailablelabel = otherfacilitesMapping[specialchildrenavailableId] || `Unknown Id (${specialchildrenavailableId})`
+      summary.byspecialchildrenavailable[specialchildrenavailablelabel] = (summary.byspecialchildrenavailable[specialchildrenavailablelabel] || 0) + 1
+
+      // Count by DayCareRoom_Available with proper mapping
+      const daycareroomavailableId = String(Institutions_OtherFacilities.DayCareRoom_Available || Institutions_OtherFacilities.DayCareRoom_Available || "Unknown")
+      const daycareroomavailablelabel = otherfacilitesMapping[daycareroomavailableId] || `Unknown Id (${daycareroomavailableId})`
+      summary.bydaycareroomavailable[daycareroomavailablelabel] = (summary.bydaycareroomavailable[daycareroomavailablelabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Enrolment ECE Experience data for preview
+  const analyzeenrolECEexperienceData = (data: any[]): EnrolmentECEExperienceSummary => {
+
+    // Class ID mappings
+    const classMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "101": "Unadmitted",
+      "102": "Kinder Garden (KG)/Montessori",
+      "103": "Nursery Class",
+      "104": "Prep/ Kachi",
+      "105": "ECE",
+      "201": "Class 1",
+      "202": "Class 2",
+      "203": "Class 3",
+      "204": "Class 4",
+      "205": "Class 5",
+      "301": "Class 6",
+      "302": "Class 7",
+      "303": "Class 8",
+      "401": "Class 9 Science Group",
+      "402": "Class 9 Arts Group",
+      "403": "Class 9 Technical Stream",
+      "404": "Class 10 Science Group",
+      "405": "Class 10 Arts Group",
+      "406": "Class 10 Technical Stream",
+      "407": "Class 9 Computer Science",
+      "408": "Class 10 Computer Science",
+      "409": "Class 9 ",
+      "410": "Class 10 ",
+      "411": "O Level 1",
+      "412": "O Level 2",
+      "501": "Class 11 Science Group",
+      "502": "Class 11 Arts Group",
+      "503": "Class 12 Science Group",
+      "504": "Class 12 Arts Group",
+      "505": "Class 11 Computer Science ",
+      "506": "Class 11 General Science",
+      "507": "Class 11 Commerce Group",
+      "508": "Class 12 Computer Science",
+      "509": "Class 12 General Science",
+      "510": "Class 12 Commerce Group",
+      "511": "Class 11",
+      "512": "Class 12",
+      "513": "A Level 1",
+      "514": "A Level 2",
+      "515": "Class 11 Premedical",
+      "516": "Class 12 Premedical",
+      "517": "Class 11 Pre_Engineering",
+      "518": "Class 12 Pre_Engineering",
+      "601": "Class 13 Science Group",
+      "602": "Class 13 Arts Group",
+      "603": "Class 14 Science Group",
+      "604": "Class 14 Arts Group",
+      "605": "B.A. Hon.1",
+      "606": "B.A. Hon.2",
+      "607": "B.A. Hon.3",
+      "608": "B.Sc. Hon.1",
+      "609": "B.Sc. Hon.2",
+      "610": "B.Sc. Hon.3",
+      "611": "Class 13",
+      "612": "Class 14",
+      "613": "B.A. Hon.4",
+      "614": "Class 13 Commerce",
+      "615": "Class 14 Commerce",
+      "616": "Class 13 Computer Science",
+      "617": "Class 14 Computer Science",
+      "618": "Class 13 General Science",
+      "619": "Class 14 General Science",
+      "620": "B.Sc. Hon. 4",
+      "621": "B. Ed",
+      "622": "Die 1St Term",
+      "623": "Die 2Nd Term",
+      "624": "B. Ed. (Part 1)",
+      "625": "B. Ed. (Part 2)",
+      "626": "Bs. Ed",
+      "627": "Bed (Hons)",
+      "628": "ADE",
+      "701": "M.A. 1",
+      "702": "M.Sc. 1",
+      "703": "M.A. 2",
+      "704": "M.Sc. 2",
+      "705": "Mcs 1",
+      "706": "Mcs 2",
+      "707": "Class 15 English",
+      "708": "Class 15 Geography",
+      "709": "Class 15 Mathematics",
+      "710": "Class 15 Mass Communication",
+      "711": "Class 15 Applied Psychology",
+      "712": "Class 15 Islamiyat",
+      "713": "Class 15 Urdu",
+      "714": "Class 15 Economics",
+      "715": "Class 15 Home Economics",
+      "716": "Class 16 English",
+      "717": "Class 16 Geography",
+      "718": "Class 16 Mathematics",
+      "719": "Class 16 Mass Communication",
+      "720": "Class 16 Applied Psychology",
+      "721": "Class 16 Islamiyat",
+      "722": "Class 16 Urdu",
+      "723": "Class 16 Economics",
+      "724": "Class 16 Home Economics",
+      "725": "M. Ed",
+      "726": "Class 15",
+      "727": "Class 16",
+      "728": "BS (YEAR 1)",
+      "729": "BS (YEAR 2)",
+      "730": "BS (YEAR 3)",
+      "731": "BS (YEAR 4)",
+      "801": "M.Phil.",
+      "901": "Ph.D.",
+      "902": "Playgroup",
+      "1001": "Ihc Courses",
+      "1005": "سال اول",
+      "1006": "سال دوم",
+      "1007": "سال سوم",
+      "1008": "سال چہارم",
+      "1009": "سال پنجم",
+      "1010": "حفظِ قرآن",
+      "1011": "تجوید و قراءت",
+    }
+
+    // Gender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Boys",
+      "2": "Girls",
+      "3": "Transgender",
+    }
+
+    // Shift ID mappings
+    const ShiftMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Morning",
+      "2": "Evening",
+      "3": "Both",
+    }
+    
+    const summary: EnrolmentECEExperienceSummary = {
+      TotalNumberofRows: data.length,
+      byclass: {},
+      bygender: {},
+      byshift: {},
+    }
+
+
+    data.forEach((Enrolment_ECEExperience) => {
+
+      // Count by Class_Id with proper mapping
+      const classId = String(Enrolment_ECEExperience.Class_Id || Enrolment_ECEExperience.Class_Id || "Unknown")
+      const classlabel = classMappings[classId] || `Unknown Class Id (${classId})`
+      summary.byclass[classlabel] = (summary.byclass[classlabel] || 0) + 1
+
+      // Count by Gender_Id with proper mapping
+      const genderId = String(Enrolment_ECEExperience.Gender_Id || Enrolment_ECEExperience.Gender_Id || "Unknown")
+      const genderlabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.bygender[genderlabel] = (summary.bygender[genderlabel] || 0) + 1
+
+      // Count by Shift_Id with proper mapping
+      const shiftId = String(Enrolment_ECEExperience.Shift_Id || Enrolment_ECEExperience.Shift_Id || "Unknown")
+      const shiftlabel = ShiftMappings[shiftId] || `Unknown Shift Id (${shiftId})`
+      summary.byshift[shiftlabel] = (summary.byshift[shiftlabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Enrolment_Refugee data for preview
+  const analyzeenrolmentrefugeeData = (data: any[]): EnrolmentRefugeeSummary => {
+
+    // Class ID mappings
+    const classMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "101": "Unadmitted",
+      "102": "Kinder Garden (KG)/Montessori",
+      "103": "Nursery Class",
+      "104": "Prep/ Kachi",
+      "105": "ECE",
+      "201": "Class 1",
+      "202": "Class 2",
+      "203": "Class 3",
+      "204": "Class 4",
+      "205": "Class 5",
+      "301": "Class 6",
+      "302": "Class 7",
+      "303": "Class 8",
+      "401": "Class 9 Science Group",
+      "402": "Class 9 Arts Group",
+      "403": "Class 9 Technical Stream",
+      "404": "Class 10 Science Group",
+      "405": "Class 10 Arts Group",
+      "406": "Class 10 Technical Stream",
+      "407": "Class 9 Computer Science",
+      "408": "Class 10 Computer Science",
+      "409": "Class 9 ",
+      "410": "Class 10 ",
+      "411": "O Level 1",
+      "412": "O Level 2",
+      "501": "Class 11 Science Group",
+      "502": "Class 11 Arts Group",
+      "503": "Class 12 Science Group",
+      "504": "Class 12 Arts Group",
+      "505": "Class 11 Computer Science ",
+      "506": "Class 11 General Science",
+      "507": "Class 11 Commerce Group",
+      "508": "Class 12 Computer Science",
+      "509": "Class 12 General Science",
+      "510": "Class 12 Commerce Group",
+      "511": "Class 11",
+      "512": "Class 12",
+      "513": "A Level 1",
+      "514": "A Level 2",
+      "515": "Class 11 Premedical",
+      "516": "Class 12 Premedical",
+      "517": "Class 11 Pre_Engineering",
+      "518": "Class 12 Pre_Engineering",
+      "601": "Class 13 Science Group",
+      "602": "Class 13 Arts Group",
+      "603": "Class 14 Science Group",
+      "604": "Class 14 Arts Group",
+      "605": "B.A. Hon.1",
+      "606": "B.A. Hon.2",
+      "607": "B.A. Hon.3",
+      "608": "B.Sc. Hon.1",
+      "609": "B.Sc. Hon.2",
+      "610": "B.Sc. Hon.3",
+      "611": "Class 13",
+      "612": "Class 14",
+      "613": "B.A. Hon.4",
+      "614": "Class 13 Commerce",
+      "615": "Class 14 Commerce",
+      "616": "Class 13 Computer Science",
+      "617": "Class 14 Computer Science",
+      "618": "Class 13 General Science",
+      "619": "Class 14 General Science",
+      "620": "B.Sc. Hon. 4",
+      "621": "B. Ed",
+      "622": "Die 1St Term",
+      "623": "Die 2Nd Term",
+      "624": "B. Ed. (Part 1)",
+      "625": "B. Ed. (Part 2)",
+      "626": "Bs. Ed",
+      "627": "Bed (Hons)",
+      "628": "ADE",
+      "701": "M.A. 1",
+      "702": "M.Sc. 1",
+      "703": "M.A. 2",
+      "704": "M.Sc. 2",
+      "705": "Mcs 1",
+      "706": "Mcs 2",
+      "707": "Class 15 English",
+      "708": "Class 15 Geography",
+      "709": "Class 15 Mathematics",
+      "710": "Class 15 Mass Communication",
+      "711": "Class 15 Applied Psychology",
+      "712": "Class 15 Islamiyat",
+      "713": "Class 15 Urdu",
+      "714": "Class 15 Economics",
+      "715": "Class 15 Home Economics",
+      "716": "Class 16 English",
+      "717": "Class 16 Geography",
+      "718": "Class 16 Mathematics",
+      "719": "Class 16 Mass Communication",
+      "720": "Class 16 Applied Psychology",
+      "721": "Class 16 Islamiyat",
+      "722": "Class 16 Urdu",
+      "723": "Class 16 Economics",
+      "724": "Class 16 Home Economics",
+      "725": "M. Ed",
+      "726": "Class 15",
+      "727": "Class 16",
+      "728": "BS (YEAR 1)",
+      "729": "BS (YEAR 2)",
+      "730": "BS (YEAR 3)",
+      "731": "BS (YEAR 4)",
+      "801": "M.Phil.",
+      "901": "Ph.D.",
+      "902": "Playgroup",
+      "1001": "Ihc Courses",
+      "1005": "سال اول",
+      "1006": "سال دوم",
+      "1007": "سال سوم",
+      "1008": "سال چہارم",
+      "1009": "سال پنجم",
+      "1010": "حفظِ قرآن",
+      "1011": "تجوید و قراءت",
+    }
+
+    // Gender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Boys",
+      "2": "Girls",
+      "3": "Transgender",
+    }
+
+    // Nationality ID mappings
+    const nationalityMappings: { [key: string]: string } = {
+      "0":"Not Reported",
+      "1":"Pakistani",
+      "2":"Afghani",
+      "3":"Bangali",
+      "4":"Chinese",
+      "5":"Irani",
+      "6":"Others",
+    }
+    
+    // Shift ID mappings
+    const ShiftMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Morning",
+      "2": "Evening",
+      "3": "Both",
+    }
+
+    const summary: EnrolmentRefugeeSummary = {
+      TotalNumberofRows: data.length,
+      byclass: {},
+      bygender: {},
+      bynationality: {},
+      byshift: {},
+    }
+
+
+    data.forEach((Enrolment_Refugee) => {
+
+      // Count by Class_Id with proper mapping
+      const classId = String(Enrolment_Refugee.Class_Id || Enrolment_Refugee.Class_Id || "Unknown")
+      const classlabel = classMappings[classId] || `Unknown Class Id (${classId})`
+      summary.byclass[classlabel] = (summary.byclass[classlabel] || 0) + 1
+
+      // Count by Gender_Id with proper mapping
+      const genderId = String(Enrolment_Refugee.Gender_Id || Enrolment_Refugee.Gender_Id || "Unknown")
+      const genderlabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.bygender[genderlabel] = (summary.bygender[genderlabel] || 0) + 1
+
+      // Count by Nationality_Id with proper mapping
+      const nationalityId = String(Enrolment_Refugee.Nationality_Id || Enrolment_Refugee.Nationality_Id || "Unknown")
+      const nationalitylabel = nationalityMappings[nationalityId] || `Unknown Nationality Id (${nationalityId})`
+      summary.bynationality[nationalitylabel] = (summary.bynationality[nationalitylabel] || 0) + 1
+
+      // Count by Shift_Id with proper mapping
+      const shiftId = String(Enrolment_Refugee.Shift_Id || Enrolment_Refugee.Shift_Id || "Unknown")
+      const shiftlabel = ShiftMappings[shiftId] || `Unknown Shift Id (${shiftId})`
+      summary.byshift[shiftlabel] = (summary.byshift[shiftlabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Enrolment Religion data for preview
+  const analyzeenrolmentreligionData = (data: any[]): EnrolmentReligionSummary => {
+
+    // Class ID mappings
+    const classMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "101": "Unadmitted",
+      "102": "Kinder Garden (KG)/Montessori",
+      "103": "Nursery Class",
+      "104": "Prep/ Kachi",
+      "105": "ECE",
+      "201": "Class 1",
+      "202": "Class 2",
+      "203": "Class 3",
+      "204": "Class 4",
+      "205": "Class 5",
+      "301": "Class 6",
+      "302": "Class 7",
+      "303": "Class 8",
+      "401": "Class 9 Science Group",
+      "402": "Class 9 Arts Group",
+      "403": "Class 9 Technical Stream",
+      "404": "Class 10 Science Group",
+      "405": "Class 10 Arts Group",
+      "406": "Class 10 Technical Stream",
+      "407": "Class 9 Computer Science",
+      "408": "Class 10 Computer Science",
+      "409": "Class 9 ",
+      "410": "Class 10 ",
+      "411": "O Level 1",
+      "412": "O Level 2",
+      "501": "Class 11 Science Group",
+      "502": "Class 11 Arts Group",
+      "503": "Class 12 Science Group",
+      "504": "Class 12 Arts Group",
+      "505": "Class 11 Computer Science ",
+      "506": "Class 11 General Science",
+      "507": "Class 11 Commerce Group",
+      "508": "Class 12 Computer Science",
+      "509": "Class 12 General Science",
+      "510": "Class 12 Commerce Group",
+      "511": "Class 11",
+      "512": "Class 12",
+      "513": "A Level 1",
+      "514": "A Level 2",
+      "515": "Class 11 Premedical",
+      "516": "Class 12 Premedical",
+      "517": "Class 11 Pre_Engineering",
+      "518": "Class 12 Pre_Engineering",
+      "601": "Class 13 Science Group",
+      "602": "Class 13 Arts Group",
+      "603": "Class 14 Science Group",
+      "604": "Class 14 Arts Group",
+      "605": "B.A. Hon.1",
+      "606": "B.A. Hon.2",
+      "607": "B.A. Hon.3",
+      "608": "B.Sc. Hon.1",
+      "609": "B.Sc. Hon.2",
+      "610": "B.Sc. Hon.3",
+      "611": "Class 13",
+      "612": "Class 14",
+      "613": "B.A. Hon.4",
+      "614": "Class 13 Commerce",
+      "615": "Class 14 Commerce",
+      "616": "Class 13 Computer Science",
+      "617": "Class 14 Computer Science",
+      "618": "Class 13 General Science",
+      "619": "Class 14 General Science",
+      "620": "B.Sc. Hon. 4",
+      "621": "B. Ed",
+      "622": "Die 1St Term",
+      "623": "Die 2Nd Term",
+      "624": "B. Ed. (Part 1)",
+      "625": "B. Ed. (Part 2)",
+      "626": "Bs. Ed",
+      "627": "Bed (Hons)",
+      "628": "ADE",
+      "701": "M.A. 1",
+      "702": "M.Sc. 1",
+      "703": "M.A. 2",
+      "704": "M.Sc. 2",
+      "705": "Mcs 1",
+      "706": "Mcs 2",
+      "707": "Class 15 English",
+      "708": "Class 15 Geography",
+      "709": "Class 15 Mathematics",
+      "710": "Class 15 Mass Communication",
+      "711": "Class 15 Applied Psychology",
+      "712": "Class 15 Islamiyat",
+      "713": "Class 15 Urdu",
+      "714": "Class 15 Economics",
+      "715": "Class 15 Home Economics",
+      "716": "Class 16 English",
+      "717": "Class 16 Geography",
+      "718": "Class 16 Mathematics",
+      "719": "Class 16 Mass Communication",
+      "720": "Class 16 Applied Psychology",
+      "721": "Class 16 Islamiyat",
+      "722": "Class 16 Urdu",
+      "723": "Class 16 Economics",
+      "724": "Class 16 Home Economics",
+      "725": "M. Ed",
+      "726": "Class 15",
+      "727": "Class 16",
+      "728": "BS (YEAR 1)",
+      "729": "BS (YEAR 2)",
+      "730": "BS (YEAR 3)",
+      "731": "BS (YEAR 4)",
+      "801": "M.Phil.",
+      "901": "Ph.D.",
+      "902": "Playgroup",
+      "1001": "Ihc Courses",
+      "1005": "سال اول",
+      "1006": "سال دوم",
+      "1007": "سال سوم",
+      "1008": "سال چہارم",
+      "1009": "سال پنجم",
+      "1010": "حفظِ قرآن",
+      "1011": "تجوید و قراءت",
+    }
+
+    // Gender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Boys",
+      "2": "Girls",
+      "3": "Transgender",
+    }
+
+    // Religion ID mappings
+    const religionMappings: { [key: string]: string } = {
+      "0":"Not Reported",
+      "1":"Muslim",
+      "2":"Christians",
+      "3":"Hindu",
+      "4":"Qadiani / Ahmadi",
+      "5":"Scheduled Cast",
+      "6":"Sikh",
+      "7":"Parsi",
+      "8":"Others",
+    }
+
+    // Shift ID mappings
+    const ShiftMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Morning",
+      "2": "Evening",
+      "3": "Both",
+    }
+    
+    const summary: EnrolmentReligionSummary = {
+      TotalNumberofRows: data.length,
+      byclass: {},  
+      bygender: {},
+      byreligion: {},
+      byshift: {},
+    }
+
+
+    data.forEach((Enrolment_Religion) => {
+
+      // Count by Class_Id with proper mapping
+      const classId = String(Enrolment_Religion.Class_Id || Enrolment_Religion.Class_Id || "Unknown")
+      const classlabel = classMappings[classId] || `Unknown Class Id (${classId})`
+      summary.byclass[classlabel] = (summary.byclass[classlabel] || 0) + 1
+
+      // Count by Gender_Id with proper mapping
+      const genderId = String(Enrolment_Religion.Gender_Id || Enrolment_Religion.Gender_Id || "Unknown")
+      const genderlabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.bygender[genderlabel] = (summary.bygender[genderlabel] || 0) + 1
+
+      // Count by Religion_Id with proper mapping
+      const religionId = String(Enrolment_Religion.Religion_Id || Enrolment_Religion.Religion_Id || "Unknown")
+      const religionlabel = religionMappings[religionId] || `Unknown Religion Id (${religionId})`
+      summary.byreligion[religionlabel] = (summary.byreligion[religionlabel] || 0) + 1
+
+      // Count by Shift_Id with proper mapping
+      const shiftId = String(Enrolment_Religion.Shift_Id || Enrolment_Religion.Shift_Id || "Unknown")
+      const shiftlabel = ShiftMappings[shiftId] || `Unknown Shift Id (${shiftId})`
+      summary.byshift[shiftlabel] = (summary.byshift[shiftlabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Enrolment Difficulty data for preview
+  const analyzeenrolmentdifficultyData = (data: any[]): EnrolmentDifficultySummary => {
+
+    // Class ID mappings
+    const classMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "101": "Unadmitted",
+      "102": "Kinder Garden (KG)/Montessori",
+      "103": "Nursery Class",
+      "104": "Prep/ Kachi",
+      "105": "ECE",
+      "201": "Class 1",
+      "202": "Class 2",
+      "203": "Class 3",
+      "204": "Class 4",
+      "205": "Class 5",
+      "301": "Class 6",
+      "302": "Class 7",
+      "303": "Class 8",
+      "401": "Class 9 Science Group",
+      "402": "Class 9 Arts Group",
+      "403": "Class 9 Technical Stream",
+      "404": "Class 10 Science Group",
+      "405": "Class 10 Arts Group",
+      "406": "Class 10 Technical Stream",
+      "407": "Class 9 Computer Science",
+      "408": "Class 10 Computer Science",
+      "409": "Class 9 ",
+      "410": "Class 10 ",
+      "411": "O Level 1",
+      "412": "O Level 2",
+      "501": "Class 11 Science Group",
+      "502": "Class 11 Arts Group",
+      "503": "Class 12 Science Group",
+      "504": "Class 12 Arts Group",
+      "505": "Class 11 Computer Science ",
+      "506": "Class 11 General Science",
+      "507": "Class 11 Commerce Group",
+      "508": "Class 12 Computer Science",
+      "509": "Class 12 General Science",
+      "510": "Class 12 Commerce Group",
+      "511": "Class 11",
+      "512": "Class 12",
+      "513": "A Level 1",
+      "514": "A Level 2",
+      "515": "Class 11 Premedical",
+      "516": "Class 12 Premedical",
+      "517": "Class 11 Pre_Engineering",
+      "518": "Class 12 Pre_Engineering",
+      "601": "Class 13 Science Group",
+      "602": "Class 13 Arts Group",
+      "603": "Class 14 Science Group",
+      "604": "Class 14 Arts Group",
+      "605": "B.A. Hon.1",
+      "606": "B.A. Hon.2",
+      "607": "B.A. Hon.3",
+      "608": "B.Sc. Hon.1",
+      "609": "B.Sc. Hon.2",
+      "610": "B.Sc. Hon.3",
+      "611": "Class 13",
+      "612": "Class 14",
+      "613": "B.A. Hon.4",
+      "614": "Class 13 Commerce",
+      "615": "Class 14 Commerce",
+      "616": "Class 13 Computer Science",
+      "617": "Class 14 Computer Science",
+      "618": "Class 13 General Science",
+      "619": "Class 14 General Science",
+      "620": "B.Sc. Hon. 4",
+      "621": "B. Ed",
+      "622": "Die 1St Term",
+      "623": "Die 2Nd Term",
+      "624": "B. Ed. (Part 1)",
+      "625": "B. Ed. (Part 2)",
+      "626": "Bs. Ed",
+      "627": "Bed (Hons)",
+      "628": "ADE",
+      "701": "M.A. 1",
+      "702": "M.Sc. 1",
+      "703": "M.A. 2",
+      "704": "M.Sc. 2",
+      "705": "Mcs 1",
+      "706": "Mcs 2",
+      "707": "Class 15 English",
+      "708": "Class 15 Geography",
+      "709": "Class 15 Mathematics",
+      "710": "Class 15 Mass Communication",
+      "711": "Class 15 Applied Psychology",
+      "712": "Class 15 Islamiyat",
+      "713": "Class 15 Urdu",
+      "714": "Class 15 Economics",
+      "715": "Class 15 Home Economics",
+      "716": "Class 16 English",
+      "717": "Class 16 Geography",
+      "718": "Class 16 Mathematics",
+      "719": "Class 16 Mass Communication",
+      "720": "Class 16 Applied Psychology",
+      "721": "Class 16 Islamiyat",
+      "722": "Class 16 Urdu",
+      "723": "Class 16 Economics",
+      "724": "Class 16 Home Economics",
+      "725": "M. Ed",
+      "726": "Class 15",
+      "727": "Class 16",
+      "728": "BS (YEAR 1)",
+      "729": "BS (YEAR 2)",
+      "730": "BS (YEAR 3)",
+      "731": "BS (YEAR 4)",
+      "801": "M.Phil.",
+      "901": "Ph.D.",
+      "902": "Playgroup",
+      "1001": "Ihc Courses",
+      "1005": "سال اول",
+      "1006": "سال دوم",
+      "1007": "سال سوم",
+      "1008": "سال چہارم",
+      "1009": "سال پنجم",
+      "1010": "حفظِ قرآن",
+      "1011": "تجوید و قراءت",
+    }
+
+    // Gender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Boys",
+      "2": "Girls",
+      "3": "Transgender",
+    }
+    
+    // Teacher Difficulty Type ID mappings
+    const difficultytypeMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Seeing, even when wearing glasses",
+      "2": "Hearing, even if using a hearing aid",
+      "3": "Walking or climbing steps",
+      "4": "Remembering or concentrating",
+      "5": "Hands & Arms",
+      "6": "Speech",
+    }
+
+    // Teacher Difficulty Category ID mappings
+    const difficultycategoryMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "No Difficulty",
+      "2": "Some difficulty",
+      "3": "Lot of difficulty",
+      "4": "Cannot do at all",
+    }
+
+    // Shift ID mappings
+    const ShiftMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Morning",
+      "2": "Evening",
+      "3": "Both",
+    }
+
+    const summary: EnrolmentDifficultySummary = {
+      TotalNumberofRows: data.length,
+      byclass: {},
+      bygender: {},
+      bydifficultytype: {},
+      bydifficultycategory: {},
+      byshift: {},
+    }
+
+
+    data.forEach((Enrolment_Difficulty) => {
+
+      // Count by Class_Id with proper mapping
+      const classId = String(Enrolment_Difficulty.Class_Id || Enrolment_Difficulty.Class_Id || "Unknown")
+      const classlabel = classMappings[classId] || `Unknown Class Id (${classId})`
+      summary.byclass[classlabel] = (summary.byclass[classlabel] || 0) + 1
+
+      // Count by Gender_Id with proper mapping
+      const genderId = String(Enrolment_Difficulty.Gender_Id || Enrolment_Difficulty.Gender_Id || "Unknown")
+      const genderlabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.bygender[genderlabel] = (summary.bygender[genderlabel] || 0) + 1
+
+      // Count by DifficultyType_Id with proper mapping
+      const difficultytypeId = String(Enrolment_Difficulty.DifficultyType_Id || Enrolment_Difficulty.DifficultyType_Id || "Unknown")
+      const difficultytypelabel = difficultytypeMappings[difficultytypeId] || `Unknown Difficulty Type Id (${difficultytypeId})`
+      summary.bydifficultytype[difficultytypelabel] = (summary.bydifficultytype[difficultytypelabel] || 0) + 1
+
+      // Count by DifficultyCategory_Id with proper mapping
+      const difficultycategoryId = String(Enrolment_Difficulty.DifficultyCategory_Id || Enrolment_Difficulty.DifficultyCategory_Id || "Unknown")
+      const difficultycategorylabel = difficultycategoryMappings[difficultycategoryId] || `Unknown Difficulty Category Id (${difficultycategoryId})`
+      summary.bydifficultycategory[difficultycategorylabel] = (summary.bydifficultycategory[difficultycategorylabel] || 0) + 1
+
+      // Count by Shift_Id with proper mapping
+      const shiftId = String(Enrolment_Difficulty.Shift_Id || Enrolment_Difficulty.Shift_Id || "Unknown")
+      const shiftlabel = ShiftMappings[shiftId] || `Unknown Shift Id (${shiftId})`
+      summary.byshift[shiftlabel] = (summary.byshift[shiftlabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Corporal Punishment data for preview
+  const analyzecorporalpunishmentData = (data: any[]): CorporalPunishmentSummary => {
+
+    // Other Facilities ID mappings
+    const otherfacilitesMapping: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Yes",
+      "2": "No",
+    }
+    
+    const summary: CorporalPunishmentSummary = {
+      TotalNumberofRows: data.length,
+      bycorporalpunishment: {},
+      byreportedtoauthorities: {},
+    }
+
+
+    data.forEach((Corporal_Punishment) => {
+
+      // Count by Corporal_Punishment with proper mapping
+      const corporalpunishmentId = String(Corporal_Punishment.Corporal_Punishment || Corporal_Punishment.Corporal_Punishment || "Unknown")
+      const corporalpunishmentlabel = otherfacilitesMapping[corporalpunishmentId] || `Unknown Id (${corporalpunishmentId})`
+      summary.bycorporalpunishment[corporalpunishmentlabel] = (summary.bycorporalpunishment[corporalpunishmentlabel] || 0) + 1
+
+      // Count by Reported_to_Authorities with proper mapping
+      const reportedtoauthoritiesId = String(Corporal_Punishment.Reported_to_Authorities || Corporal_Punishment.Reported_to_Authorities || "Unknown")
+      const reportedtoauthoritieslabel = otherfacilitesMapping[reportedtoauthoritiesId] || `Unknown Id (${reportedtoauthoritiesId})`
+      summary.byreportedtoauthorities[reportedtoauthoritieslabel] = (summary.byreportedtoauthorities[reportedtoauthoritieslabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Building data for preview
+  const analyzebuildingData = (data: any[]): BuildingSummary => {
+
+
+    // Buiding Availability ID mappings
+    const BuidingAvailabilityMappings: { [key: string]: string } = {
+      "0":"Not Reported",
+      "1":"Available",
+      "2":"Not Available",
+      "3":"Not Functional",
+      "4":"Not Applicable",
+      "5":"Inadequate",
+    }
+
+    // Buiding Ownership ID mappings
+    const BuidingOwnershipMappings: { [key: string]: string } = {
+      "0":"Not Reported",
+      "1":"Govt. Building",
+      "2":"Other Building",
+      "3":"Rented",
+      "4":"Donated",
+      "5":"Rent Free",
+      "6":"No Building",
+    }
+
+    // Buiding Condition ID mappings
+    const BuidingConditionMappings: { [key: string]: string } = {
+      "0":"Not Reported",
+      "1":"Satisfactory",
+      "2":"Need Repair",
+      "3":"Dangerous",
+      "4":"No Building",
+    }
+
+    // Construction Type ID mappings
+    const ConstructionTypeMappings: { [key: string]: string } = {
+      "0":"Not Reported",
+      "1":"Kacha",
+      "2":"Paka",
+      "3":"Mix",
+      "4":"No Buiding",
+      "5":"Pre-Fabricated",
+      "6":"Temporary Shelter",
+    }
+    
+    const summary: BuildingSummary = {
+      TotalNumberofRows: data.length,
+      bybuildingavailability: {},
+      bybuildingownership: {},
+      bybuildingcondition: {},
+      byconstructiontype: {},
+    }
+
+
+    data.forEach((Building) => {
+
+      // Count by BuildingAvailability_Id with proper mapping
+      const buildingavailabilityId = String(Building.BuildingAvailability_Id || Building.BuildingAvailability_Id || "Unknown")
+      const buildingavailabilitylabel = BuidingAvailabilityMappings[buildingavailabilityId] || `Unknown Building Availability Id (${buildingavailabilityId})`
+      summary.bybuildingavailability[buildingavailabilitylabel] = (summary.bybuildingavailability[buildingavailabilitylabel] || 0) + 1
+
+      // Count by BuildingOwnership_Id with proper mapping
+      const buildingownershipId = String(Building.BuildingOwnership_Id || Building.BuildingOwnership_Id || "Unknown")
+      const buildingownershiplabel = BuidingOwnershipMappings[buildingownershipId] || `Unknown Building Ownership Id (${buildingownershipId})`
+      summary.bybuildingownership[buildingownershiplabel] = (summary.bybuildingownership[buildingownershiplabel] || 0) + 1
+
+      // Count by BuildingCondition_Id with proper mapping
+      const buildingconditionId = String(Building.BuildingCondition_Id || Building.BuildingCondition_Id || "Unknown")
+      const buildingconditionlabel = BuidingConditionMappings[buildingconditionId] || `Unknown Building Condition Id (${buildingconditionId})`
+      summary.bybuildingcondition[buildingconditionlabel] = (summary.bybuildingcondition[buildingconditionlabel] || 0) + 1
+
+      // Count by ConstructionType_Id with proper mapping
+      const constructiontypeId = String(Building.ConstructionType_Id || Building.ConstructionType_Id || "Unknown")
+      const constructiontypelabel = ConstructionTypeMappings[constructiontypeId] || `Unknown Construction Type Id (${constructiontypeId})`
+      summary.byconstructiontype[constructiontypelabel] = (summary.byconstructiontype[constructiontypelabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Repeater data for preview
+  const analyzerepeaterData = (data: any[]): RepeaterSummary => {
+
+    // Class ID mappings
+    const classMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "101": "Unadmitted",
+      "102": "Kinder Garden (KG)/Montessori",
+      "103": "Nursery Class",
+      "104": "Prep/ Kachi",
+      "105": "ECE",
+      "201": "Class 1",
+      "202": "Class 2",
+      "203": "Class 3",
+      "204": "Class 4",
+      "205": "Class 5",
+      "301": "Class 6",
+      "302": "Class 7",
+      "303": "Class 8",
+      "401": "Class 9 Science Group",
+      "402": "Class 9 Arts Group",
+      "403": "Class 9 Technical Stream",
+      "404": "Class 10 Science Group",
+      "405": "Class 10 Arts Group",
+      "406": "Class 10 Technical Stream",
+      "407": "Class 9 Computer Science",
+      "408": "Class 10 Computer Science",
+      "409": "Class 9 ",
+      "410": "Class 10 ",
+      "411": "O Level 1",
+      "412": "O Level 2",
+      "501": "Class 11 Science Group",
+      "502": "Class 11 Arts Group",
+      "503": "Class 12 Science Group",
+      "504": "Class 12 Arts Group",
+      "505": "Class 11 Computer Science ",
+      "506": "Class 11 General Science",
+      "507": "Class 11 Commerce Group",
+      "508": "Class 12 Computer Science",
+      "509": "Class 12 General Science",
+      "510": "Class 12 Commerce Group",
+      "511": "Class 11",
+      "512": "Class 12",
+      "513": "A Level 1",
+      "514": "A Level 2",
+      "515": "Class 11 Premedical",
+      "516": "Class 12 Premedical",
+      "517": "Class 11 Pre_Engineering",
+      "518": "Class 12 Pre_Engineering",
+      "601": "Class 13 Science Group",
+      "602": "Class 13 Arts Group",
+      "603": "Class 14 Science Group",
+      "604": "Class 14 Arts Group",
+      "605": "B.A. Hon.1",
+      "606": "B.A. Hon.2",
+      "607": "B.A. Hon.3",
+      "608": "B.Sc. Hon.1",
+      "609": "B.Sc. Hon.2",
+      "610": "B.Sc. Hon.3",
+      "611": "Class 13",
+      "612": "Class 14",
+      "613": "B.A. Hon.4",
+      "614": "Class 13 Commerce",
+      "615": "Class 14 Commerce",
+      "616": "Class 13 Computer Science",
+      "617": "Class 14 Computer Science",
+      "618": "Class 13 General Science",
+      "619": "Class 14 General Science",
+      "620": "B.Sc. Hon. 4",
+      "621": "B. Ed",
+      "622": "Die 1St Term",
+      "623": "Die 2Nd Term",
+      "624": "B. Ed. (Part 1)",
+      "625": "B. Ed. (Part 2)",
+      "626": "Bs. Ed",
+      "627": "Bed (Hons)",
+      "628": "ADE",
+      "701": "M.A. 1",
+      "702": "M.Sc. 1",
+      "703": "M.A. 2",
+      "704": "M.Sc. 2",
+      "705": "Mcs 1",
+      "706": "Mcs 2",
+      "707": "Class 15 English",
+      "708": "Class 15 Geography",
+      "709": "Class 15 Mathematics",
+      "710": "Class 15 Mass Communication",
+      "711": "Class 15 Applied Psychology",
+      "712": "Class 15 Islamiyat",
+      "713": "Class 15 Urdu",
+      "714": "Class 15 Economics",
+      "715": "Class 15 Home Economics",
+      "716": "Class 16 English",
+      "717": "Class 16 Geography",
+      "718": "Class 16 Mathematics",
+      "719": "Class 16 Mass Communication",
+      "720": "Class 16 Applied Psychology",
+      "721": "Class 16 Islamiyat",
+      "722": "Class 16 Urdu",
+      "723": "Class 16 Economics",
+      "724": "Class 16 Home Economics",
+      "725": "M. Ed",
+      "726": "Class 15",
+      "727": "Class 16",
+      "728": "BS (YEAR 1)",
+      "729": "BS (YEAR 2)",
+      "730": "BS (YEAR 3)",
+      "731": "BS (YEAR 4)",
+      "801": "M.Phil.",
+      "901": "Ph.D.",
+      "902": "Playgroup",
+      "1001": "Ihc Courses",
+      "1005": "سال اول",
+      "1006": "سال دوم",
+      "1007": "سال سوم",
+      "1008": "سال چہارم",
+      "1009": "سال پنجم",
+      "1010": "حفظِ قرآن",
+      "1011": "تجوید و قراءت",
+    }
+
+    // Gender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Boys",
+      "2": "Girls",
+      "3": "Transgender",
+    }
+
+    // Shift ID mappings
+    const ShiftMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Morning",
+      "2": "Evening",
+      "3": "Both",
+    }
+
+    const summary: RepeaterSummary = {
+      TotalNumberofRows: data.length,
+      byclass: {},
+      bygender: {},
+      byshift: {},
+    }
+
+
+    data.forEach((Repeater) => {
+
+      // Count by Class_Id with proper mapping
+      const classId = String(Repeater.Class_Id || Repeater.Class_Id || "Unknown")
+      const classlabel = classMappings[classId] || `Unknown Class Id (${classId})`
+      summary.byclass[classlabel] = (summary.byclass[classlabel] || 0) + 1
+
+      // Count by Gender_Id with proper mapping
+      const genderId = String(Repeater.Gender_Id || Repeater.Gender_Id || "Unknown")
+      const genderlabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.bygender[genderlabel] = (summary.bygender[genderlabel] || 0) + 1
+
+      // Count by Shift_Id with proper mapping
+      const shiftId = String(Repeater.Shift_Id || Repeater.Shift_Id || "Unknown")
+      const shiftlabel = ShiftMappings[shiftId] || `Unknown Shift Id (${shiftId})`
+      summary.byshift[shiftlabel] = (summary.byshift[shiftlabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Teaching Non Teaching Category data for preview
+  const analyzeteachingnonteachingcategoryData = (data: any[]): TeachingNonTeachingCategorySummary => {
+
+    // Staff ID mappings
+    const StaffMappings: { [key: string]: string } = {
+      "0":"Not Reported",
+      "1":"Teaching",
+      "2":"Non-Teaching",
+    }
+
+    // TeacherNatureOfService ID mappings
+    const natureofserviceMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Sanctioned Permanent",
+      "2": "Filled Permanent",
+      "3": "Sanctioned Contractual",
+      "4": "Filled Contractual",
+      "5": "Vacant",
+    }
+
+    // Gender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Boys Institution",
+      "2": "Girls Institution",
+      "3": "Mix Institution",
+    }
+
+    // Shift ID mappings
+    const ShiftMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Morning",
+      "2": "Evening",
+      "3": "Both",
+    }
+    
+    const summary: TeachingNonTeachingCategorySummary = {
+      TotalNumberofRows: data.length,
+      bystaff: {},
+      bynatureofservice: {},
+      bygender: {},
+      byshift: {},
+    }
+
+
+    data.forEach((TeachingNonTeaching_Category) => {
+
+      // Count by Staff_Id with proper mapping
+      const staffId = String(TeachingNonTeaching_Category.Staff_Id || TeachingNonTeaching_Category.Staff_Id || "Unknown")
+      const stafflabel = StaffMappings[staffId] || `Unknown Staff Id (${staffId})`
+      summary.bystaff[stafflabel] = (summary.bystaff[stafflabel] || 0) + 1
+
+      // Count by NatureOfService_Id with proper mapping
+      const natureofserviceId = String(TeachingNonTeaching_Category.NatureOfService_Id || TeachingNonTeaching_Category.NatureOfService_Id || "Unknown")
+      const natureofservicelabel = natureofserviceMappings[natureofserviceId] || `Unknown Nature Of Service Id (${natureofserviceId})`
+      summary.bynatureofservice[natureofservicelabel] = (summary.bynatureofservice[natureofservicelabel] || 0) + 1
+
+      // Count by gender with proper mapping
+      const genderId = String(TeachingNonTeaching_Category.Gender_Id || TeachingNonTeaching_Category.Gender_Id || "Unknown")
+      const genderlabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.bygender[genderlabel] = (summary.bygender[genderlabel] || 0) + 1
+
+      // Count by Shift_Id with proper mapping
+      const shiftId = String(TeachingNonTeaching_Category.Shift_Id || TeachingNonTeaching_Category.Shift_Id || "Unknown")
+      const shiftlabel = ShiftMappings[shiftId] || `Unknown Shift Id (${shiftId})`
+      summary.byshift[shiftlabel] = (summary.byshift[shiftlabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze TeachingNonTeaching_Designation data for preview
+  const analyzeteachingnonteachingdesignationData = (data: any[]): TeachingNonTeachingDesignationSummary => {
+
+    // Gender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Boys Institution",
+      "2": "Girls Institution",
+      "3": "Mix Institution",
+    }
+
+    // Staff ID mappings
+    const StaffMappings: { [key: string]: string } = {
+      "0":"Not Reported",
+      "1":"Teaching",
+      "2":"Non-Teaching",
+    }
+
+    // TeacherDesignation ID mappings
+    const designationMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Principal",
+      "2": "Vice Principal",
+      "3": "Senior Subject Specialist (English)",
+      "4": "Senior Subject Specialist (Urdu)",
+      "5": "Senior Subject Specialist (Islamiyat)",
+      "6": "Senior Subject Specialist (Pak Study)",
+      "7": "Senior Subject Specialist (Civics)",
+      "8": "Senior Subject Specialist (History)",
+      "9": "Senior Subject Specialist (Economics)",
+      "10": "Senior Subject Specialist (Statistics)",
+      "11": "Senior Subject Specialist (Pashto)",
+      "12": "Senior Subject Specialist (Home Economics)",
+      "13": "Senior Subject Specialist (Maths)",
+      "14": "Senior Subject Specialist (Physics)",
+      "15": "Senior Subject Specialist (Chemistry)",
+      "16": "Senior Subject Specialist (Biology)",
+      "17": "Senior Subject Specialist (General)",
+      "18": "Subject Specialist (English)",
+      "19": "Subject Specialist (Urdu)",
+      "20": "Subject Specialist (Islamiyat)",
+      "21": "Subject Specialist (Pak Study)",
+      "22": "Subject Specialist (Civics)",
+      "23": "Subject Specialist (History)",
+      "24": "Subject Specialist (Economics)",
+      "25": "Subject Specialist (Statistics)",
+      "26": "Subject Specialist (Pashto)",
+      "27": "Subject Specialist (Home Economics)",
+      "28": "Subject Specialist (Maths)",
+      "29": "Subject Specialist (Physics)",
+      "30": "Subject Specialist (Chemistry)",
+      "31": "Subject Specialist (Biology)",
+      "32": "Subject Specialist (General)",
+      "33": "Subject Specialist (Arabic)",
+      "34": "Subject Specialist (Auditing)",
+      "35": "Subject Specialist (Business Administration)",
+      "36": "Subject Specialist (Business Communication)",
+      "37": "Subject Specialist (Education)",
+      "38": "Subject Specialist (General History)",
+      "39": "Subject Specialist (Geography)",
+      "40": "Subject Specialist (Geology)",
+      "41": "Subject Specialist (Finance)",
+      "42": "Subject Specialist (Health and Physical Education)",
+      "43": "Subject Specialist (Islamic History)",
+      "44": "Subject Specialist (International Relations)",
+      "45": "Subject Specialist (Library Science)",
+      "46": "Subject Specialist (Mass Communication)",
+      "47": "Subject Specialist (Philosophy)",
+      "48": "Subject Specialist (Psychology)",
+      "49": "Subject Specialist (Public Administration)",
+      "50": "Subject Specialist (Sindhi)",
+      "51": "Subject Specialist (Sociology)",
+      "52": "Subject Specialist (Social Work)",
+      "53": "Subject Specialist (Statistics)",
+      "54": "Subject Specialist (Special Education)",
+      "55": "Subject Specialist (Urdu)",
+      "56": "Subject Specialist (Bio Chemistry)",
+      "57": "Subject Specialist (Botany)",
+      "58": "Subject Specialist (Genetics)",
+      "59": "Subject Specialist (Micro Biology)",
+      "60": "Subject Specialist (Zoology)",
+      "61": "Subject Specialist (Computer Science)",
+      "62": "Subject Specialist (Information Technology)",
+      "63": "Librarian",
+      "64": "Instructor Physical Education",
+      "65": "Senior Instructor Physical Education",
+      "66": "Chief Instructor Physical Education",
+      "67": "Head Master/Mistress",
+      "68": "Secondary School Teacher (General)",
+      "69": "Secondary School Teacher (Biology)",
+      "70": "Secondary School Teacher (Chemistry)",
+      "71": "Secondary School Teacher (Math)",
+      "72": "Secondary School Teacher (Physics)",
+      "73": "Secondary School Teacher (Information Technology)",
+      "74": "Secondary School Teacher (Arts)",
+      "75": "Secondary School Teacher (Computer Science)",
+      "76": "Senior Certificate Teacher",
+      "77": "Certificate Teacher",
+      "78": "Senior Physical Education Teacher",
+      "79": "Physical Education Teacher",
+      "80": "Senior Drawing Master",
+      "81": "Drawing Master",
+      "82": "Senior Arabic Teacher",
+      "83": "Arabic Teacher",
+      "84": "Senior Theology Teacher",
+      "85": "Theology Teacher",
+      "86": "Senior Qari / Qaria",
+      "87": "Qari / Qaria",
+      "88": "Certified Teacher (Information Technology)",
+      "89": "Primary School Head Teacher", 
+      "90": "Senior Primary School Teacher",
+      "91": "Primary School Teacher",
+      "92": "Elementary Teacher",
+      "93": "Imam",
+      "94": "Hostel Superintendent",
+      "95": "Assistant",
+      "96": "Senior Clerk",
+      "97": "Junior Clerk",
+      "98": "Store Keeper",
+      "99": "Assistant Store Keeper",
+      "100": "Senior Lab Assistant",
+      "101": "Lab Assistant",
+      "102": "Lab Attendant",
+      "103": "Driver",
+      "104": "Naib Qasid",
+      "105": "Cook",
+      "106": "Baheshti",
+      "107": "Work Inspector",
+      "108": "Assistant Work Inspector",
+      "109": "Work Shop Attendant",
+      "110": "Bearer",
+      "111": "Mali",
+      "112": "Mai/Caller",
+      "113": "Chowkidar",
+      "114": "Sweeper",
+      "115": "ESE (Arts)",
+      "116": "ESE (Science)",
+      "117": "Elementary School Teacher (Arabic)",
+      "118": "Elementary School Teacher (Drawing)",
+      "119": "Elementary School Teacher (English)",
+      "120": "Elementary School Teacher (General Arts)",
+      "121": "Elementary School Teacher (Science)",
+      "122": "Elementary School Teacher (Urdu)",
+      "123": "SESE (Physical Education)",
+      "124": "SESE (Science)",
+      "125": "SESE (Maths)",
+      "126": "Senior Head Master",
+      "127": "SSE (Science)",
+      "128": "SSE (Chemistry)",
+      "129": "SSE (Biology)",
+      "130": "Junior School Teacher",
+      "131": "High School Teacher",
+      "132": "Physical Training Instructor",
+      "133": "WIT",
+      "134": "DT",
+      "135": "ECT",
+      "136": "Non-Gov’t",
+      "137": "Band Master",
+      "138": "Subject Specialist",
+      "139": "Information Technology Teacher",
+      "140": "Junior English Teacher (General)",
+      "141": "Junior English Teacher (Technical)",
+      "142": "Elementary School Teacher",
+      "143": "Lab Incharge (Information Technology)",
+      "144": "Library Assistant",
+      "145": "Superintendent",
+      "146": "Junior Elementary School Teacher",
+      "147": "Junior Vernacular Teacher",
+      "148": "Office Assistant",
+      "149": "Water Carrier",
+      "150": "Computer Operator",
+      "151": "Lab Superintendent",
+      "152": "Lab Supervisor",
+      "153": "Governess",
+      "154": "Lab Assistant (Information Technology)",
+      "155": "Senior Librarian",
+      "156": "Subject Specialist",
+      "157": "Junior English Teacher",
+      "158": "Lab Incharge (Computer)",
+      "159": "Others",
+    }
+    
+    const summary: TeachingNonTeachingDesignationSummary = {
+      TotalNumberofRows: data.length,
+      bygender: {},
+      bystaff: {},
+      bydesignation: {},
+    }
+
+
+    data.forEach((TeachingNonTeaching_Designation) => {
+
+      // Count by Gender_Id with proper mapping
+      const genderId = String(TeachingNonTeaching_Designation.Gender_Id || TeachingNonTeaching_Designation.Gender_Id || "Unknown")
+      const genderlabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.bygender[genderlabel] = (summary.bygender[genderlabel] || 0) + 1
+
+      // Count by Staff_Id with proper mapping
+      const staffId = String(TeachingNonTeaching_Designation.Staff_Id || TeachingNonTeaching_Designation.Staff_Id || "Unknown")
+      const stafflabel = StaffMappings[staffId] || `Unknown Staff Id (${staffId})`
+      summary.bystaff[stafflabel] = (summary.bystaff[stafflabel] || 0) + 1
+
+      // Count by Designation_Id with proper mapping
+      const designationId = String(TeachingNonTeaching_Designation.Designation_Id || TeachingNonTeaching_Designation.Designation_Id || "Unknown")
+      const designationlabel = designationMappings[designationId] || `Unknown Designation Id (${designationId})`
+      summary.bydesignation[designationlabel] = (summary.bydesignation[designationlabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Teachers Professional Qualification data for preview
+  const analyzeteachersprofessionalqualification = (data: any[]): TeachersProfessionalQualificationSummary => {
+
+    // Gender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Boys Institution",
+      "2": "Girls Institution",
+      "3": "Mix Institution",
+    }
+
+    // Shift ID mappings
+    const ShiftMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Morning",
+      "2": "Evening",
+      "3": "Both",
+    }
+
+    // TeacherProfessionalQualification ID mappings
+    const professionalqualificationMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "P.T.C",
+      "2": "C.T",
+      "3": "B.Ed.",
+      "4": "M.ED",
+      "5": "Un-Trained",
+      "6": "B.S.Ed.",
+      "7": "MS Ed.",
+      "8": "M. Phil Education",
+      "9": "DM/DIE/JDPE/SDPE/MPE",
+      "10": "Arabic",
+      "11": "ECE",
+      "12": "ADE",
+      "13": "PTAC",
+      "14": "Physical Diploma",
+      "15": "Others",
+    }
+    
+    const summary: TeachersProfessionalQualificationSummary = {
+      TotalNumberofRows: data.length,
+      bygender: {},
+      byshift: {},
+      byprofessionalqualification: {},
+    }
+
+
+    data.forEach((Teachers_ProfessionalQualification) => {
+
+      // Count by Gender_Id with proper mapping
+      const genderId = String(Teachers_ProfessionalQualification.Gender_Id || Teachers_ProfessionalQualification.Gender_Id || "Unknown")
+      const genderlabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.bygender[genderlabel] = (summary.bygender[genderlabel] || 0) + 1
+
+      // Count by Shift_Id with proper mapping
+      const shiftId = String(Teachers_ProfessionalQualification.Shift_Id || Teachers_ProfessionalQualification.Shift_Id || "Unknown")
+      const shiftlabel = ShiftMappings[shiftId] || `Unknown Shift Id (${shiftId})`
+      summary.byshift[shiftlabel] = (summary.byshift[shiftlabel] || 0) + 1
+
+      // Count by ProfessionalQualification_Id with proper mapping
+      const professionalqualificationId = String(Teachers_ProfessionalQualification.ProfessionalQualification_Id || Teachers_ProfessionalQualification.ProfessionalQualification_Id || "Unknown")
+      const professionalqualificationlabel = professionalqualificationMappings[professionalqualificationId] || `Unknown Professional Qualification Id (${professionalqualificationId})`
+      summary.byprofessionalqualification[professionalqualificationlabel] = (summary.byprofessionalqualification[professionalqualificationlabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Teachers Academic Qualification data for preview
+  const analyzeteachersacademicqualificationData = (data: any[]): TeachersAcademicQualificationSummary => {
+
+    // TeacherAcademicQualification ID mappings
+    const academicqualificationMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Middle",
+      "2": "Matric",
+      "3": "F.A / F.Sc.",
+      "4": "B.A / B.Sc.",
+      "5": "M.A / M.Sc.",
+      "6": "M.Phil.",
+      "7": "Ph.D.",
+      "8": "BCS/MCS/BIT/MIT",
+      "9": "MBBS/ BDS",
+      "10": "MBA",
+      "11": "FCPS/FRCP/MRCP/MCPS",
+      "12": "M.D",
+      "13": "B. Com",
+      "14": "M.Com",
+      "15": "Others",
+    }
+
+    // Gender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Boys Institution",
+      "2": "Girls Institution",
+      "3": "Mix Institution",
+    }
+
+    // Shift ID mappings
+    const ShiftMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Morning",
+      "2": "Evening",
+      "3": "Both",
+    }
+    
+    const summary: TeachersAcademicQualificationSummary = {
+      TotalNumberofRows: data.length,
+      byacademicqualification: {},
+      bygender: {},
+      byshift: {},
+    }
+
+
+    data.forEach((Teachers_AcademicQualification) => {
+
+      // Count by AcademicQualification_Id with proper mapping
+      const AcademicQualificationId = String(Teachers_AcademicQualification.AcademicQualification_Id || Teachers_AcademicQualification.AcademicQualification_Id || "Unknown")
+      const AcademicQualificationalabel = academicqualificationMappings[AcademicQualificationId] || `Unknown Academic Qualification Id (${AcademicQualificationId})`
+      summary.byacademicqualification[AcademicQualificationalabel] = (summary.byacademicqualification[AcademicQualificationalabel] || 0) + 1
+
+      // Count by Gender_Id with proper mapping
+      const genderId = String(Teachers_AcademicQualification.Gender_Id || Teachers_AcademicQualification.Gender_Id || "Unknown")
+      const genderlabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.bygender[genderlabel] = (summary.bygender[genderlabel] || 0) + 1
+
+      // Count by Shift_Id with proper mapping
+      const shiftId = String(Teachers_AcademicQualification.Shift_Id || Teachers_AcademicQualification.Shift_Id || "Unknown")
+      const shiftlabel = ShiftMappings[shiftId] || `Unknown Shift Id (${shiftId})`
+      summary.byshift[shiftlabel] = (summary.byshift[shiftlabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze ECE_Facilities data for preview
+  const analyzeecefacilitiesData = (data: any[]): ECEFacilitiesSummary => {
+
+    // Other Facilities ID mappings
+    const otherfacilitesMapping: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Yes",
+      "2": "No",
+    }
+    
+    const summary: ECEFacilitiesSummary = {
+      TotalNumberofRows: data.length,
+      byeceroomsavailable: {},
+      byecetrainedteacheravailable: {},
+      byecematerialavailable: {},
+      byecefurnitureavailable: {},
+    }
+
+
+    data.forEach((ECE_Facilities) => {
+
+      // Count by ECErooms_Available with proper mapping
+      const eceroomsavailableId = String(ECE_Facilities.ECErooms_Available || ECE_Facilities.ECErooms_Available || "Unknown")
+      const eceroomsavailablelabel = otherfacilitesMapping[eceroomsavailableId] || `Unknown Id (${eceroomsavailableId})`
+      summary.byeceroomsavailable[eceroomsavailablelabel] = (summary.byeceroomsavailable[eceroomsavailablelabel] || 0) + 1
+
+      // Count by ECETrainedTeacher_Available with proper mapping
+      const ecetrainedteacherId = String(ECE_Facilities.ECETrainedTeacher_Available || ECE_Facilities.ECETrainedTeacher_Available || "Unknown")
+      const ecetrainedteacherlabel = otherfacilitesMapping[ecetrainedteacherId] || `Unknown Id (${ecetrainedteacherId})`
+      summary.byecetrainedteacheravailable[ecetrainedteacherlabel] = (summary.byecetrainedteacheravailable[ecetrainedteacherlabel] || 0) + 1
+
+      // Count by ECEMaterial_Available with proper mapping
+      const ecematerialId = String(ECE_Facilities.ECEMaterial_Available || ECE_Facilities.ECEMaterial_Available || "Unknown")
+      const ecemateriallabel = otherfacilitesMapping[ecematerialId] || `Unknown Id (${ecematerialId})`
+      summary.byecematerialavailable[ecemateriallabel] = (summary.byecematerialavailable[ecemateriallabel] || 0) + 1
+
+      // Count by ECEFurniture_Available with proper mapping
+      const ecefurnitureId = String(ECE_Facilities.ECEFurniture_Available || ECE_Facilities.ECEFurniture_Available || "Unknown")
+      const ecefurniturelabel = otherfacilitesMapping[ecefurnitureId] || `Unknown Id (${ecefurnitureId})`
+      summary.byecefurnitureavailable[ecefurniturelabel] = (summary.byecefurnitureavailable[ecefurniturelabel] || 0) + 1
+    })
+
+    return summary
+  }
+
+  // Analyze Student Profile data for preview
+  const analyzestudentprofileData = (data: any[]): StudentProfileSummary => {
+
+    // Gender ID mappings
+    const genderMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Boys",
+      "2": "Girls",
+      "3": "Transgender",
+    }
+
+    // Class ID mappings
+    const classMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "101": "Unadmitted",
+      "102": "Kinder Garden (KG)/Montessori",
+      "103": "Nursery Class",
+      "104": "Prep/ Kachi",
+      "105": "ECE",
+      "201": "Class 1",
+      "202": "Class 2",
+      "203": "Class 3",
+      "204": "Class 4",
+      "205": "Class 5",
+      "301": "Class 6",
+      "302": "Class 7",
+      "303": "Class 8",
+      "401": "Class 9 Science Group",
+      "402": "Class 9 Arts Group",
+      "403": "Class 9 Technical Stream",
+      "404": "Class 10 Science Group",
+      "405": "Class 10 Arts Group",
+      "406": "Class 10 Technical Stream",
+      "407": "Class 9 Computer Science",
+      "408": "Class 10 Computer Science",
+      "409": "Class 9 ",
+      "410": "Class 10 ",
+      "411": "O Level 1",
+      "412": "O Level 2",
+      "501": "Class 11 Science Group",
+      "502": "Class 11 Arts Group",
+      "503": "Class 12 Science Group",
+      "504": "Class 12 Arts Group",
+      "505": "Class 11 Computer Science ",
+      "506": "Class 11 General Science",
+      "507": "Class 11 Commerce Group",
+      "508": "Class 12 Computer Science",
+      "509": "Class 12 General Science",
+      "510": "Class 12 Commerce Group",
+      "511": "Class 11",
+      "512": "Class 12",
+      "513": "A Level 1",
+      "514": "A Level 2",
+      "515": "Class 11 Premedical",
+      "516": "Class 12 Premedical",
+      "517": "Class 11 Pre_Engineering",
+      "518": "Class 12 Pre_Engineering",
+      "601": "Class 13 Science Group",
+      "602": "Class 13 Arts Group",
+      "603": "Class 14 Science Group",
+      "604": "Class 14 Arts Group",
+      "605": "B.A. Hon.1",
+      "606": "B.A. Hon.2",
+      "607": "B.A. Hon.3",
+      "608": "B.Sc. Hon.1",
+      "609": "B.Sc. Hon.2",
+      "610": "B.Sc. Hon.3",
+      "611": "Class 13",
+      "612": "Class 14",
+      "613": "B.A. Hon.4",
+      "614": "Class 13 Commerce",
+      "615": "Class 14 Commerce",
+      "616": "Class 13 Computer Science",
+      "617": "Class 14 Computer Science",
+      "618": "Class 13 General Science",
+      "619": "Class 14 General Science",
+      "620": "B.Sc. Hon. 4",
+      "621": "B. Ed",
+      "622": "Die 1St Term",
+      "623": "Die 2Nd Term",
+      "624": "B. Ed. (Part 1)",
+      "625": "B. Ed. (Part 2)",
+      "626": "Bs. Ed",
+      "627": "Bed (Hons)",
+      "628": "ADE",
+      "701": "M.A. 1",
+      "702": "M.Sc. 1",
+      "703": "M.A. 2",
+      "704": "M.Sc. 2",
+      "705": "Mcs 1",
+      "706": "Mcs 2",
+      "707": "Class 15 English",
+      "708": "Class 15 Geography",
+      "709": "Class 15 Mathematics",
+      "710": "Class 15 Mass Communication",
+      "711": "Class 15 Applied Psychology",
+      "712": "Class 15 Islamiyat",
+      "713": "Class 15 Urdu",
+      "714": "Class 15 Economics",
+      "715": "Class 15 Home Economics",
+      "716": "Class 16 English",
+      "717": "Class 16 Geography",
+      "718": "Class 16 Mathematics",
+      "719": "Class 16 Mass Communication",
+      "720": "Class 16 Applied Psychology",
+      "721": "Class 16 Islamiyat",
+      "722": "Class 16 Urdu",
+      "723": "Class 16 Economics",
+      "724": "Class 16 Home Economics",
+      "725": "M. Ed",
+      "726": "Class 15",
+      "727": "Class 16",
+      "728": "BS (YEAR 1)",
+      "729": "BS (YEAR 2)",
+      "730": "BS (YEAR 3)",
+      "731": "BS (YEAR 4)",
+      "801": "M.Phil.",
+      "901": "Ph.D.",
+      "902": "Playgroup",
+      "1001": "Ihc Courses",
+      "1005": "سال اول",
+      "1006": "سال دوم",
+      "1007": "سال سوم",
+      "1008": "سال چہارم",
+      "1009": "سال پنجم",
+      "1010": "حفظِ قرآن",
+      "1011": "تجوید و قراءت",
+    }
+
+    // Student Status ID mappings
+    const StudentStatusMappings: { [key: string]: string } = {
+      "0":"Not Reported",
+      "1":"Promoted",
+      "2":"Repeater",
+      "3":"Transferred",
+      "4":"Drop-Out",
+    }
+
+    // Teacher Difficulty Type ID mappings
+    const difficultytypeMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Seeing, even when wearing glasses",
+      "2": "Hearing, even if using a hearing aid",
+      "3": "Walking or climbing steps",
+      "4": "Remembering or concentrating",
+      "5": "Hands & Arms",
+      "6": "Speech",
+    }
+
+    // Teacher Difficulty Category ID mappings
+    const difficultycategoryMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "No Difficulty",
+      "2": "Some difficulty",
+      "3": "Lot of difficulty",
+      "4": "Cannot do at all",
+    }
+
+    // Religion ID mappings
+    const religionMappings: { [key: string]: string } = {
+      "0":"Not Reported",
+      "1":"Muslim",
+      "2":"Christians",
+      "3":"Hindu",
+      "4":"Qadiani / Ahmadi",
+      "5":"Scheduled Cast",
+      "6":"Sikh",
+      "7":"Parsi",
+      "8":"Others",
+    }
+
+    // Nationality ID mappings
+    const nationalityMappings: { [key: string]: string } = {
+      "0":"Not Reported",
+      "1":"Pakistani",
+      "2":"Afghani",
+      "3":"Bangali",
+      "4":"Chinese",
+      "5":"Irani",
+      "6":"Others",
+    }
+
+    // Shift ID mappings
+    const ShiftMappings: { [key: string]: string } = {
+      "0": "Not Reported",
+      "1": "Morning",
+      "2": "Evening",
+      "3": "Both",
+    }
+    
+    const summary: StudentProfileSummary = {
+      TotalNumberofRows: data.length,
+      bygender: {},
+      byclass: {},
+      bystudentstatus: {},
+      bydifficultyType: {},
+      bydifficultyCategory: {},
+      byreligion: {},
+      bynationality: {},
+      byshift: {},
+    }
+
+
+    data.forEach((Student_Profile) => {
+
+      // Count by Gender_Id with proper mapping
+      const genderId = String(Student_Profile.Gender_Id || Student_Profile.Gender_Id || "Unknown")
+      const genderlabel = genderMappings[genderId] || `Unknown Gender Id (${genderId})`
+      summary.bygender[genderlabel] = (summary.bygender[genderlabel] || 0) + 1
+
+      // Count by Class_Id with proper mapping
+      const classId = String(Student_Profile.Class_Id || Student_Profile.Class_Id || "Unknown")
+      const classlabel = classMappings[classId] || `Unknown Class Id (${classId})`
+      summary.byclass[classlabel] = (summary.byclass[classlabel] || 0) + 1
+
+      // Count by StudentStatus_Id with proper mapping
+      const studentstatusId = String(Student_Profile.StudentStatus_Id || Student_Profile.StudentStatus_Id || "Unknown")
+      const studentstatuslabel = StudentStatusMappings[studentstatusId] || `Unknown Student Status Id (${studentstatusId})`
+      summary.bystudentstatus[studentstatuslabel] = (summary.bystudentstatus[studentstatuslabel] || 0) + 1
+
+      // Count by DifficultyType_Id with proper mapping
+      const difficultytypeId = String(Student_Profile.DifficultyType_Id || Student_Profile.DifficultyType_Id || "Unknown")
+      const difficultytypelabel = difficultytypeMappings[difficultytypeId] || `Unknown Difficulty Type Id (${difficultytypeId})`
+      summary.bydifficultyType[difficultytypelabel] = (summary.bydifficultyType[difficultytypelabel] || 0) + 1
+
+      // Count by DifficultyCategory_Id with proper mapping
+      const difficultycategoryId = String(Student_Profile.DifficultyCategory_Id || Student_Profile.DifficultyCategory_Id || "Unknown")
+      const difficultycategorylabel = difficultycategoryMappings[difficultycategoryId] || `Unknown Difficulty Category Id (${difficultycategoryId})`
+      summary.bydifficultyCategory[difficultycategorylabel] = (summary.bydifficultyCategory[difficultycategorylabel] || 0) + 1
+
+      // Count by Religion_Id with proper mapping
+      const religionId = String(Student_Profile.Religion_Id || Student_Profile.Religion_Id || "Unknown")
+      const religionlabel = religionMappings[religionId] || `Unknown Religion Id (${religionId})`
+      summary.byreligion[religionlabel] = (summary.byreligion[religionlabel] || 0) + 1
+
+      // Count by Nationality_Id with proper mapping
+      const nationalityId = String(Student_Profile.Nationality_Id || Student_Profile.Nationality_Id || "Unknown")
+      const nationalitylabel = nationalityMappings[nationalityId] || `Unknown Nationality Id (${nationalityId})`
+      summary.bynationality[nationalitylabel] = (summary.bynationality[nationalitylabel] || 0) + 1
+
+      // Count by Shift_Id with proper mapping
+      const shiftId = String(Student_Profile.Shift_Id || Student_Profile.Shift_Id || "Unknown")
+      const shiftlabel = ShiftMappings[shiftId] || `Unknown Shift Id (${shiftId})`
+      summary.byshift[shiftlabel] = (summary.byshift[shiftlabel] || 0) + 1
     })
 
     return summary
@@ -1448,8 +3713,104 @@ export default function TableUploadTracker({
 
       // If it's Institution_Attack table, analyze the data
       if (tableName === "Institution_Attack") {
-        const summary = analyzeinstitutionattackdata(jsonData[tableName])
+        const summary = analyzeinstitutionattackData(jsonData[tableName])
         setInstitutionattackSummary(summary)
+      }
+
+      // If it's Institution_Security table, analyze the data
+      if (tableName === "Institution_Security") {
+        const summary = analyzeinstitutionsecurityData(jsonData[tableName])
+        setInstitutionSecuritySummary(summary)
+      }
+
+      // If it's NonTeachers_Profile table, analyze the data
+      if (tableName === "NonTeachers_Profile") {
+        const summary = analyzenonteachersprofileData(jsonData[tableName])
+        setnonteachersProfileSummary(summary)
+      }
+
+      // If it's Institutions_OtherFacilities table, analyze the data
+      if (tableName === "Institutions_OtherFacilities") {
+        const summary = analyzeinstitutionOtherfacillitiesData(jsonData[tableName])
+        setInstitutionsOtherFacilitiesSummary(summary)
+      }
+
+      // If it's Enrolment_ECEExperience table, analyze the data
+      if (tableName === "Enrolment_ECEExperience") {
+        const summary = analyzeenrolECEexperienceData(jsonData[tableName])
+        setEnrolmentECEExperienceSummary(summary)
+      }
+
+      // If it's Enrolment_Refugee table, analyze the data
+      if (tableName === "Enrolment_Refugee") {
+        const summary = analyzeenrolmentrefugeeData(jsonData[tableName])
+        setEnrolmentRefugeeSummary(summary)
+      }
+
+      // If it's Enrolment_Religion table, analyze the data
+      if (tableName === "Enrolment_Religion") {
+        const summary = analyzeenrolmentreligionData(jsonData[tableName])
+        setEnrolmentReligionSummary(summary)
+      }
+
+      // If it's Enrolment_Difficulty table, analyze the data
+      if (tableName === "Enrolment_Difficulty") {
+        const summary = analyzeenrolmentdifficultyData(jsonData[tableName])
+        setEnrolmentDifficultySummary(summary)
+      }
+
+      // If it's Corporal_Punishment table, analyze the data
+      if (tableName === "Corporal_Punishment") {
+        const summary = analyzecorporalpunishmentData(jsonData[tableName])
+        setCorporalPunishmentSummary(summary)
+      }
+
+      // If it's Building table, analyze the data
+      if (tableName === "Building") {
+        const summary = analyzebuildingData(jsonData[tableName])
+        setBuildingSummary(summary)
+      }
+
+      // If it's Repeater table, analyze the data
+      if (tableName === "Repeater") {
+        const summary = analyzerepeaterData(jsonData[tableName])
+        setRepeaterSummary(summary)
+      }
+
+      // If it's TeachingNonTeaching_Designation table, analyze the data
+      if (tableName === "TeachingNonTeaching_Designation") {
+        const summary = analyzeteachingnonteachingdesignationData(jsonData[tableName])
+        setTeachingNonTeachingDesignationSummary(summary)
+      }
+
+      // If it's TeachingNonTeaching_Category table, analyze the data
+      if (tableName === "TeachingNonTeaching_Category") {
+        const summary = analyzeteachingnonteachingcategoryData(jsonData[tableName])
+        setTeachingNonTeachingCategorySummary(summary)
+      }
+
+      // If it's Teachers_ProfessionalQualification table, analyze the data
+      if (tableName === "Teachers_ProfessionalQualification") {
+        const summary = analyzeteachersprofessionalqualification(jsonData[tableName])
+        setTeachersProfessionalQualificationSummary(summary)
+      }
+
+      // If it's Teachers_AcademicQualification table, analyze the data
+      if (tableName === "Teachers_AcademicQualification") {
+        const summary = analyzeteachersacademicqualificationData(jsonData[tableName])
+        setTeachersAcademicQualificationSummary(summary)
+      }
+
+      // If it's ECE_Facilities table, analyze the data
+      if (tableName === "ECE_Facilities") {
+        const summary = analyzeecefacilitiesData(jsonData[tableName])
+        setECEFacilitiesSummary(summary)
+      }
+
+      // If it's Student_Profile table, analyze the data
+      if (tableName === "Student_Profile") {
+        const summary = analyzestudentprofileData(jsonData[tableName])
+        setStudentProfileSummary(summary)
       }
 
       // Close upload dialog and show preview dialog
@@ -1546,6 +3907,23 @@ export default function TableUploadTracker({
       setFacilitiesSummary(null)
       setictfacilitiesSummary(null)
       setInstitutionattackSummary(null)
+      setInstitutionSecuritySummary(null)
+      setnonteachersProfileSummary(null)
+      setInstitutionsOtherFacilitiesSummary(null)
+      setEnrolmentECEExperienceSummary(null)
+      setEnrolmentRefugeeSummary(null)
+      setEnrolmentReligionSummary(null)
+      setEnrolmentDifficultySummary(null)
+      setCorporalPunishmentSummary(null)
+      setBuildingSummary(null)
+      setRepeaterSummary(null)
+      setTeachingNonTeachingCategorySummary(null)
+      setTeachingNonTeachingDesignationSummary(null)
+      setTeachersProfessionalQualificationSummary(null)
+      setTeachersAcademicQualificationSummary(null)
+      setECEFacilitiesSummary(null)
+      setStudentProfileSummary(null)
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Upload failed";
       setUploadError(errorMessage);
@@ -1578,6 +3956,22 @@ export default function TableUploadTracker({
     setFacilitiesSummary(null)
     setictfacilitiesSummary(null)
     setInstitutionattackSummary(null)
+    setInstitutionSecuritySummary(null)
+    setnonteachersProfileSummary(null)
+    setInstitutionsOtherFacilitiesSummary(null)
+    setEnrolmentECEExperienceSummary(null)
+    setEnrolmentRefugeeSummary(null)
+    setEnrolmentReligionSummary(null)
+    setEnrolmentDifficultySummary(null)
+    setCorporalPunishmentSummary(null)
+    setBuildingSummary(null)
+    setRepeaterSummary(null)
+    setTeachingNonTeachingCategorySummary(null)
+    setTeachingNonTeachingDesignationSummary(null)
+    setTeachersProfessionalQualificationSummary(null)
+    setTeachersAcademicQualificationSummary(null)
+    setECEFacilitiesSummary(null)
+    setStudentProfileSummary(null)
     setUploadError("")
   }
 
@@ -4565,8 +6959,8 @@ export default function TableUploadTracker({
               </div>
             )}
 
-            {/* Generic summary for other tables */}
-            {selectedTable !== "Institutions" && "Teachers_Profile" && "EnrolAgeWise" && "Facilities" && "ICT_Facilities" && "Institution_Attack" && parsedJsonData && selectedTable && (
+            {/* summary for tables */}
+            {selectedTable !== "Institutions" && "Teachers_Profile" && "EnrolAgeWise" && "Facilities" && "ICT_Facilities" && "Institution_Attack" && "Institution_Security" && "Non_Teachers_Profile" && "Institutions_OtherFacilities" && "Enrolment_ECEExperience" && "Enrolment_Refugee" && "Enrolment_Religion" && "Enrolment_Difficulty" && "Corporal_Punishment" && "Rooms" && "Building" && "Repeaters" && "TeachingNonTeaching_Category" && "TeachingNonTeaching_Designation" && "Teachers_ProfessionalQualification" && "Teachers_AcademicQualification" && "ECE_Facilities" && "Sanctioned_Teaching_Non_Teaching" && "Student_Profile" && parsedJsonData && selectedTable && (
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium text-gray-900 mb-2">Data Summary</h3>
                 <p className="text-sm text-gray-700">
