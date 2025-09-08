@@ -323,6 +323,30 @@ const teachersAcademicQualificationhasUnknowns = hasUnknowns(TeachersAcademicQua
 const ecefacilitiesshasUnknowns = hasUnknowns(ECEFacilitiesSummary);
 const studentProfilehasUnknowns = hasUnknowns(StudentProfileSummary);
 
+const hasAnyUnknowns =
+  institutionshasUnknowns ||
+  teachersProfilehasUnknowns ||
+  enrolAgeWisehasUnknowns ||
+  facilitiesshasUnknowns ||
+  ictfacilitiesshasUnknowns ||
+  institutionattackshasUnknowns ||
+  institutionSecurityshasUnknowns ||
+  nonteachersProfilehasUnknowns ||
+  institutionsOtherFacilitiesshasUnknowns ||
+  enrolmentECEExperiencehasUnknowns ||
+  enrolmentRefugeehasUnknowns ||
+  enrolmentReligionhasUnknowns ||
+  enrolmentDifficultyhasUnknowns ||
+  corporalPunishmenthasUnknowns ||
+  buildinghasUnknowns ||
+  repeaterhasUnknowns ||
+  teachingNonTeachingCategoryhasUnknowns ||
+  teachingNonTeachingDesignationhasUnknowns ||
+  teachersProfessionalQualificationhasUnknowns ||
+  teachersAcademicQualificationhasUnknowns ||
+  ecefacilitiesshasUnknowns ||
+  studentProfilehasUnknowns;
+
   const tables = getTablesList()
   const [currentYear, setCurrentYear] = useState("")
 
@@ -10613,7 +10637,7 @@ const studentProfilehasUnknowns = hasUnknowns(StudentProfileSummary);
   <div className="flex flex-col items-end">
     <Button
       onClick={handleConfirmedUpload}
-      disabled={uploading || institutionshasUnknowns || teachersProfilehasUnknowns || enrolAgeWisehasUnknowns || facilitiesshasUnknowns || ictfacilitiesshasUnknowns || institutionattackshasUnknowns || institutionSecurityshasUnknowns || nonteachersProfilehasUnknowns || institutionsOtherFacilitiesshasUnknowns || enrolmentECEExperiencehasUnknowns || enrolmentRefugeehasUnknowns || enrolmentReligionhasUnknowns || enrolmentDifficultyhasUnknowns || corporalPunishmenthasUnknowns || buildinghasUnknowns || repeaterhasUnknowns || teachingNonTeachingCategoryhasUnknowns || teachingNonTeachingDesignationhasUnknowns || teachersProfessionalQualificationhasUnknowns || teachersAcademicQualificationhasUnknowns || ecefacilitiesshasUnknowns || studentProfilehasUnknowns } // disabled if uploading OR Unknowns exist
+      disabled={uploading || hasAnyUnknowns } // disabled if uploading OR Unknowns exist
       className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {uploading ? (
@@ -10629,7 +10653,7 @@ const studentProfilehasUnknowns = hasUnknowns(StudentProfileSummary);
       )}
     </Button>
 
-    {(institutionshasUnknowns || teachersProfilehasUnknowns || enrolAgeWisehasUnknowns || facilitiesshasUnknowns || ictfacilitiesshasUnknowns || institutionattackshasUnknowns || institutionSecurityshasUnknowns || nonteachersProfilehasUnknowns || institutionsOtherFacilitiesshasUnknowns || enrolmentECEExperiencehasUnknowns || enrolmentRefugeehasUnknowns || enrolmentReligionhasUnknowns || enrolmentDifficultyhasUnknowns || corporalPunishmenthasUnknowns || buildinghasUnknowns || repeaterhasUnknowns || teachingNonTeachingCategoryhasUnknowns || teachingNonTeachingDesignationhasUnknowns || teachersProfessionalQualificationhasUnknowns || teachersAcademicQualificationhasUnknowns || ecefacilitiesshasUnknowns || studentProfilehasUnknowns) && !uploading && (
+    {hasAnyUnknowns && !uploading && (
       <p className="text-sm text-red-600 mt-2">
         ⚠ Please resolve all <strong>Unknown</strong> values in the data before uploading.
       </p>
