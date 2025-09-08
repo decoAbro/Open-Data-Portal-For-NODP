@@ -286,12 +286,51 @@ export default function TableUploadTracker({
   const summaryRef = useRef<HTMLDivElement>(null)
   const pdfMetaRef = useRef<HTMLDivElement>(null)
 
+  // Utility: checks if any "Unknown" exists in summary objects
+const hasUnknowns = (summary: any): boolean => {
+  if (!summary) return false;
+  return Object.values(summary).some((group: any) => {
+    if (typeof group === "object" && group !== null) {
+      return Object.keys(group).some(
+        (key) => key.toLowerCase().includes("unknown")
+      );
+    }
+    return false;
+  });
+};
+
+
+const institutionshasUnknowns = hasUnknowns(institutionSummary);
+const teachersProfilehasUnknowns = hasUnknowns(TeachersProfileSummary);
+const enrolAgeWisehasUnknowns = hasUnknowns(EnrolAgeWiseSummary);
+const facilitiesshasUnknowns = hasUnknowns(FacilitiesSummary);
+const ictfacilitiesshasUnknowns = hasUnknowns(ictfacilitiesSummary);
+const institutionattackshasUnknowns = hasUnknowns(InstitutionattackSummary);
+const institutionSecurityshasUnknowns = hasUnknowns(InstitutionSecuritySummary);
+const nonteachersProfilehasUnknowns = hasUnknowns(nonteachersProfileSummary);
+const institutionsOtherFacilitiesshasUnknowns = hasUnknowns(InstitutionsOtherFacilitiesSummary);
+const enrolmentECEExperiencehasUnknowns = hasUnknowns(EnrolmentECEExperienceSummary);
+const enrolmentRefugeehasUnknowns = hasUnknowns(EnrolmentRefugeeSummary);
+const enrolmentReligionhasUnknowns = hasUnknowns(EnrolmentReligionSummary);
+const enrolmentDifficultyhasUnknowns = hasUnknowns(EnrolmentDifficultySummary);
+const corporalPunishmenthasUnknowns = hasUnknowns(CorporalPunishmentSummary);
+const buildinghasUnknowns = hasUnknowns(BuildingSummary);
+const repeaterhasUnknowns = hasUnknowns(RepeaterSummary);
+const teachingNonTeachingCategoryhasUnknowns = hasUnknowns(TeachingNonTeachingCategorySummary);
+const teachingNonTeachingDesignationhasUnknowns = hasUnknowns(TeachingNonTeachingDesignationSummary);
+const teachersProfessionalQualificationhasUnknowns = hasUnknowns(TeachersProfessionalQualificationSummary);
+const teachersAcademicQualificationhasUnknowns = hasUnknowns(TeachersAcademicQualificationSummary);
+const ecefacilitiesshasUnknowns = hasUnknowns(ECEFacilitiesSummary);
+const studentProfilehasUnknowns = hasUnknowns(StudentProfileSummary);
+
   const tables = getTablesList()
   const [currentYear, setCurrentYear] = useState("")
 
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+
 
   // Initial setup
   useEffect(() => {
@@ -10566,24 +10605,38 @@ export default function TableUploadTracker({
             )}
 
             {/* Action buttons */}
-            <div className="flex justify-end space-x-3 pt-4 border-t">
-              <Button variant="outline" onClick={handleUploadRejection} disabled={uploading}>
-                Cancel & Select Different File
-              </Button>
-              <Button onClick={handleConfirmedUpload} disabled={uploading} className="bg-green-600 hover:bg-green-700">
-                {uploading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Uploading...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Confirm & Upload Data
-                  </>
-                )}
-              </Button>
-            </div>
+<div className="flex justify-end space-x-3 pt-4 border-t">
+  <Button variant="outline" onClick={handleUploadRejection} disabled={uploading}>
+    Cancel & Select Different File
+  </Button>
+
+  <div className="flex flex-col items-end">
+    <Button
+      onClick={handleConfirmedUpload}
+      disabled={uploading || institutionshasUnknowns || teachersProfilehasUnknowns || enrolAgeWisehasUnknowns || facilitiesshasUnknowns || ictfacilitiesshasUnknowns || institutionattackshasUnknowns || institutionSecurityshasUnknowns || nonteachersProfilehasUnknowns || institutionsOtherFacilitiesshasUnknowns || enrolmentECEExperiencehasUnknowns || enrolmentRefugeehasUnknowns || enrolmentReligionhasUnknowns || enrolmentDifficultyhasUnknowns || corporalPunishmenthasUnknowns || buildinghasUnknowns || repeaterhasUnknowns || teachingNonTeachingCategoryhasUnknowns || teachingNonTeachingDesignationhasUnknowns || teachersProfessionalQualificationhasUnknowns || teachersAcademicQualificationhasUnknowns || ecefacilitiesshasUnknowns || studentProfilehasUnknowns } // disabled if uploading OR Unknowns exist
+      className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {uploading ? (
+        <>
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+          Uploading...
+        </>
+      ) : (
+        <>
+          <CheckCircle className="h-4 w-4 mr-2" />
+          Confirm & Upload Data
+        </>
+      )}
+    </Button>
+
+    {(institutionshasUnknowns || teachersProfilehasUnknowns || enrolAgeWisehasUnknowns || facilitiesshasUnknowns || ictfacilitiesshasUnknowns || institutionattackshasUnknowns || institutionSecurityshasUnknowns || nonteachersProfilehasUnknowns || institutionsOtherFacilitiesshasUnknowns || enrolmentECEExperiencehasUnknowns || enrolmentRefugeehasUnknowns || enrolmentReligionhasUnknowns || enrolmentDifficultyhasUnknowns || corporalPunishmenthasUnknowns || buildinghasUnknowns || repeaterhasUnknowns || teachingNonTeachingCategoryhasUnknowns || teachingNonTeachingDesignationhasUnknowns || teachersProfessionalQualificationhasUnknowns || teachersAcademicQualificationhasUnknowns || ecefacilitiesshasUnknowns || studentProfilehasUnknowns) && !uploading && (
+      <p className="text-sm text-red-600 mt-2">
+        ⚠ Please resolve all <strong>Unknown</strong> values in the data before uploading.
+      </p>
+    )}
+  </div>
+</div>
+
           </div>
         </DialogContent>
       </Dialog>
