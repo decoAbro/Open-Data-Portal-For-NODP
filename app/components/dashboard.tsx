@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
+import UploadHistory from "./upload-history"
 import {
   Upload,
   CheckCircle,
@@ -748,6 +749,10 @@ export default function Dashboard({ userCredentials, onLogout }: DashboardProps)
               <FileJson className="h-4 w-4 mr-2" />
               JSON Converter
             </TabsTrigger>
+            <TabsTrigger value="upload-history" className="flex items-center">
+              <Clock className="h-4 w-4 mr-2" />
+              Upload History
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">
@@ -887,6 +892,10 @@ export default function Dashboard({ userCredentials, onLogout }: DashboardProps)
 
           <TabsContent value="json-converter">
             <JsonConverterContent />
+          </TabsContent>
+
+          <TabsContent value="upload-history">
+            <UploadHistory username={userCredentials.username} />
           </TabsContent>
         </Tabs>
       </div>
