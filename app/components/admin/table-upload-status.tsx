@@ -95,21 +95,21 @@ export default function TableUploadStatus() {
   // Fetch tables list from API
   const tablesRes = await fetch("/api/tables-list")
   const tablesData = await tablesRes.json()
-  const tablesList = tablesData.success ? tablesData.tables : []
-      const uploads = getTableUploads()
-      const dataNotAvailable = JSON.parse(localStorage.getItem("pie-portal-data-not-available") || "[]")
-      const year = getCurrentYear()
+    const tablesList = tablesData.success ? tablesData.tables : []
+    const uploads = getTableUploads()
+    const dataNotAvailable = JSON.parse(localStorage.getItem("pie-portal-data-not-available") || "[]")
+    const year = getCurrentYear()
 
-      // Create upload summary based on API users
-      const summary: Record<string, Record<string, string>> = {}
+    // Create upload summary based on API users
+    const summary: Record<string, Record<string, string>> = {}
 
-      // Initialize summary object with API users
-      apiUsers.forEach((user: User) => {
-        summary[user.username] = {}
-        tablesList.forEach((table) => {
-          summary[user.username][table] = "pending" // Default status
-        })
+    // Initialize summary object with API users
+    apiUsers.forEach((user: User) => {
+      summary[user.username] = {}
+      tablesList.forEach((table: string) => {
+        summary[user.username][table] = "pending" // Default status
       })
+    })
 
       // Fill in uploaded tables from localStorage uploads
       uploads.forEach((upload) => {
