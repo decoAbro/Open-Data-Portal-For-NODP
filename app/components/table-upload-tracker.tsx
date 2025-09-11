@@ -4062,6 +4062,23 @@ const hasAnyUnknowns =
     filteredRecords.push(dataNotAvailableRecord)
     localStorage.setItem("pie-portal-data-not-available", JSON.stringify(filteredRecords))
 
+      // Store in backend database
+      fetch("/api/data-not-available", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(dataNotAvailableRecord)
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to store record in database");
+        // Optionally handle success
+      })
+      .catch(err => {
+        // Optionally handle error (show notification, etc)
+        console.error("Error storing data not available record:", err);
+      });
+
     // Send notification to admin
     const notification = {
       id: Date.now() + 1, // Different ID from the record

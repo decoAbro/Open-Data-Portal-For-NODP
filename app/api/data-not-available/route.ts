@@ -22,9 +22,9 @@ export async function GET(request: NextRequest) {
   let pool: sql.ConnectionPool | null = null
   try {
     pool = await sql.connect(dbConfig)
-    const query = `SELECT id, username, table_name, census_year, status, date_marked FROM data_not_available WHERE username = @username ORDER BY date_marked DESC`
-    const result = await pool.request().input("username", sql.NVarChar, username).query(query)
-    return NextResponse.json({ dataNotAvailable: result.recordset })
+  const query = `SELECT id, username, table_name, census_year, reason, created_at, report_date FROM data_not_available WHERE username = @username ORDER BY created_at DESC`
+  const result = await pool.request().input("username", sql.NVarChar, username).query(query)
+  return NextResponse.json({ dataNotAvailable: result.recordset })
   } catch (error) {
     console.error("Error fetching data-not-available:", error)
     return NextResponse.json({ error: "Failed to fetch data-not-available" }, { status: 500 })
@@ -36,8 +36,8 @@ export async function GET(request: NextRequest) {
 // POST: Mark data-not-available for a user
 export async function POST(request: NextRequest) {
   const body = await request.json()
-  const { username, tableName, censusYear, reason } = body
-  if (!username || !tableName || !censusYear) {
+  const { username, tableName, year, reason } = body
+  if (!username || !tableName || !year) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
   }
   let pool: sql.ConnectionPool | null = null
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     await pool.request()
       .input("username", sql.NVarChar, username)
       .input("tableName", sql.NVarChar, tableName)
-      .input("censusYear", sql.NVarChar, censusYear)
+      .input("censusYear", sql.NVarChar, year)
       .input("reason", sql.NVarChar, reason || "data_not_available")
       .query(query)
     return NextResponse.json({ success: true })
