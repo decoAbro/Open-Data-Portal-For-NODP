@@ -53,7 +53,7 @@ export default function TableUploadStatus() {
   const [previewData, setPreviewData] = useState<any>(null)
   const [previewTableName, setPreviewTableName] = useState<string>("")
   const [previewUsername, setPreviewUsername] = useState<string>("")
-  const [institutionSummary, setInstitutionSummary] = useState<any>(null)
+  // ...existing code...
 
   // Fetch users from the same API endpoint as User Management
   const fetchUsers = async () => {
@@ -367,10 +367,6 @@ export default function TableUploadStatus() {
           tehsil: `Tehsil ${(i % 3) + 1}`,
           census_year: Number.parseInt(currentYear),
         }))
-
-        // Analyze institution data
-        const summary = analyzeInstitutionData(mockData)
-        setInstitutionSummary(summary)
       } else {
         // Generate generic mock data for other tables
         mockData = Array.from({ length: upload.recordCount || 25 }, (_, i) => ({
@@ -768,11 +764,11 @@ export default function TableUploadStatus() {
                             return (
                               <TableCell key={table} className="text-center">
                                 {status === "uploaded" ? (
-                                  <CheckCircle className="h-5 w-5 text-green-500 mx-auto" title="Uploaded" />
+                                  <CheckCircle className="h-5 w-5 text-green-500 mx-auto" />
                                 ) : status === "data_not_available" ? (
-                                  <AlertCircle className="h-5 w-5 text-orange-500 mx-auto" title="Data Not Available" />
+                                  <AlertCircle className="h-5 w-5 text-orange-500 mx-auto" />
                                 ) : (
-                                  <XCircle className="h-5 w-5 text-gray-400 mx-auto" title="Pending" />
+                                  <XCircle className="h-5 w-5 text-gray-400 mx-auto" />
                                 )}
                               </TableCell>
                             )
@@ -926,99 +922,6 @@ export default function TableUploadStatus() {
               </div>
             )}
 
-            {/* Institution-specific summary */}
-            {previewTableName === "Institutions" && institutionSummary && (
-              <div className="space-y-4">
-                <h3 className="font-medium text-gray-900 flex items-center">
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Data Summary
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* By Level */}
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">By Level ID</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {Object.entries(institutionSummary.byLevel).map(([level, count]) => (
-                          <div key={level} className="flex justify-between text-sm">
-                            <span className="text-gray-600">{level}:</span>
-                            <span className="font-medium">{count}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* By Gender */}
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">By Gender</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Boys Institution:</span>
-                          <span className="font-medium">{institutionSummary.byGender.boysInstitution}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Girls Institution:</span>
-                          <span className="font-medium">{institutionSummary.byGender.girlsInstitution}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Mix Institution:</span>
-                          <span className="font-medium">{institutionSummary.byGender.mixInstitution}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Not Reported:</span>
-                          <span className="font-medium">{institutionSummary.byGender.notReported}</span>
-                        </div>
-                        {institutionSummary.byGender.others > 0 && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Others:</span>
-                            <span className="font-medium">{institutionSummary.byGender.others}</span>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* By Location */}
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">By Location ID</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="space-y-2">
-                        {Object.entries(institutionSummary.byLocation).map(([location, count]) => (
-                          <div key={location} className="flex justify-between text-sm">
-                            <span className="text-gray-600">{location}:</span>
-                            <span className="font-medium">{count}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-green-900 mb-2">Summary</h4>
-                  <p className="text-sm text-green-800">
-                    This upload contains <strong>{institutionSummary.totalInstitutions}</strong> institutions. The data
-                    includes {Object.keys(institutionSummary.byLevel).length} different education levels,
-                    {institutionSummary.byGender.boysInstitution +
-                      institutionSummary.byGender.girlsInstitution +
-                      institutionSummary.byGender.mixInstitution +
-                      institutionSummary.byGender.notReported +
-                      institutionSummary.byGender.others}{" "}
-                    institutions by gender distribution, and {Object.keys(institutionSummary.byLocation).length}{" "}
-                    different location types.
-                  </p>
-                </div>
-              </div>
-            )}
 
             {/* Generic summary for other tables */}
             {previewTableName !== "Institutions" && previewData && (
