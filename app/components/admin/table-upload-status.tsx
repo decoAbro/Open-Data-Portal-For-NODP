@@ -92,8 +92,10 @@ export default function TableUploadStatus() {
       // Fetch users from API (same as User Management)
       const apiUsers = await fetchUsers()
 
-      // Get other data from localStorage
-      const tablesList = getTablesList()
+  // Fetch tables list from API
+  const tablesRes = await fetch("/api/tables-list")
+  const tablesData = await tablesRes.json()
+  const tablesList = tablesData.success ? tablesData.tables : []
       const uploads = getTableUploads()
       const dataNotAvailable = JSON.parse(localStorage.getItem("pie-portal-data-not-available") || "[]")
       const year = getCurrentYear()
