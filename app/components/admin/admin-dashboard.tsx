@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import DatabaseDataStatus from "./database-data-status"
 import {
   Clock,
   Upload,
@@ -20,6 +21,7 @@ import {
   Bell,
   RotateCcw,
   AlertTriangle,
+  Database,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -531,6 +533,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <Bell className="h-4 w-4 mr-2" />
                 Notifications
               </TabsTrigger>
+              <TabsTrigger value="database-status" className="flex items-center">
+                <Database className="h-4 w-4 mr-2" />
+                Stage Data Status
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="upload-management">
@@ -710,6 +716,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
             <TabsContent value="notifications">
               <NotificationManagement />
+            </TabsContent>
+
+            <TabsContent value="database-status">
+              <DatabaseDataStatus />
             </TabsContent>
           </Tabs>
         </div>
