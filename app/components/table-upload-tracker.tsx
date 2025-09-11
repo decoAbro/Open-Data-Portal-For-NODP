@@ -378,28 +378,38 @@ const hasAnyUnknowns =
     if (!isClient || !currentYear) return
 
     const loadData = async () => {
-      // Load uploaded tables for this user
-      const userUploads = getTableUploadsByUsername(username)
-      const uploadedTableNames = userUploads
-        .filter((upload) => upload.year === currentYear)
-        .map((upload) => upload.tableName)
-      setUploadedTables(uploadedTableNames)
 
-      // Load data not available tables for this user from backend
-      try {
-        const res = await fetch(`/api/data-not-available?username=${encodeURIComponent(username)}`);
-        if (res.ok) {
-          const json = await res.json();
-          const userDataNotAvailable = (json.dataNotAvailable || [])
-            .filter((record: any) => String(record.census_year) === String(currentYear))
-            .map((record: any) => record.table_name);
-          setDataNotAvailableTables(userDataNotAvailable);
-        } else {
+        // Load uploaded tables for this user from upload history API
+        try {
+          const res = await fetch(`/api/upload-history?username=${encodeURIComponent(username)}`);
+          if (res.ok) {
+            const json = await res.json();
+            const uploadedTableNames = (json.uploadHistory || [])
+              .filter((record: any) => String(record.censusYear) === String(currentYear))
+              .map((record: any) => record.tableName);
+            setUploadedTables(uploadedTableNames);
+          } else {
+            setUploadedTables([]);
+          }
+        } catch (err) {
+          setUploadedTables([]);
+        }
+
+        // Load data not available tables for this user from backend
+        try {
+          const res = await fetch(`/api/data-not-available?username=${encodeURIComponent(username)}`);
+          if (res.ok) {
+            const json = await res.json();
+            const userDataNotAvailable = (json.dataNotAvailable || [])
+              .filter((record: any) => String(record.census_year) === String(currentYear))
+              .map((record: any) => record.table_name);
+            setDataNotAvailableTables(userDataNotAvailable);
+          } else {
+            setDataNotAvailableTables([]);
+          }
+        } catch (err) {
           setDataNotAvailableTables([]);
         }
-      } catch (err) {
-        setDataNotAvailableTables([]);
-      }
 
       // Check upload window status from server
       const windowStatus = await getUploadWindowStatus();
@@ -3927,20 +3937,22 @@ const hasAnyUnknowns =
       const formattedMessage = responseText;
       
       // Record successful upload
-      addTableUploadRecord({
-        username,
-        tableName: selectedTable,
-        filename: selectedFile.name,
-        uploadDate: new Date().toISOString(),
-        fileSize: `${Math.round(selectedFile.size / 1024)} KB`,
-        year: currentYear,
-        status: "success",
-        recordCount: parsedJsonData[selectedTable].length,
-        message: formattedMessage
-      })
 
-      // Update local state
-      setUploadedTables((prev) => [...prev, selectedTable])
+      // Re-fetch uploaded tables from the database (upload history API)
+      try {
+        const res = await fetch(`/api/upload-history?username=${encodeURIComponent(username)}`);
+        if (res.ok) {
+          const json = await res.json();
+          const uploadedTableNames = (json.uploadHistory || [])
+            .filter((record: any) => String(record.censusYear) === String(currentYear))
+            .map((record: any) => record.tableName);
+          setUploadedTables(uploadedTableNames);
+        } else {
+          setUploadedTables([]);
+        }
+      } catch (err) {
+        setUploadedTables([]);
+      }
       
       // Show toast notification with a slight delay to ensure state is updated
       // Store the complete API response, just split into lines for readability
@@ -4126,25 +4138,11 @@ const hasAnyUnknowns =
     const sampleData = {
       [tableName]: [
         {
-          id: 1,
-          census_year: Number.parseInt(currentYear),
-          // Add more sample fields based on table type
-          ...(tableName === "Institutions" && {
-            Inst_Id: "INST001",
-            institution_name: "Sample School",
-            level_Id: 1,
-            gender_Id: 1,
-            location_Id: 1,
-            district: "Sample District",
-            tehsil: "Sample Tehsil",
-          }),
-          ...(tableName === "Teachers_Profile" && {
-            teacher_name: "Sample Teacher",
-            qualification: "Masters",
-            experience_years: 5,
-          }),
-          // Add more table-specific sample fields as needed
+          teacher_name: "Sample Teacher",
+          qualification: "Masters",
+          experience_years: 5,
         },
+        // Add more table-specific sample fields as needed
       ],
     }
 
