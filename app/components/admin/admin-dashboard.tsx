@@ -39,6 +39,7 @@ import {
 } from "../../utils/storage"
 import JsonConverterContent from "../../json-converter/components/json-converter-content"
 import TableUploadStatus from "./table-upload-status"
+import UploadSummaryReport from "./upload-summary-report"
 import NotificationManagement from "./notification-management"
 
 interface AdminDashboardProps {
@@ -529,6 +530,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <Table className="h-4 w-4 mr-2" />
                 Table Uploads
               </TabsTrigger>
+                <TabsTrigger value="upload-summary-report" className="flex items-center">
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Upload Summary Report
+                </TabsTrigger>
               <TabsTrigger value="notifications" className="flex items-center">
                 <Bell className="h-4 w-4 mr-2" />
                 Notifications
@@ -713,6 +718,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             <TabsContent value="table-uploads">
               <TableUploadStatus />
             </TabsContent>
+
+              <TabsContent value="upload-summary-report">
+                <UploadSummaryReport />
+              </TabsContent>
 
             <TabsContent value="notifications">
               <NotificationManagement />
