@@ -385,12 +385,21 @@ const hasAnyUnknowns =
         .map((upload) => upload.tableName)
       setUploadedTables(uploadedTableNames)
 
-      // Load data not available tables for this user
-      const dataNotAvailableRecords = JSON.parse(localStorage.getItem("pie-portal-data-not-available") || "[]")
-      const userDataNotAvailable = dataNotAvailableRecords
-        .filter((record: any) => record.username === username && record.year === currentYear)
-        .map((record: any) => record.tableName)
-      setDataNotAvailableTables(userDataNotAvailable)
+      // Load data not available tables for this user from backend
+      try {
+        const res = await fetch(`/api/data-not-available?username=${encodeURIComponent(username)}`);
+        if (res.ok) {
+          const json = await res.json();
+          const userDataNotAvailable = (json.dataNotAvailable || [])
+            .filter((record: any) => String(record.census_year) === String(currentYear))
+            .map((record: any) => record.table_name);
+          setDataNotAvailableTables(userDataNotAvailable);
+        } else {
+          setDataNotAvailableTables([]);
+        }
+      } catch (err) {
+        setDataNotAvailableTables([]);
+      }
 
       // Check upload window status from server
       const windowStatus = await getUploadWindowStatus();
