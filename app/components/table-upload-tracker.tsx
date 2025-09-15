@@ -3911,7 +3911,7 @@ const hasAnyUnknowns =
     setUploadError("")
 
     try {
-      // Simulate API call to upload data
+      // Existing API call to upload data
       const response = await fetch("/api/upload", {
         method: "POST",
         headers: {
@@ -3925,16 +3925,35 @@ const hasAnyUnknowns =
         }),
       })
 
+      // New API call to save uploaded JSON file to database
+      const dbResponse = await fetch("/api/upload-json", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          filename: selectedFile.name,
+          census_year: currentYear,
+          uploaded_by: username,
+          json_data: parsedJsonData,
+        }),
+      })
+
       if (!response.ok) {
         const errorText = await response.text()
         throw new Error(errorText || "Upload failed")
       }
+      if (!dbResponse.ok) {
+        const errorText = await dbResponse.text()
+        throw new Error(errorText || "Database upload failed")
+      }
 
       // Get the API response message
       const responseText = await response.text();
+      const dbResponseText = await dbResponse.text();
       
       // Store the complete response without any filtering
-      const formattedMessage = responseText;
+      const formattedMessage = responseText + "\n" + dbResponseText;
       
       // Record successful upload
 
@@ -3956,7 +3975,7 @@ const hasAnyUnknowns =
       
       // Show toast notification with a slight delay to ensure state is updated
       // Store the complete API response, just split into lines for readability
-      const cleanedApiResponse = responseText
+      const cleanedApiResponse = formattedMessage
         .split('.')
         .map(sentence => sentence.trim())
         .filter(sentence => sentence.length > 0)
@@ -3969,7 +3988,7 @@ const hasAnyUnknowns =
           <div className="mt-2 space-y-3">
             <div className="pb-2">
               <p className="text-sm text-gray-700 whitespace-pre-line bg-gray-50 p-3 rounded-md border border-gray-200">
-                {responseText}
+                {cleanedApiResponse}
               </p>
             </div>
           </div>
