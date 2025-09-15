@@ -106,7 +106,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-blue-800">Total Uploads</CardTitle>
@@ -128,19 +128,6 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
               {uploadHistory.filter((record) => record.status.toLowerCase() === "success").length}
             </div>
             <p className="text-xs text-green-700 mt-1">Successfully processed</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-800">Total Data</CardTitle>
-            <HardDrive className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-900">
-              {formatFileSize(uploadHistory.reduce((total, record) => total + record.fileSizeBytes, 0))}
-            </div>
-            <p className="text-xs text-purple-700 mt-1">Data uploaded</p>
           </CardContent>
         </Card>
       </div>
@@ -166,7 +153,6 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                     <TableHead>Records</TableHead>
                     <TableHead>Year</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -189,11 +175,6 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                       <TableCell>{record.recordCount?.toLocaleString() || "N/A"}</TableCell>
                       <TableCell>{record.censusYear}</TableCell>
                       <TableCell>{getStatusBadge(record.status)}</TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="sm" onClick={() => handleViewDetails(record)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
