@@ -37,7 +37,6 @@ import {
   getAdminPassword,
   masterReset,
 } from "../../utils/storage"
-import JsonConverterContent from "../../json-converter/components/json-converter-content"
 import TableUploadStatus from "./table-upload-status"
 import UploadHistory from "./upload-summary-report"
 
@@ -372,10 +371,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <Users className="h-4 w-4 mr-2" />
                 User Management
               </TabsTrigger>
-              <TabsTrigger value="json-converter" className="flex items-center">
-                <FileJson className="h-4 w-4 mr-2" />
-                JSON Converter
-              </TabsTrigger>
               <TabsTrigger value="table-uploads" className="flex items-center">
                 <Table className="h-4 w-4 mr-2" />
                 Table Uploads
@@ -542,10 +537,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
             <TabsContent value="users">
               <UserManagement />
-            </TabsContent>
-
-            <TabsContent value="json-converter">
-              <JsonConverterContent />
             </TabsContent>
 
             <TabsContent value="table-uploads">
