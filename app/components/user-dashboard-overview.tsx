@@ -329,7 +329,7 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
               {dataNotAvailableTables.map((record, index) => (
                 <div key={record.id || index} className="p-4 border rounded-lg bg-orange-50 border-orange-200">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-orange-900">{record.tableName}</h4>
+                    <h4 className="font-medium text-orange-900">{record.table_name}</h4>
                     <Badge className="bg-orange-100 text-orange-800 border-0">
                       <AlertCircle className="h-3 w-3 mr-1" />
                       Not Available
@@ -338,7 +338,7 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
                   <div className="text-sm text-orange-700">
                     <div className="flex justify-between">
                       <span>Reported Date:</span>
-                      <span className="font-medium">{new Date(record.reportDate).toLocaleDateString()}</span>
+                      <span className="font-medium">{record.report_date ? new Date(record.report_date).toLocaleDateString() : ''}</span>
                     </div>
                   </div>
                 </div>
