@@ -40,7 +40,6 @@ import {
 import JsonConverterContent from "../../json-converter/components/json-converter-content"
 import TableUploadStatus from "./table-upload-status"
 import UploadHistory from "./upload-summary-report"
-import NotificationManagement from "./notification-management"
 
 interface AdminDashboardProps {
   onLogout: () => void
@@ -385,10 +384,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   <Clock className="h-4 w-4 mr-2" />
                   Upload History
                 </TabsTrigger>
-              <TabsTrigger value="notifications" className="flex items-center">
-                <Bell className="h-4 w-4 mr-2" />
-                Notifications
-              </TabsTrigger>
               <TabsTrigger value="database-status" className="flex items-center">
                 <Database className="h-4 w-4 mr-2" />
                 Stage Data Status
@@ -495,19 +490,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="notification-message" className="text-sm font-medium">
-                          Notification Message
-                        </Label>
-                        <textarea
-                          id="notification-message"
-                          placeholder="Enter the message to send to all users about the upload window..."
-                          value={uploadMessage}
-                          onChange={(e) => setUploadMessage(e.target.value)}
-                          className="w-full min-h-[100px] p-3 border border-gray-300 rounded-md bg-white resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-
                       <div className="flex justify-end">
                         <Button
                           onClick={handleOpenWindow}
@@ -573,10 +555,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               <TabsContent value="upload-summary-report">
                 <UploadHistory username="admin" />
               </TabsContent>
-
-            <TabsContent value="notifications">
-              <NotificationManagement />
-            </TabsContent>
 
             <TabsContent value="database-status">
               <DatabaseDataStatus />
