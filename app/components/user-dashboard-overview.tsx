@@ -20,7 +20,6 @@ import {
 import {
   getTablesList,
   getTableUploadsByUsername,
-  getDataNotAvailableByUsername,
   getUploadHistory,
   getCurrentYear,
   getUploadWindowStatus,
@@ -76,41 +75,64 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
   }, [])
 
   useEffect(() => {
-    if (!isClient) return
+    if (!isClient) return;
 
-    const loadData = () => {
-      // Load user-specific data
-      const userTableUploads = getTableUploadsByUsername(username).filter((upload) => upload.year === currentYear)
-      const userDataNotAvailable = getDataNotAvailableByUsername(username).filter(
-        (record) => record.year === currentYear,
-      )
-      const userUploadHistory = getUploadHistory().filter((record) => record.username === username)
 
-      setUploadedTables(userTableUploads)
-      setDataNotAvailableTables(userDataNotAvailable)
-      setUploadHistory(userUploadHistory)
+    const loadData = async () => {
+      // Fetch upload history from API
+      let userUploadHistory: any[] = [];
+      let userTableUploads: any[] = [];
+      try {
+        const res = await fetch(`/api/upload-history?username=${encodeURIComponent(username)}`);
+        if (res.ok) {
+          const json = await res.json();
+          userUploadHistory = json.uploadHistory || [];
+          userTableUploads = userUploadHistory.filter((upload: any) => String(upload.censusYear) === String(currentYear));
+        }
+      } catch (err) {
+        userUploadHistory = [];
+        userTableUploads = [];
+      }
+
+      // Fetch data not available from API
+      let userDataNotAvailable: any[] = [];
+      try {
+        const res = await fetch(`/api/data-not-available?username=${encodeURIComponent(username)}`);
+        if (res.ok) {
+          const json = await res.json();
+          userDataNotAvailable = (json.dataNotAvailable || []).filter(
+            (record: any) => String(record.census_year) === String(currentYear)
+          );
+        }
+      } catch (err) {
+        userDataNotAvailable = [];
+      }
+
+      setUploadedTables(userTableUploads);
+      setDataNotAvailableTables(userDataNotAvailable);
+      setUploadHistory(userUploadHistory);
 
       // Debug log to check data
-      console.log("User upload history:", userUploadHistory)
-      console.log("Current username:", username)
-      console.log("All upload history:", getUploadHistory())
-    }
+      console.log("User upload history (API):", userUploadHistory);
+      console.log("Current username:", username);
+      console.log("Data Not Available from API:", userDataNotAvailable);
+    };
 
-    loadData()
+    loadData();
 
     // Listen for upload history updates
     const handleUploadHistoryUpdate = () => {
-      loadData()
-    }
+      loadData();
+    };
 
-    window.addEventListener("uploadHistoryUpdated", handleUploadHistoryUpdate)
-    window.addEventListener("storage", handleUploadHistoryUpdate)
+    window.addEventListener("uploadHistoryUpdated", handleUploadHistoryUpdate);
+    window.addEventListener("storage", handleUploadHistoryUpdate);
 
     return () => {
-      window.removeEventListener("uploadHistoryUpdated", handleUploadHistoryUpdate)
-      window.removeEventListener("storage", handleUploadHistoryUpdate)
-    }
-  }, [isClient, username, currentYear])
+      window.removeEventListener("uploadHistoryUpdated", handleUploadHistoryUpdate);
+      window.removeEventListener("storage", handleUploadHistoryUpdate);
+    };
+  }, [isClient, username, currentYear]);
 
   if (!isClient) {
     return (
@@ -133,18 +155,7 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
     .sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime())
     .slice(0, 5)
 
-  // Calculate total file size uploaded
-  const totalSizeKB = uploadHistory.reduce((total, upload) => {
-    const sizeMatch = upload.fileSize.match(/(\d+\.?\d*)\s*KB/)
-    return total + (sizeMatch ? Number.parseFloat(sizeMatch[1]) : 0)
-  }, 0)
 
-  const formatFileSize = (sizeKB: number) => {
-    if (sizeKB >= 1024) {
-      return `${(sizeKB / 1024).toFixed(1)} MB`
-    }
-    return `${sizeKB.toFixed(1)} KB`
-  }
 
   const handlePreviewUpload = (upload: any) => {
     setSelectedUpload(upload)
@@ -233,10 +244,6 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Total Data Uploaded:</span>
-                <span className="font-medium">{formatFileSize(totalSizeKB)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Current Year:</span>
                 <span className="font-medium">{currentYear}</span>
               </div>
@@ -294,9 +301,6 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
                         <span>{upload.fileSize}</span>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => handlePreviewUpload(upload)} className="ml-2">
-                      <Eye className="h-4 w-4" />
-                    </Button>
                   </div>
                 ))}
               </div>
