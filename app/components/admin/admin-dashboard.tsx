@@ -76,12 +76,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [dbStatus, setDbStatus] = useState<DatabaseStatus | null>(null)
   const [dbLoading, setDbLoading] = useState(false)
 
-  // Master Reset states
-  const [showMasterReset, setShowMasterReset] = useState(false)
-  const [resetPassword, setResetPassword] = useState("")
-  const [resetError, setResetError] = useState("")
-  const [resetConfirmation, setResetConfirmation] = useState("")
-  const [isResetting, setIsResetting] = useState(false)
 
   // Initialize client-side state
   useEffect(() => {
@@ -219,41 +213,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setCurrentYear(year)
   }
 
-  // Master Reset Functions
-  const handleMasterReset = () => {
-    setResetError("")
-
-    // Validate password
-    const currentPassword = getAdminPassword()
-    if (resetPassword !== currentPassword) {
-      setResetError("Incorrect admin password")
-      return
-    }
-
-    // Validate confirmation text
-    if (resetConfirmation !== "RESET ALL DATA") {
-      setResetError("Please type 'RESET ALL DATA' to confirm")
-      return
-    }
-
-    setIsResetting(true)
-
-    // Perform master reset after 2 seconds (to show loading state)
-    setTimeout(() => {
-      masterReset()
-      setIsResetting(false)
-      setShowMasterReset(false)
-
-      // Refresh the page to reflect changes
-      window.location.reload()
-    }, 2000)
-  }
-
-  const resetMasterResetForm = () => {
-    setResetPassword("")
-    setResetConfirmation("")
-    setResetError("")
-  }
 
   // Show loading state during hydration
   if (!isClient) {
@@ -325,114 +284,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   </TooltipContent>
                 </Tooltip>
 
-                {/* Master Reset Button */}
-                <Dialog open={showMasterReset} onOpenChange={setShowMasterReset}>
-                  <DialogTrigger asChild>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="destructive" size="sm" className="bg-red-600 hover:bg-red-700">
-                          <RotateCcw className="h-4 w-4 mr-2" />
-                          Master Reset
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Reset all application data (requires admin password)</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle className="flex items-center text-red-600">
-                        <AlertTriangle className="h-5 w-5 mr-2" />
-                        Master Reset - DANGER ZONE
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <Alert variant="destructive">
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertDescription>
-                          <strong>WARNING:</strong> This will permanently delete ALL application data including:
-                          <ul className="list-disc list-inside mt-2 space-y-1">
-                            <li>All notifications</li>
-                            <li>Upload history</li>
-                            <li>Table upload records</li>
-                            <li>Upload window settings</li>
-                            <li>User upload permissions</li>
-                          </ul>
-                          <p className="mt-2 font-medium">Database users will NOT be affected.</p>
-                        </AlertDescription>
-                      </Alert>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="reset-password">Admin Password</Label>
-                        <Input
-                          id="reset-password"
-                          type="password"
-                          placeholder="Enter admin password to confirm"
-                          value={resetPassword}
-                          onChange={(e) => setResetPassword(e.target.value)}
-                          disabled={isResetting}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="reset-confirmation">Type "RESET ALL DATA" to confirm</Label>
-                        <Input
-                          id="reset-confirmation"
-                          type="text"
-                          placeholder="RESET ALL DATA"
-                          value={resetConfirmation}
-                          onChange={(e) => setResetConfirmation(e.target.value)}
-                          disabled={isResetting}
-                        />
-                      </div>
-
-                      {resetError && (
-                        <Alert variant="destructive">
-                          <AlertDescription>{resetError}</AlertDescription>
-                        </Alert>
-                      )}
-
-                      <div className="flex justify-between pt-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => {
-                            resetMasterResetForm()
-                            setShowMasterReset(false)
-                          }}
-                          disabled={isResetting}
-                        >
-                          Cancel
-                        </Button>
-                        <div className="space-x-2">
-                          <Button type="button" variant="outline" onClick={resetMasterResetForm} disabled={isResetting}>
-                            Clear
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            onClick={handleMasterReset}
-                            disabled={isResetting || !resetPassword || resetConfirmation !== "RESET ALL DATA"}
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            {isResetting ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                                Resetting...
-                              </>
-                            ) : (
-                              <>
-                                <RotateCcw className="h-4 w-4 mr-2" />
-                                RESET ALL DATA
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
 
                 <Dialog open={showPasswordChange} onOpenChange={setShowPasswordChange}>
                   <DialogTrigger asChild>
@@ -531,8 +382,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 Table Uploads
               </TabsTrigger>
                 <TabsTrigger value="upload-summary-report" className="flex items-center">
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Upload Summary Report
+                  <Clock className="h-4 w-4 mr-2" />
+                  Upload History
                 </TabsTrigger>
               <TabsTrigger value="notifications" className="flex items-center">
                 <Bell className="h-4 w-4 mr-2" />
