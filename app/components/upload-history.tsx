@@ -19,6 +19,7 @@ interface UploadRecord {
   censusYear: string
   status: string
   errorMessage?: string
+  json_data?: string | null
 }
 
 interface UploadHistoryProps {
@@ -153,6 +154,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                     <TableHead>Records</TableHead>
                     <TableHead>Year</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>JSON Data</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -175,6 +177,11 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                       <TableCell>{record.recordCount?.toLocaleString() || "N/A"}</TableCell>
                       <TableCell>{record.censusYear}</TableCell>
                       <TableCell>{getStatusBadge(record.status)}</TableCell>
+                      <TableCell>
+                        <Button size="sm" variant="outline" onClick={() => handleViewDetails(record)}>
+                          View Summary
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -241,6 +248,20 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                 </div>
               )}
 
+              {selectedRecord?.json_data && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700">JSON Data</label>
+                  <pre className="mt-1 p-3 bg-gray-50 border border-gray-200 rounded-md overflow-x-auto text-xs text-gray-800 max-h-64">
+                    {(() => {
+                      try {
+                        return JSON.stringify(JSON.parse(selectedRecord.json_data!), null, 2)
+                      } catch {
+                        return selectedRecord.json_data
+                      }
+                    })()}
+                  </pre>
+                </div>
+              )}
               <div className="flex justify-end">
                 <Button variant="outline" onClick={() => setShowDetailsDialog(false)}>
                   Close

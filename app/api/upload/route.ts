@@ -94,6 +94,7 @@ export async function POST(request: NextRequest) {
         recordCount: tableName ? jsonData[tableName].length : Object.keys(jsonData).length,
         status: "failed",
         errorMessage: errorText,
+        jsonData: JSON.stringify(jsonData),
       })
 
       return new NextResponse(`External API Error (${externalApiResponse.status}): ${errorText}`, {
@@ -128,6 +129,7 @@ export async function POST(request: NextRequest) {
       recordCount,
       status: "success",
       errorMessage: null,
+      jsonData: JSON.stringify(jsonData),
     })
 
     return new NextResponse(message, { status: 200 })
@@ -143,6 +145,7 @@ export async function POST(request: NextRequest) {
       recordCount: 0,
       status: "failed",
       errorMessage: error instanceof Error ? error.message : "Unknown error",
+      jsonData: null,
     })
 
     // Handle specific error types
@@ -172,6 +175,7 @@ async function storeUploadRecord({
   recordCount,
   status,
   errorMessage,
+  jsonData,
 }: {
   username: string
   filename: string
@@ -180,6 +184,7 @@ async function storeUploadRecord({
   recordCount: number
   status: "success" | "failed"
   errorMessage: string | null
+  jsonData: string | null
 }) {
   let pool: sql.ConnectionPool | null = null
 
@@ -199,7 +204,8 @@ async function storeUploadRecord({
         upload_date DATETIME2 DEFAULT GETDATE(),
         status NVARCHAR(20) NOT NULL,
         error_message NVARCHAR(MAX) NULL,
-        census_year NVARCHAR(10) NULL
+        census_year NVARCHAR(10) NULL,
+        json_data NVARCHAR(MAX) NULL
       )
     `
 
@@ -219,11 +225,11 @@ async function storeUploadRecord({
     const insertQuery = `
       INSERT INTO upload_records (
         username, filename, file_size_bytes, table_name, record_count, 
-        status, error_message, census_year
+        status, error_message, census_year, json_data
       )
       VALUES (
         @username, @filename, @fileSize, @tableName, @recordCount, 
-        @status, @errorMessage, @censusYear
+        @status, @errorMessage, @censusYear, @jsonData
       )
     `
 
@@ -237,6 +243,7 @@ async function storeUploadRecord({
       .input("status", sql.NVarChar, status)
       .input("errorMessage", sql.NVarChar, errorMessage)
       .input("censusYear", sql.NVarChar, currentCensusYear)
+      .input("jsonData", sql.NVarChar, jsonData)
       .query(insertQuery)
 
     if (!currentCensusYear) {

@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
     pool = await sql.connect(dbConfig)
 
     // Query upload_records table for the specific user
+
     const query = `
       SELECT 
         id,
@@ -38,7 +39,8 @@ export async function GET(request: NextRequest) {
         upload_date,
         census_year,
         status,
-        error_message
+        error_message,
+        json_data
       FROM upload_records 
       WHERE username = @username
       ORDER BY upload_date DESC
@@ -58,6 +60,7 @@ export async function GET(request: NextRequest) {
       censusYear: record.census_year,
       status: record.status,
       errorMessage: record.error_message,
+      json_data: record.json_data,
     }))
 
     return NextResponse.json({ uploadHistory })
