@@ -251,15 +251,17 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
               {selectedRecord?.json_data && (
                 <div>
                   <label className="text-sm font-medium text-gray-700">JSON Data</label>
-                  <pre className="mt-1 p-3 bg-gray-50 border border-gray-200 rounded-md overflow-x-auto text-xs text-gray-800 max-h-64">
-                    {(() => {
-                      try {
-                        return JSON.stringify(JSON.parse(selectedRecord.json_data!), null, 2)
-                      } catch {
-                        return selectedRecord.json_data
-                      }
-                    })()}
-                  </pre>
+                  <div className="mt-1 p-3 bg-gray-50 border border-gray-200 rounded-md max-h-64 overflow-auto w-full">
+                    <pre className="text-xs text-gray-800 font-mono whitespace-pre-wrap break-all">
+                      {(() => {
+                        try {
+                          return JSON.stringify(JSON.parse(selectedRecord.json_data!), null, 2)
+                        } catch {
+                          return selectedRecord.json_data
+                        }
+                      })()}
+                    </pre>
+                  </div>
                 </div>
               )}
               <div className="flex justify-end">
