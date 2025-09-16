@@ -16,18 +16,37 @@ const dbConfig = {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const username = searchParams.get("username")
-
-  if (!username) {
-    return NextResponse.json({ error: "Username is required" }, { status: 400 })
-  }
+  const downloadPdfId = searchParams.get("downloadPdfId")
 
   let pool: sql.ConnectionPool | null = null
 
   try {
     pool = await sql.connect(dbConfig)
 
-    // Query upload_records table for the specific user
+    if (downloadPdfId) {
+      // Download PDF blob for a specific record
+      const pdfQuery = `SELECT filename, pdf_file FROM upload_records WHERE id = @id`;
+      const pdfResult = await pool.request().input("id", sql.Int, downloadPdfId).query(pdfQuery);
+      if (!pdfResult.recordset[0] || !pdfResult.recordset[0].pdf_file) {
+        return new NextResponse("PDF not found", { status: 404 });
+      }
+      const { filename, pdf_file } = pdfResult.recordset[0];
+      // pdf_file is likely a Buffer (MSSQL varbinary)
+      const buffer = Buffer.isBuffer(pdf_file) ? pdf_file : Buffer.from(pdf_file);
+      return new NextResponse(buffer, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="${filename || 'file'}.pdf"`,
+        },
+      });
+    }
 
+    if (!username) {
+      return NextResponse.json({ error: "Username is required" }, { status: 400 })
+    }
+
+    // Query upload_records table for the specific user
     const query = `
       SELECT 
         id,
@@ -40,7 +59,8 @@ export async function GET(request: NextRequest) {
         census_year,
         status,
         error_message,
-        json_data
+        json_data,
+        pdf_file
       FROM upload_records 
       WHERE username = @username
       ORDER BY upload_date DESC
@@ -61,6 +81,7 @@ export async function GET(request: NextRequest) {
       status: record.status,
       errorMessage: record.error_message,
       json_data: record.json_data,
+      pdf_file: record.pdf_file ? `/api/upload-history?downloadPdfId=${record.id}` : null,
     }))
 
     return NextResponse.json({ uploadHistory })

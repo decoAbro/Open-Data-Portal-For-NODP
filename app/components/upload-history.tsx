@@ -20,6 +20,7 @@ interface UploadRecord {
   status: string
   errorMessage?: string
   json_data?: string | null
+  pdf_file?: string | null
 }
 
 interface UploadHistoryProps {
@@ -154,7 +155,8 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                     <TableHead>Records</TableHead>
                     <TableHead>Year</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>JSON Data</TableHead>
+                    <TableHead>Download Data Summary</TableHead>
+                    <TableHead>View Data Summary</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -177,6 +179,34 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                       <TableCell>{record.recordCount?.toLocaleString() || "N/A"}</TableCell>
                       <TableCell>{record.censusYear}</TableCell>
                       <TableCell>{getStatusBadge(record.status)}</TableCell>
+                      <TableCell>
+                        {record.pdf_file ? (
+                          <button
+                            className="text-blue-600 underline"
+                            onClick={async () => {
+                              try {
+                                const res = await fetch(record.pdf_file as string);
+                                if (!res.ok) throw new Error('Failed to download PDF');
+                                const blob = await res.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = (record.filename || 'file') + '.pdf';
+                                document.body.appendChild(a);
+                                a.click();
+                                a.remove();
+                                window.URL.revokeObjectURL(url);
+                              } catch (e) {
+                                alert('Could not download PDF');
+                              }
+                            }}
+                          >
+                            Download PDF
+                          </button>
+                        ) : (
+                          <span className="text-gray-400">N/A</span>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <Button size="sm" variant="outline" onClick={() => handleViewDetails(record)}>
                           View Summary
@@ -236,6 +266,37 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                 <div>
                   <label className="text-sm font-medium text-gray-700">Status</label>
                   <div className="mt-1">{getStatusBadge(selectedRecord.status)}</div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">PDF File</label>
+                  <div className="mt-1">
+                    {selectedRecord.pdf_file ? (
+                      <button
+                        className="text-blue-600 underline"
+                        onClick={async () => {
+                          try {
+                            const res = await fetch(selectedRecord.pdf_file!);
+                            if (!res.ok) throw new Error('Failed to download PDF');
+                            const blob = await res.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = (selectedRecord.filename || 'file') + '.pdf';
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            window.URL.revokeObjectURL(url);
+                          } catch (e) {
+                            alert('Could not download PDF');
+                          }
+                        }}
+                      >
+                        Download PDF
+                      </button>
+                    ) : (
+                      <span className="text-gray-400">N/A</span>
+                    )}
+                  </div>
                 </div>
               </div>
 

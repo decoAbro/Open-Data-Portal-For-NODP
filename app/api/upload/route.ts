@@ -15,7 +15,7 @@ const dbConfig = {
 
 export async function POST(request: NextRequest) {
   try {
-    const { jsonData, username, password, tableName } = await request.json()
+  const { jsonData, username, password, tableName, pdfBase64 } = await request.json()
 
     // Validate credentials (in a real app, this would check against a database)
     if (!username || !password) {
@@ -86,16 +86,17 @@ export async function POST(request: NextRequest) {
       }
 
       // Store failed upload record in database
-      await storeUploadRecord({
-        username: username || "unknown",
-        filename: tableName ? `${tableName}.json` : "bulk_upload.json",
-        fileSize: JSON.stringify(jsonData).length,
-        tableName: tableName || "bulk_upload",
-        recordCount: tableName ? jsonData[tableName].length : Object.keys(jsonData).length,
-        status: "failed",
-        errorMessage: errorText,
-        jsonData: JSON.stringify(jsonData),
-      })
+        await storeUploadRecord({
+          username: username || "unknown",
+          filename: tableName ? `${tableName}.json` : "bulk_upload.json",
+          fileSize: JSON.stringify(jsonData).length,
+          tableName: tableName || "bulk_upload",
+          recordCount: tableName ? jsonData[tableName].length : Object.keys(jsonData).length,
+          status: "failed",
+          errorMessage: errorText,
+          jsonData: JSON.stringify(jsonData),
+          pdfBuffer: pdfBase64 ? Buffer.from(pdfBase64, 'base64') : null,
+        })
 
       return new NextResponse(`External API Error (${externalApiResponse.status}): ${errorText}`, {
         status: externalApiResponse.status,
@@ -130,6 +131,7 @@ export async function POST(request: NextRequest) {
       status: "success",
       errorMessage: null,
       jsonData: JSON.stringify(jsonData),
+      pdfBuffer: pdfBase64 ? Buffer.from(pdfBase64, 'base64') : null,
     })
 
     return new NextResponse(message, { status: 200 })
@@ -146,6 +148,7 @@ export async function POST(request: NextRequest) {
       status: "failed",
       errorMessage: error instanceof Error ? error.message : "Unknown error",
       jsonData: null,
+      pdfBuffer: null,
     })
 
     // Handle specific error types
@@ -176,6 +179,7 @@ async function storeUploadRecord({
   status,
   errorMessage,
   jsonData,
+  pdfBuffer,
 }: {
   username: string
   filename: string
@@ -185,6 +189,7 @@ async function storeUploadRecord({
   status: "success" | "failed"
   errorMessage: string | null
   jsonData: string | null
+  pdfBuffer: Buffer | null
 }) {
   let pool: sql.ConnectionPool | null = null
 
@@ -205,7 +210,8 @@ async function storeUploadRecord({
         status NVARCHAR(20) NOT NULL,
         error_message NVARCHAR(MAX) NULL,
         census_year NVARCHAR(10) NULL,
-        json_data NVARCHAR(MAX) NULL
+        json_data NVARCHAR(MAX) NULL,
+        pdf_file VARBINARY(MAX) NULL
       )
     `
 
@@ -225,11 +231,11 @@ async function storeUploadRecord({
     const insertQuery = `
       INSERT INTO upload_records (
         username, filename, file_size_bytes, table_name, record_count, 
-        status, error_message, census_year, json_data
+        status, error_message, census_year, json_data, pdf_file
       )
       VALUES (
         @username, @filename, @fileSize, @tableName, @recordCount, 
-        @status, @errorMessage, @censusYear, @jsonData
+        @status, @errorMessage, @censusYear, @jsonData, @pdfFile
       )
     `
 
@@ -244,6 +250,7 @@ async function storeUploadRecord({
       .input("errorMessage", sql.NVarChar, errorMessage)
       .input("censusYear", sql.NVarChar, currentCensusYear)
       .input("jsonData", sql.NVarChar, jsonData)
+      .input("pdfFile", sql.VarBinary(sql.MAX), pdfBuffer)
       .query(insertQuery)
 
     if (!currentCensusYear) {

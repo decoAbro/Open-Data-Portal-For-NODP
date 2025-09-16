@@ -17,7 +17,7 @@ import {
   getUploadWindowStatus,
   updateUserByUsername,
 } from "../utils/storage"
-import { downloadElementAsPDF } from "@/utils/download-pdf"
+import { downloadElementAsPDF, getElementPDFBase64 } from "@/utils/download-pdf"
 
 interface TableUploadTrackerProps {
   username: string
@@ -3911,7 +3911,13 @@ const hasAnyUnknowns =
     setUploadError("")
 
     try {
-      // Existing API call to upload data
+      // Generate PDF as base64 for upload
+      let pdfBase64: string | null = null;
+      if (pdfMetaRef.current) {
+        pdfBase64 = await getElementPDFBase64(pdfMetaRef.current);
+      }
+
+      // Existing API call to upload data (now with pdfBase64)
       const response = await fetch("/api/upload", {
         method: "POST",
         headers: {
@@ -3922,6 +3928,7 @@ const hasAnyUnknowns =
           username,
           password,
           tableName: selectedTable,
+          pdfBase64,
         }),
       })
 
