@@ -144,7 +144,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
         </CardHeader>
         <CardContent>
           {uploadHistory.length > 0 ? (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto" style={{ minWidth: '1200px', width: '100%' }}>
               <Table>
                 <TableHeader>
                   <TableRow>
