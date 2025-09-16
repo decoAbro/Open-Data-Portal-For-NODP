@@ -3996,8 +3996,12 @@ const hasAnyUnknowns =
         type: 'success'
       });
       setShowNotification(true);
-      
 
+      // Automatically download PDF after successful upload
+      if (pdfMetaRef.current && selectedTable) {
+        let pdfFileName = `${selectedTable}-Data-Summary.pdf`;
+        downloadElementAsPDF(pdfMetaRef.current, pdfFileName);
+      }
 
       // Close dialogs and reset state
       setShowPreviewDialog(false)
