@@ -39,7 +39,7 @@ import {
 } from "../../utils/storage"
 import JsonConverterContent from "../../json-converter/components/json-converter-content"
 import TableUploadStatus from "./table-upload-status"
-import UploadSummaryReport from "./upload-summary-report"
+import UploadHistory from "./upload-summary-report"
 import NotificationManagement from "./notification-management"
 
 interface AdminDashboardProps {
@@ -720,7 +720,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             </TabsContent>
 
               <TabsContent value="upload-summary-report">
-                <UploadSummaryReport />
+                <UploadHistory username="admin" />
               </TabsContent>
 
             <TabsContent value="notifications">
