@@ -181,8 +181,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                       <TableCell>{getStatusBadge(record.status)}</TableCell>
                       <TableCell>
                         {record.pdf_file ? (
-                          <button
-                            className="text-blue-600 underline"
+                          <Button size="sm" variant="outline"
                             onClick={async () => {
                               try {
                                 const res = await fetch(record.pdf_file as string);
@@ -201,8 +200,8 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                               }
                             }}
                           >
-                            Download PDF
-                          </button>
+                            Download Summary
+                          </Button>
                         ) : (
                           <span className="text-gray-400">N/A</span>
                         )}
@@ -271,8 +270,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                   <label className="text-sm font-medium text-gray-700">PDF File</label>
                   <div className="mt-1">
                     {selectedRecord.pdf_file ? (
-                      <button
-                        className="text-blue-600 underline"
+                      <Button size="sm" variant="outline"
                         onClick={async () => {
                           try {
                             const res = await fetch(selectedRecord.pdf_file!);
@@ -292,7 +290,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                         }}
                       >
                         Download PDF
-                      </button>
+                      </Button>
                     ) : (
                       <span className="text-gray-400">N/A</span>
                     )}
