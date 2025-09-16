@@ -23,6 +23,7 @@ interface UploadRecord {
   pdf_file?: string | null
 }
 
+
 interface UploadHistoryProps {
   username: string
 }
@@ -32,6 +33,9 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   const [loading, setLoading] = useState(true)
   const [selectedRecord, setSelectedRecord] = useState<UploadRecord | null>(null)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
+  const [uploadedByFilter, setUploadedByFilter] = useState<string>("")
+  const [tableNameFilter, setTableNameFilter] = useState<string>("")
+  const [yearFilter, setYearFilter] = useState<string>("")
 
   useEffect(() => {
     fetchUploadHistory()
@@ -105,8 +109,67 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
     )
   }
 
+
+  // Get unique usernames, table names, and years for filter dropdowns
+  const uniqueUsernames = Array.from(new Set(uploadHistory.map((r) => r.username))).sort()
+  const uniqueTableNames = Array.from(new Set(uploadHistory.map((r) => r.tableName))).sort()
+  const uniqueYears = Array.from(new Set(uploadHistory.map((r) => r.censusYear))).filter(Boolean).sort()
+
+  // Filtered upload history
+  const filteredUploadHistory = uploadHistory.filter((r) => {
+    const byUser = uploadedByFilter ? r.username === uploadedByFilter : true
+    const byTable = tableNameFilter ? r.tableName === tableNameFilter : true
+    const byYear = yearFilter ? r.censusYear === yearFilter : true
+    return byUser && byTable && byYear
+  })
+
   return (
     <div className="space-y-6">
+      {/* Filter Bar */}
+      <div className="flex flex-wrap items-center gap-4 mb-2">
+        <div>
+          <label htmlFor="uploadedByFilter" className="text-sm font-medium text-gray-700 mr-2">Uploaded By:</label>
+          <select
+            id="uploadedByFilter"
+            className="border rounded px-2 py-1 text-sm"
+            value={uploadedByFilter}
+            onChange={e => setUploadedByFilter(e.target.value)}
+          >
+            <option value="">All</option>
+            {uniqueUsernames.map((u) => (
+              <option key={u} value={u}>{u}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="tableNameFilter" className="text-sm font-medium text-gray-700 mr-2">Table Name:</label>
+          <select
+            id="tableNameFilter"
+            className="border rounded px-2 py-1 text-sm"
+            value={tableNameFilter}
+            onChange={e => setTableNameFilter(e.target.value)}
+          >
+            <option value="">All</option>
+            {uniqueTableNames.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="yearFilter" className="text-sm font-medium text-gray-700 mr-2">Year:</label>
+          <select
+            id="yearFilter"
+            className="border rounded px-2 py-1 text-sm"
+            value={yearFilter}
+            onChange={e => setYearFilter(e.target.value)}
+          >
+            <option value="">All</option>
+            {uniqueYears.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+      </div>
       {/* Summary Cards */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
@@ -115,7 +178,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
             <Database className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-900">{uploadHistory.length}</div>
+            <div className="text-2xl font-bold text-blue-900">{filteredUploadHistory.length}</div>
             <p className="text-xs text-blue-700 mt-1">All time uploads</p>
           </CardContent>
         </Card>
@@ -127,7 +190,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-900">
-              {uploadHistory.filter((record) => record.status.toLowerCase() === "success").length}
+              {filteredUploadHistory.filter((record) => record.status.toLowerCase() === "success").length}
             </div>
             <p className="text-xs text-green-700 mt-1">Successfully processed</p>
           </CardContent>
@@ -143,7 +206,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {uploadHistory.length > 0 ? (
+          {filteredUploadHistory.length > 0 ? (
             <div className="overflow-x-auto" style={{ minWidth: '1200px', width: '100%' }}>
               <Table>
                 <TableHeader>
@@ -159,7 +222,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {uploadHistory.map((record) => (
+                  {filteredUploadHistory.map((record) => (
                     <TableRow key={record.id}>
                       <TableCell className="font-medium">{record.tableName}</TableCell>
                        <TableCell className="font-medium">{record.username}</TableCell>
@@ -323,4 +386,5 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
       </Dialog>
     </div>
   )
+  // ...existing code...
 }
