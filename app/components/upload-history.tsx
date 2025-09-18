@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Clock, FileText, CheckCircle, XCircle, AlertCircle, Eye, Database, Calendar, HardDrive } from "lucide-react"
+import { PDFDocument } from 'pdf-lib';
 
 interface UploadRecord {
   id: number
@@ -32,6 +33,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   const [loading, setLoading] = useState(true)
   const [selectedRecord, setSelectedRecord] = useState<UploadRecord | null>(null)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
+  const [yearFilter, setYearFilter] = useState<string>("")
 
   useEffect(() => {
     fetchUploadHistory()
@@ -105,17 +107,91 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
     )
   }
 
+  // Get unique years for filter dropdown
+  const uniqueYears = Array.from(new Set(uploadHistory.map((r) => r.censusYear))).filter(Boolean).sort()
+
+  // Filtered upload history
+  const filteredUploadHistory = yearFilter
+    ? uploadHistory.filter((r) => r.censusYear === yearFilter)
+    : uploadHistory
+
   return (
     <div className="space-y-6">
+      {/* Filter Bar */}
+      <div className="flex flex-wrap items-center gap-4 mb-2">
+        <div>
+          <label htmlFor="yearFilter" className="text-sm font-medium text-gray-700 mr-2">Year:</label>
+          <select
+            id="yearFilter"
+            className="border rounded px-2 py-1 text-sm"
+            value={yearFilter}
+            onChange={e => setYearFilter(e.target.value)}
+          >
+            <option value="">All</option>
+            {uniqueYears.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Download All Summaries Button */}
+      <div className="flex justify-end mb-2">
+        <Button
+          size="sm"
+          className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+          variant="default"
+          onClick={async () => {
+            const recordsToDownload = filteredUploadHistory.filter(r => r.pdf_file);
+            if (recordsToDownload.length === 0) {
+              alert('No summaries available to download.');
+              return;
+            }
+            try {
+              // Fetch all PDFs as ArrayBuffers
+              const pdfBuffers = await Promise.all(
+                recordsToDownload.map(async (record) => {
+                  const res = await fetch(record.pdf_file as string);
+                  if (!res.ok) throw new Error('Failed to download PDF');
+                  return await res.arrayBuffer();
+                })
+              );
+              // Merge PDFs using pdf-lib
+              const mergedPdf = await PDFDocument.create();
+              for (const pdfBytes of pdfBuffers) {
+                const pdf = await PDFDocument.load(pdfBytes);
+                const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                copiedPages.forEach((page) => mergedPdf.addPage(page));
+              }
+              const mergedPdfBytes = await mergedPdf.save();
+              // Download merged PDF
+              const blob = new Blob([new Uint8Array(mergedPdfBytes)], { type: 'application/pdf' });
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'all-summaries.pdf';
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              window.URL.revokeObjectURL(url);
+            } catch (e) {
+              alert('Could not merge and download PDFs.');
+            }
+          }}
+        >
+          Download All Summaries
+        </Button>
+      </div>
+
       {/* Summary Cards */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-blue-800">Total Uploads</CardTitle>
             <Database className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-900">{uploadHistory.length}</div>
+            <div className="text-2xl font-bold text-blue-900">{filteredUploadHistory.length}</div>
             <p className="text-xs text-blue-700 mt-1">All time uploads</p>
           </CardContent>
         </Card>
@@ -143,7 +219,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {uploadHistory.length > 0 ? (
+          {filteredUploadHistory.length > 0 ? (
             <div className="overflow-x-auto" style={{ minWidth: '1200px', width: '100%' }}>
               <Table>
                 <TableHeader>
@@ -160,7 +236,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {uploadHistory.map((record) => (
+                  {filteredUploadHistory.map((record) => (
                     <TableRow key={record.id}>
                       <TableCell className="font-medium">{record.tableName}</TableCell>
                       <TableCell>
