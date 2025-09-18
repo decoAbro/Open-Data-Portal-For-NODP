@@ -37,7 +37,6 @@ import {
   getAdminPassword,
   masterReset,
 } from "../../utils/storage"
-import TableUploadStatus from "./table-upload-status"
 import UploadHistory from "./upload-summary-report"
 
 interface AdminDashboardProps {
@@ -371,10 +370,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <Users className="h-4 w-4 mr-2" />
                 User Management
               </TabsTrigger>
-              <TabsTrigger value="table-uploads" className="flex items-center">
-                <Table className="h-4 w-4 mr-2" />
-                Table Uploads
-              </TabsTrigger>
                 <TabsTrigger value="upload-summary-report" className="flex items-center">
                   <Clock className="h-4 w-4 mr-2" />
                   Upload History
@@ -537,10 +532,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
             <TabsContent value="users">
               <UserManagement />
-            </TabsContent>
-
-            <TabsContent value="table-uploads">
-              <TableUploadStatus />
             </TabsContent>
 
               <TabsContent value="upload-summary-report">
