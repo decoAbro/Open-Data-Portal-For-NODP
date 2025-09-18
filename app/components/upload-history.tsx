@@ -34,6 +34,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   const [selectedRecord, setSelectedRecord] = useState<UploadRecord | null>(null)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [yearFilter, setYearFilter] = useState<string>("")
+  const [downloadingAll, setDownloadingAll] = useState(false)
 
   useEffect(() => {
     fetchUploadHistory()
@@ -141,10 +142,13 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
           size="sm"
           className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
           variant="default"
+          disabled={downloadingAll}
           onClick={async () => {
+            setDownloadingAll(true);
             const recordsToDownload = filteredUploadHistory.filter(r => r.pdf_file);
             if (recordsToDownload.length === 0) {
               alert('No summaries available to download.');
+              setDownloadingAll(false);
               return;
             }
             try {
@@ -176,10 +180,19 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
               window.URL.revokeObjectURL(url);
             } catch (e) {
               alert('Could not merge and download PDFs.');
+            } finally {
+              setDownloadingAll(false);
             }
           }}
         >
-          Download All Summaries
+          {downloadingAll ? (
+            <span className="flex items-center">
+              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+              Downloading...
+            </span>
+          ) : (
+            'Download All Summaries'
+          )}
         </Button>
       </div>
 
