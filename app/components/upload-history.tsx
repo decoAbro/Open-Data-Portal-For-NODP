@@ -85,6 +85,13 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
             Failed
           </Badge>
         )
+      case "rejected":
+        return (
+          <Badge className="bg-red-100 text-red-800 border-0">
+            <XCircle className="h-3 w-3 mr-1" />
+            Rejected
+          </Badge>
+        )
       default:
         return (
           <Badge className="bg-yellow-100 text-yellow-800 border-0">
@@ -289,6 +296,25 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                       <TableCell>
                         <Button size="sm" variant="outline" onClick={() => handleViewDetails(record)}>
                           View Summary
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={record.status.toLowerCase() !== "rejected"}
+                          onClick={async () => {
+                            if (!window.confirm("Are you sure you want to delete this record?")) return;
+                            try {
+                              const res = await fetch(`/api/upload-history/delete?id=${record.id}`, { method: "DELETE" });
+                              if (!res.ok) throw new Error("Failed to delete record");
+                              setUploadHistory((prev) => prev.filter((r) => r.id !== record.id));
+                            } catch (e) {
+                              alert("Could not delete record");
+                            }
+                          }}
+                        >
+                          Delete
                         </Button>
                       </TableCell>
                     </TableRow>

@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     if (typeof window !== "undefined") {
       const existingHistory = JSON.parse(localStorage.getItem("pie-portal-upload-history") || "[]")
       const updatedHistory = existingHistory.map((record: any) =>
-        record.id === uploadRecord.id ? { ...record, status: "success", message: message } : record,
+        record.id === uploadRecord.id ? { ...record, status: "In-Review", message: message } : record,
       )
       localStorage.setItem("pie-portal-upload-history", JSON.stringify(updatedHistory))
     }
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
       fileSize: JSON.stringify(jsonData).length,
       tableName: tableName || "bulk_upload",
       recordCount,
-      status: "success",
+      status: "In-Review",
       errorMessage: null,
       jsonData: JSON.stringify(jsonData),
       pdfBuffer: pdfBase64 ? Buffer.from(pdfBase64, 'base64') : null,
@@ -186,7 +186,7 @@ async function storeUploadRecord({
   fileSize: number
   tableName: string
   recordCount: number
-  status: "success" | "failed"
+  status: "success" | "failed" | "In-Review" | "Rejected"
   errorMessage: string | null
   jsonData: string | null
   pdfBuffer: Buffer | null
