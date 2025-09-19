@@ -384,6 +384,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <Database className="h-4 w-4 mr-2" />
                 Stage Data Status
               </TabsTrigger>
+              <TabsTrigger value="approval-verification" className="flex items-center">
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Approval & Verification
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="upload-management">
