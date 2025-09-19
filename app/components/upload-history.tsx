@@ -71,6 +71,20 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
+      case "approved":
+        return (
+          <Badge className="bg-green-100 text-green-800 border-0">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Approved
+          </Badge>
+        )
+      case "rejected":
+        return (
+          <Badge className="bg-red-100 text-red-800 border-0">
+            <XCircle className="h-3 w-3 mr-1" />
+            Rejected
+          </Badge>
+        )
       case "success":
         return (
           <Badge className="bg-green-100 text-green-800 border-0">
@@ -83,13 +97,6 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
           <Badge className="bg-red-100 text-red-800 border-0">
             <XCircle className="h-3 w-3 mr-1" />
             Failed
-          </Badge>
-        )
-      case "rejected":
-        return (
-          <Badge className="bg-red-100 text-red-800 border-0">
-            <XCircle className="h-3 w-3 mr-1" />
-            Rejected
           </Badge>
         )
       default:
