@@ -39,6 +39,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   const [statusUpdating, setStatusUpdating] = useState(false)
   const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null)
   const [viewLoadingId, setViewLoadingId] = useState<number | null>(null)
+  const [statusFilter, setStatusFilter] = useState<string>("")
   // Update status handler
   const handleUpdateStatus = async (recordId: number, newStatus: string) => {
     setStatusUpdating(true)
@@ -154,17 +155,50 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   }
 
 
-  // Get unique usernames, table names, and years for filter dropdowns
-  const uniqueUsernames = Array.from(new Set(uploadHistory.map((r) => r.username))).sort()
-  const uniqueTableNames = Array.from(new Set(uploadHistory.map((r) => r.tableName))).sort()
-  const uniqueYears = Array.from(new Set(uploadHistory.map((r) => r.censusYear))).filter(Boolean).sort()
+  // Dynamically filter dropdown options based on other filters
+  const filterForDropdowns = (records: UploadRecord[]) => {
+    return {
+      usernames: Array.from(new Set(records.map((r) => r.username))).sort(),
+      tableNames: Array.from(new Set(records.map((r) => r.tableName))).sort(),
+      years: Array.from(new Set(records.map((r) => r.censusYear))).filter(Boolean).sort(),
+      statuses: Array.from(new Set(records.map((r) => (r.status || "").toLowerCase()))).filter(Boolean).sort(),
+    };
+  };
+
+  // For each filter, apply the other filters to get valid options
+  const filteredForUsernames = uploadHistory.filter(r =>
+    (tableNameFilter ? r.tableName === tableNameFilter : true) &&
+    (yearFilter ? r.censusYear === yearFilter : true) &&
+    (statusFilter ? (r.status || "").toLowerCase() === statusFilter : true)
+  );
+  const filteredForTableNames = uploadHistory.filter(r =>
+    (uploadedByFilter ? r.username === uploadedByFilter : true) &&
+    (yearFilter ? r.censusYear === yearFilter : true) &&
+    (statusFilter ? (r.status || "").toLowerCase() === statusFilter : true)
+  );
+  const filteredForYears = uploadHistory.filter(r =>
+    (uploadedByFilter ? r.username === uploadedByFilter : true) &&
+    (tableNameFilter ? r.tableName === tableNameFilter : true) &&
+    (statusFilter ? (r.status || "").toLowerCase() === statusFilter : true)
+  );
+  const filteredForStatuses = uploadHistory.filter(r =>
+    (uploadedByFilter ? r.username === uploadedByFilter : true) &&
+    (tableNameFilter ? r.tableName === tableNameFilter : true) &&
+    (yearFilter ? r.censusYear === yearFilter : true)
+  );
+
+  const uniqueUsernames = filterForDropdowns(filteredForUsernames).usernames;
+  const uniqueTableNames = filterForDropdowns(filteredForTableNames).tableNames;
+  const uniqueYears = filterForDropdowns(filteredForYears).years;
+  const uniqueStatuses = filterForDropdowns(filteredForStatuses).statuses;
 
   // Filtered upload history
   const filteredUploadHistory = uploadHistory.filter((r) => {
     const byUser = uploadedByFilter ? r.username === uploadedByFilter : true
     const byTable = tableNameFilter ? r.tableName === tableNameFilter : true
     const byYear = yearFilter ? r.censusYear === yearFilter : true
-    return byUser && byTable && byYear
+    const byStatus = statusFilter ? (r.status || "").toLowerCase() === statusFilter : true
+    return byUser && byTable && byYear && byStatus
   })
 
   // Status counts for summary cards
@@ -175,7 +209,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   return (
     <div className="space-y-6">
       {/* Filter Bar */}
-      <div className="flex flex-wrap items-center gap-4 mb-2">
+  <div className="flex flex-wrap items-center gap-4 mb-2">
         <div>
           <label htmlFor="uploadedByFilter" className="text-sm font-medium text-gray-700 mr-2">Uploaded By:</label>
           <select
@@ -215,6 +249,20 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
             <option value="">All</option>
             {uniqueYears.map((y) => (
               <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="statusFilter" className="text-sm font-medium text-gray-700 mr-2">Status:</label>
+          <select
+            id="statusFilter"
+            className="border rounded px-2 py-1 text-sm"
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+          >
+            <option value="">All</option>
+            {uniqueStatuses.map((s) => (
+              <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
             ))}
           </select>
         </div>
