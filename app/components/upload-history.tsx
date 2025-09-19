@@ -121,7 +121,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
       {/* Filter Bar */}
       <div className="flex flex-wrap items-center gap-4 mb-2">
         <div>
-          <label htmlFor="yearFilter" className="text-sm font-medium text-gray-700 mr-2">Year:</label>
+              <label htmlFor="yearFilter" className="text-sm font-medium text-gray-700 mr-2">Census Year:</label>
           <select
             id="yearFilter"
             className="border rounded px-2 py-1 text-sm"
@@ -238,11 +238,9 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Table Name</TableHead>
-                    <TableHead>Filename</TableHead>
                     <TableHead>Upload Date</TableHead>
-                    <TableHead>File Size</TableHead>
                     <TableHead>Records</TableHead>
-                    <TableHead>Year</TableHead>
+                    <TableHead>Census Year</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Download Data Summary</TableHead>
                     <TableHead>View Data Summary</TableHead>
@@ -254,17 +252,10 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                       <TableCell className="font-medium">{record.tableName}</TableCell>
                       <TableCell>
                         <div className="flex items-center">
-                          <FileText className="h-4 w-4 mr-2 text-gray-500" />
-                          {record.filename}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
                           <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                           {new Date(record.uploadDate).toLocaleString()}
                         </div>
                       </TableCell>
-                      <TableCell>{formatFileSize(record.fileSizeBytes)}</TableCell>
                       <TableCell>{record.recordCount?.toLocaleString() || "N/A"}</TableCell>
                       <TableCell>{record.censusYear}</TableCell>
                       <TableCell>{getStatusBadge(record.status)}</TableCell>
@@ -331,18 +322,12 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                   <label className="text-sm font-medium text-gray-700">Table Name</label>
                   <p className="text-sm text-gray-900 mt-1">{selectedRecord.tableName}</p>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Filename</label>
-                  <p className="text-sm text-gray-900 mt-1">{selectedRecord.filename}</p>
-                </div>
+                {/* Filename removed as requested */}
                 <div>
                   <label className="text-sm font-medium text-gray-700">Upload Date</label>
                   <p className="text-sm text-gray-900 mt-1">{new Date(selectedRecord.uploadDate).toLocaleString()}</p>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">File Size</label>
-                  <p className="text-sm text-gray-900 mt-1">{formatFileSize(selectedRecord.fileSizeBytes)}</p>
-                </div>
+                {/* File Size removed as requested */}
                 <div>
                   <label className="text-sm font-medium text-gray-700">Record Count</label>
                   <p className="text-sm text-gray-900 mt-1">{selectedRecord.recordCount?.toLocaleString() || "N/A"}</p>
