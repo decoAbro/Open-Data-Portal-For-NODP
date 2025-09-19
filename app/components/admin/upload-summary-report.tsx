@@ -36,6 +36,31 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   const [uploadedByFilter, setUploadedByFilter] = useState<string>("")
   const [tableNameFilter, setTableNameFilter] = useState<string>("")
   const [yearFilter, setYearFilter] = useState<string>("")
+  const [statusUpdating, setStatusUpdating] = useState(false)
+  const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null)
+  const [viewLoadingId, setViewLoadingId] = useState<number | null>(null)
+  // Update status handler
+  const handleUpdateStatus = async (recordId: number, newStatus: string) => {
+    setStatusUpdating(true)
+    setStatusUpdateError(null)
+    try {
+      const res = await fetch(`/api/upload-history-admin/update-status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: recordId, status: newStatus })
+      })
+      if (!res.ok) throw new Error("Failed to update status")
+      // Update local state for immediate feedback
+      setUploadHistory(prev => prev.map(r => r.id === recordId ? { ...r, status: newStatus } : r))
+      if (selectedRecord && selectedRecord.id === recordId) {
+        setSelectedRecord({ ...selectedRecord, status: newStatus })
+      }
+    } catch (e: any) {
+      setStatusUpdateError(e.message || "Error updating status")
+    } finally {
+      setStatusUpdating(false)
+    }
+  }
 
   useEffect(() => {
     fetchUploadHistory()
@@ -72,6 +97,20 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
+      case "approved":
+        return (
+          <Badge className="bg-green-100 text-green-800 border-0">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Approved
+          </Badge>
+        )
+      case "rejected":
+        return (
+          <Badge className="bg-red-100 text-red-800 border-0">
+            <XCircle className="h-3 w-3 mr-1" />
+            Rejected
+          </Badge>
+        )
       case "success":
         return (
           <Badge className="bg-green-100 text-green-800 border-0">
@@ -97,8 +136,13 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   }
 
   const handleViewDetails = (record: UploadRecord) => {
-    setSelectedRecord(record)
-    setShowDetailsDialog(true)
+    setViewLoadingId(record.id)
+    // Simulate async loading for UX, or replace with real fetch if needed
+    setTimeout(() => {
+      setSelectedRecord(record)
+      setShowDetailsDialog(true)
+      setViewLoadingId(null)
+    }, 400)
   }
 
   if (loading) {
@@ -205,7 +249,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                     <TableHead>Year</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Download Data Summary</TableHead>
-                    <TableHead>View Data Summary</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -250,8 +294,18 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Button size="sm" variant="outline" onClick={() => handleViewDetails(record)}>
-                          View Summary
+                        <Button
+                          size="sm"
+                          variant="default"
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={() => handleViewDetails(record)}
+                          disabled={viewLoadingId === record.id}
+                        >
+                          {viewLoadingId === record.id ? (
+                            <span className="flex items-center"><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>Viewing...</span>
+                          ) : (
+                            "View"
+                          )}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -285,10 +339,10 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                   <label className="text-sm font-medium text-gray-700">Table Name</label>
                   <p className="text-sm text-gray-900 mt-1">{selectedRecord.tableName}</p>
                 </div>
-                 <div>
-                   <label className="text-sm font-medium text-gray-700">User Name</label>
-                   <p className="text-sm text-gray-900 mt-1">{selectedRecord.username}</p>
-                 </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">User Name</label>
+                  <p className="text-sm text-gray-900 mt-1">{selectedRecord.username}</p>
+                </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Upload Date</label>
                   <p className="text-sm text-gray-900 mt-1">{new Date(selectedRecord.uploadDate).toLocaleString()}</p>
@@ -303,7 +357,32 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Status</label>
-                  <div className="mt-1">{getStatusBadge(selectedRecord.status)}</div>
+                  <div className="mt-1 flex items-center gap-2">
+                    {getStatusBadge(selectedRecord.status)}
+                    {selectedRecord.status.toLowerCase() === "in-review" && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={statusUpdating}
+                          onClick={() => handleUpdateStatus(selectedRecord.id, "Approved")}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={statusUpdating}
+                          onClick={() => handleUpdateStatus(selectedRecord.id, "Rejected")}
+                        >
+                          Reject
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                  {statusUpdateError && (
+                    <div className="text-xs text-red-600 mt-1">{statusUpdateError}</div>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">PDF File</label>
