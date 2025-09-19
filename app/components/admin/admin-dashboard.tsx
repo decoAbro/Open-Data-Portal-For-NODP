@@ -37,7 +37,7 @@ import {
   getAdminPassword,
   masterReset,
 } from "../../utils/storage"
-import UploadHistory from "./upload-summary-report"
+import UploadHistory from "./approval-history-management"
 
 interface AdminDashboardProps {
   onLogout: () => void
