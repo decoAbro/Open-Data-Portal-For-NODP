@@ -56,6 +56,7 @@ interface DatabaseStatus {
 
 export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [showUploadWindow, setShowUploadWindow] = useState(false)
+  const [openingUploadWindow, setOpeningUploadWindow] = useState(false)
   const [uploadDeadlineDate, setUploadDeadlineDate] = useState("")
   const [uploadDeadlineTime, setUploadDeadlineTime] = useState("")
   const [uploadMessage, setUploadMessage] = useState("")
@@ -141,18 +142,20 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setDbLoading(false)
   }
 
-  const handleOpenWindow = () => {
+  const handleOpenWindow = async () => {
     if (!uploadDeadlineDate || !uploadDeadlineTime || !uploadMessage || !uploadYear) {
       return
     }
 
+    setOpeningUploadWindow(true)
     // Combine date and time into a single ISO string
     const deadlineDateTime = new Date(`${uploadDeadlineDate}T${uploadDeadlineTime}:00`)
     const deadline = deadlineDateTime.toISOString()
 
-    openUploadWindow(deadline, uploadMessage, uploadYear)
+    await openUploadWindow(deadline, uploadMessage, uploadYear)
     setShowUploadWindow(false)
-    checkWindowStatus()
+    await checkWindowStatus()
+    setOpeningUploadWindow(false)
   }
 
   const handleCloseWindow = () => {
@@ -483,11 +486,15 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <div className="flex justify-end">
                         <Button
                           onClick={handleOpenWindow}
-                          disabled={!uploadDeadlineDate || !uploadDeadlineTime || !uploadMessage || !uploadYear}
-                          className="bg-green-600 hover:bg-green-700"
+                          disabled={openingUploadWindow || !uploadDeadlineDate || !uploadDeadlineTime || !uploadMessage || !uploadYear}
+                          className="bg-green-600 hover:bg-green-700 flex items-center"
                         >
-                          <Upload className="h-4 w-4 mr-2" />
-                          Open Upload Window
+                          {openingUploadWindow ? (
+                            <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                          ) : (
+                            <Upload className="h-4 w-4 mr-2" />
+                          )}
+                          {openingUploadWindow ? "Opening..." : "Open Upload Window"}
                         </Button>
                       </div>
                     </CardContent>
