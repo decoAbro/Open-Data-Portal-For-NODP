@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import useSWR from "swr"
+import { fetcher } from "@/utils/swr-fetcher"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -29,34 +31,20 @@ interface UploadHistoryProps {
 }
 
 export default function UploadHistory({ username }: UploadHistoryProps) {
-  const [uploadHistory, setUploadHistory] = useState<UploadRecord[]>([])
-  const [loading, setLoading] = useState(true)
   const [selectedRecord, setSelectedRecord] = useState<UploadRecord | null>(null)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [yearFilter, setYearFilter] = useState<string>("")
   const [downloadingAll, setDownloadingAll] = useState(false)
 
-  useEffect(() => {
-    fetchUploadHistory()
-  }, [username])
+  // Use SWR for caching and background refresh
+  const { data, isLoading, mutate } = useSWR(
+    username ? `/api/upload-history?username=${encodeURIComponent(username)}` : null,
+    fetcher,
+    { refreshInterval: 60000 } // Optional: auto-refresh every 60s
+  )
+  const uploadHistory: UploadRecord[] = data?.uploadHistory || []
 
-  const fetchUploadHistory = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch(`/api/upload-history?username=${encodeURIComponent(username)}`)
-
-      if (response.ok) {
-        const data = await response.json()
-        setUploadHistory(data.uploadHistory || [])
-      } else {
-        console.error("Failed to fetch upload history")
-      }
-    } catch (error) {
-      console.error("Error fetching upload history:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Remove fetchUploadHistory and useEffect (SWR handles fetching)
 
   const formatFileSize = (bytes: number) => {
     if (bytes >= 1024 * 1024 * 1024) {
@@ -114,7 +102,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
     setShowDetailsDialog(true)
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -315,7 +303,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                             try {
                               const res = await fetch(`/api/upload-history/delete?id=${record.id}`, { method: "DELETE" });
                               if (!res.ok) throw new Error("Failed to delete record");
-                              setUploadHistory((prev) => prev.filter((r) => r.id !== record.id));
+                              mutate(); // Revalidate cache after delete
                             } catch (e) {
                               alert("Could not delete record");
                             }

@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Username is required" }, { status: 400 })
     }
 
-    // Query upload_records table for the specific user
+    // Query upload_records table for the specific user (exclude pdf_file and json_data for speed)
     const query = `
       SELECT 
         id,
@@ -59,8 +59,9 @@ export async function GET(request: NextRequest) {
         census_year,
         status,
         error_message,
-        json_data,
-        pdf_file
+        -- json_data, -- Exclude from main query
+        -- pdf_file   -- Exclude from main query
+        CASE WHEN pdf_file IS NOT NULL THEN 1 ELSE 0 END AS has_pdf
       FROM upload_records 
       WHERE username = @username
       ORDER BY upload_date DESC
@@ -80,8 +81,9 @@ export async function GET(request: NextRequest) {
       censusYear: record.census_year,
       status: record.status,
       errorMessage: record.error_message,
-      json_data: record.json_data,
-      pdf_file: record.pdf_file ? `/api/upload-history?downloadPdfId=${record.id}` : null,
+      // Only provide download link if PDF exists
+      pdf_file: record.has_pdf ? `/api/upload-history?downloadPdfId=${record.id}` : null,
+      // json_data: not included for speed
     }))
 
     return NextResponse.json({ uploadHistory })
