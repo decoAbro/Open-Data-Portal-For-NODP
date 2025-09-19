@@ -27,7 +27,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Image from "next/image"
 import UserManagement from "./user-management"
-import ApprovalVerification from "./approval-verification"
 import {
   openUploadWindow,
   closeUploadWindow,
@@ -385,10 +384,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <Database className="h-4 w-4 mr-2" />
                 Stage Data Status
               </TabsTrigger>
-              <TabsTrigger value="approval-verification" className="flex items-center">
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Approval & Verification
-              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="upload-management">
@@ -565,9 +560,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               <DatabaseDataStatus />
             </TabsContent>
 
-            <TabsContent value="approval-verification">
-              <ApprovalVerification />
-            </TabsContent>
           </Tabs>
         </div>
       </div>
