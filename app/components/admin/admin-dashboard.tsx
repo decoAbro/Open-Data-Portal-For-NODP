@@ -27,6 +27,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Image from "next/image"
 import UserManagement from "./user-management"
+import ApprovalVerification from "./approval-verification"
 import {
   openUploadWindow,
   closeUploadWindow,
@@ -562,6 +563,19 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
             <TabsContent value="database-status">
               <DatabaseDataStatus />
+            </TabsContent>
+
+            <TabsContent value="approval-verification">
+              {/* Example data and handlers for Approval & Verification */}
+              <ApprovalVerification
+                records={[
+                  { id: '1', name: 'Record 1', status: 'in review' },
+                  { id: '2', name: 'Record 2', status: 'approved' },
+                  { id: '3', name: 'Record 3', status: 'in review' },
+                ]}
+                onApprove={(id) => alert(`Approved record ${id}`)}
+                onReject={(id) => alert(`Rejected record ${id}`)}
+              />
             </TabsContent>
           </Tabs>
         </div>
