@@ -1,6 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
+interface Notification {
+  id: number;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
@@ -36,6 +42,36 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
   const [uploadHistory, setUploadHistory] = useState<any[]>([])
   const [selectedUpload, setSelectedUpload] = useState<any>(null)
   const [showPreviewDialog, setShowPreviewDialog] = useState(false)
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [notifLoading, setNotifLoading] = useState(false)
+  // Fetch notifications for the user
+  useEffect(() => {
+    if (!isClient || !username) return;
+    const fetchNotifications = async () => {
+      setNotifLoading(true);
+      try {
+        const res = await fetch(`/api/notifications?userId=${encodeURIComponent(username)}`);
+        if (res.ok) {
+          const json = await res.json();
+          setNotifications(json.notifications || []);
+        }
+      } catch (e) {
+        setNotifications([]);
+      } finally {
+        setNotifLoading(false);
+      }
+    };
+    fetchNotifications();
+  }, [isClient, username]);
+
+  const handleMarkNotifRead = async (id: number) => {
+    await fetch('/api/notifications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    setNotifications((prev) => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+  };
 
   const tables = getTablesList()
   const [currentYear, setCurrentYear] = useState("")
@@ -162,8 +198,48 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
     setShowPreviewDialog(true)
   }
 
+  // Unread notification count
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+
   return (
     <div className="space-y-6">
+      {/* In-App Notifications */}
+      <div className="mb-4">
+        <Card className="border-blue-200">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-blue-800 flex items-center">
+              Notifications
+              {notifLoading ? (
+                <span className="ml-2 animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></span>
+              ) : unreadCount > 0 ? (
+                <span className="ml-2 bg-blue-600 text-white rounded-full px-2 py-0.5 text-xs">{unreadCount} new</span>
+              ) : null}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {notifications.length === 0 && !notifLoading && (
+              <div className="text-gray-500 text-sm">No notifications yet.</div>
+            )}
+            {notifications.length > 0 && (
+              <ul className="divide-y divide-gray-100">
+                {notifications.map((notif) => (
+                  <li key={notif.id} className={`py-2 flex items-center justify-between ${notif.is_read ? 'opacity-60' : ''}`}>
+                    <div>
+                      <span className="block text-sm">{notif.message}</span>
+                      <span className="block text-xs text-gray-400">{new Date(notif.created_at).toLocaleString()}</span>
+                    </div>
+                    {!notif.is_read && (
+                      <Button size="sm" variant="outline" className="ml-2" onClick={() => handleMarkNotifRead(notif.id)}>
+                        Mark as read
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      </div>
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Tables Uploaded */}

@@ -21,14 +21,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing id or status" }, { status: 400 });
     }
     pool = await sql.connect(dbConfig);
+    // Get username for notification
+    const userQuery = `SELECT username FROM upload_records WHERE id = @id`;
+    const userResult = await pool.request().input("id", sql.Int, id).query(userQuery);
+    if (!userResult.recordset[0]) {
+      return NextResponse.json({ error: "Record not found" }, { status: 404 });
+    }
+    const username = userResult.recordset[0].username;
+
+    // Update status
     const updateQuery = `UPDATE upload_records SET status = @status WHERE id = @id`;
     const result = await pool.request()
       .input("status", sql.VarChar, status)
       .input("id", sql.Int, id)
       .query(updateQuery);
     if (result.rowsAffected[0] === 0) {
-      return NextResponse.json({ error: "Record not found or not updated" }, { status: 404 });
+      return NextResponse.json({ error: "Record not updated" }, { status: 404 });
     }
+
+    // Insert notification for user
+    let notifMsg = "";
+    if (status.toLowerCase() === "approved") {
+      notifMsg = "Your uploaded file has been approved.";
+    } else if (status.toLowerCase() === "rejected") {
+      notifMsg = "Your uploaded file has been rejected.";
+    } else {
+      notifMsg = `Status updated to: ${status}`;
+    }
+    const notifQuery = `INSERT INTO notifications (user_id, message, is_read, created_at) VALUES (@user_id, @message, 0, GETDATE())`;
+    await pool.request()
+      .input("user_id", sql.NVarChar, username)
+      .input("message", sql.NVarChar, notifMsg)
+      .query(notifQuery);
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error updating status:", error);
