@@ -378,7 +378,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               </TabsTrigger>
                 <TabsTrigger value="upload-summary-report" className="flex items-center">
                   <Clock className="h-4 w-4 mr-2" />
-                  Upload History
+                  Approval And History Management
                 </TabsTrigger>
               <TabsTrigger value="database-status" className="flex items-center">
                 <Database className="h-4 w-4 mr-2" />
