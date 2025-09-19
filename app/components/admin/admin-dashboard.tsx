@@ -73,6 +73,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState("upload-management")
   const [dbStatus, setDbStatus] = useState<DatabaseStatus | null>(null)
   const [dbLoading, setDbLoading] = useState(false)
+  const [closingUploadWindow, setClosingUploadWindow] = useState(false)
 
 
   // Initialize client-side state
@@ -158,9 +159,11 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setOpeningUploadWindow(false)
   }
 
-  const handleCloseWindow = () => {
-    closeUploadWindow()
-    checkWindowStatus()
+  const handleCloseWindow = async () => {
+    setClosingUploadWindow(true)
+    await closeUploadWindow()
+    await checkWindowStatus()
+    setClosingUploadWindow(false)
   }
 
   const handlePasswordChange = () => {
@@ -413,8 +416,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                             </p>
                           </div>
                         </div>
-                        <Button variant="destructive" onClick={handleCloseWindow}>
-                          Close Upload Window
+                        <Button
+                          variant="destructive"
+                          onClick={handleCloseWindow}
+                          disabled={closingUploadWindow}
+                          className="flex items-center"
+                        >
+                          {closingUploadWindow ? (
+                            <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                          ) : null}
+                          {closingUploadWindow ? "Closing..." : "Close Upload Window"}
                         </Button>
                       </div>
                     ) : (
