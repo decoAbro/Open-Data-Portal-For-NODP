@@ -167,6 +167,11 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
     return byUser && byTable && byYear
   })
 
+  // Status counts for summary cards
+  const approvedCount = filteredUploadHistory.filter(r => r.status?.toLowerCase() === "approved").length;
+  const rejectedCount = filteredUploadHistory.filter(r => r.status?.toLowerCase() === "rejected").length;
+  const inReviewCount = filteredUploadHistory.filter(r => r.status?.toLowerCase() === "in-review").length;
+
   return (
     <div className="space-y-6">
       {/* Filter Bar */}
@@ -214,8 +219,8 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
           </select>
         </div>
       </div>
-      {/* Summary Cards */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Status Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-blue-800">Total Uploads</CardTitle>
@@ -224,6 +229,36 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
           <CardContent>
             <div className="text-2xl font-bold text-blue-900">{filteredUploadHistory.length}</div>
             <p className="text-xs text-blue-700 mt-1">All time uploads</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-green-800">Approved</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-900">{approvedCount}</div>
+            <p className="text-xs text-green-700 mt-1">Approved uploads</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-red-800">Rejected</CardTitle>
+            <XCircle className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-900">{rejectedCount}</div>
+            <p className="text-xs text-red-700 mt-1">Rejected uploads</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-yellow-800">In-Review</CardTitle>
+            <AlertCircle className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-900">{inReviewCount}</div>
+            <p className="text-xs text-yellow-700 mt-1">In-Review uploads</p>
           </CardContent>
         </Card>
       </div>
