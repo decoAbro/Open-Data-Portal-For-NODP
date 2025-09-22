@@ -483,6 +483,15 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                     setDeletingRecordId(null)
                     return
                   }
+                  if (data) {
+                    const rows = data.deletedDataRows ?? 0
+                    const reason = data.cascadeReason
+                    if (rows > 0) {
+                      alert(`Deleted record and ${rows} related data row${rows !== 1 ? 's' : ''}.`)
+                    } else {
+                      alert(`Record deleted. No related rows removed (${reason || 'no match'}).`)
+                    }
+                  }
                   setDeleteDialogRecord(null)
                   setDeleting(false)
                   setDeletingRecordId(null)

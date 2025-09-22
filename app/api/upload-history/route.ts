@@ -99,6 +99,9 @@ export async function GET(request: NextRequest) {
 
 // DELETE /api/upload-history?id=123
 // Only allows deletion of records whose status is 'rejected'.
+// Also attempts to delete related data rows from the original data table, matching any supported user column variant.
+// Supported user column candidates (case-insensitive): username, user_name, uploadedBy, uploaded_by, uploaded_by_user, created_by.
+// Resolves table schema (defaults to dbo) and uses QUOTENAME for safety; only proceeds if a user column exists.
 export async function DELETE(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const id = searchParams.get("id")
@@ -112,7 +115,7 @@ export async function DELETE(request: NextRequest) {
     const check = await pool
       .request()
       .input("id", sql.Int, id)
-      .query(`SELECT status FROM upload_records WHERE id = @id`)
+      .query(`SELECT id, status, username, table_name, census_year FROM upload_records WHERE id = @id`)
 
     if (!check.recordset[0]) {
       return NextResponse.json({ error: "Record not found" }, { status: 404 })
@@ -121,9 +124,79 @@ export async function DELETE(request: NextRequest) {
     if (check.recordset[0].status?.toLowerCase() !== "rejected") {
       return NextResponse.json({ error: "Only rejected records can be deleted" }, { status: 403 })
     }
+  const { username, table_name } = check.recordset[0]
 
-    await pool.request().input("id", sql.Int, id).query(`DELETE FROM upload_records WHERE id = @id`)
-    return NextResponse.json({ success: true })
+    // Whitelist pattern for table names to avoid injection. Only allow letters, numbers, underscore.
+    if (!/^[A-Za-z0-9_]+$/.test(table_name)) {
+      return NextResponse.json({ error: "Unsafe table name" }, { status: 400 })
+    }
+
+    // Begin transaction for cascading delete
+    const transaction = new sql.Transaction(pool)
+    await transaction.begin()
+    try {
+      const requestTx = new sql.Request(transaction)
+
+      // Identify schema & user column variant
+      const columnCandidates = [
+        'username', 'user_name', 'uploadedBy', 'uploaded_by', 'uploaded_by_user', 'created_by'
+      ]
+      // Fetch columns for the target table across schemas
+      const columnsQuery = `
+        SELECT s.name AS schema_name, o.name AS table_name, c.name AS column_name
+        FROM sys.objects o
+        INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
+        INNER JOIN sys.columns c ON c.object_id = o.object_id
+        WHERE o.type = 'U' AND o.name = @tbl
+      `
+      const columnsResult = await requestTx.input('tbl', sql.NVarChar, table_name).query(columnsQuery)
+
+      let schemaName: string | null = null
+      let matchedUserColumn: string | null = null
+      if (columnsResult.recordset.length > 0) {
+        schemaName = columnsResult.recordset[0].schema_name || 'dbo'
+        const availableColumnsLower = columnsResult.recordset.map(r => r.column_name.toLowerCase())
+        for (const candidate of columnCandidates) {
+          if (availableColumnsLower.includes(candidate.toLowerCase())) {
+            matchedUserColumn = columnsResult.recordset.find(r => r.column_name.toLowerCase() === candidate.toLowerCase())!.column_name
+            break
+          }
+        }
+      }
+
+      let deletedDataRows = 0
+      let cascadeReason = ''
+      if (!schemaName) {
+        cascadeReason = 'Table not found in any schema'
+      } else if (!matchedUserColumn) {
+        cascadeReason = 'No user ownership column found'
+      } else {
+        // Safe dynamic SQL using QUOTENAME for schema & table; parameterize username
+        const deleteStatement = `DELETE FROM ` +
+          `QUOTENAME(@sch) + '.' + QUOTENAME(@tbl) + ' WHERE ' + QUOTENAME(@col) + ' = @username'`
+        // Build dynamic SQL via sp_executesql pattern
+        const dynSql = `DECLARE @sql NVARCHAR(MAX);\n` +
+          `SET @sql = N'DELETE FROM ' + QUOTENAME(@sch) + '.' + QUOTENAME(@tbl) + N' WHERE ' + QUOTENAME(@col) + N' = @u';\n` +
+          `EXEC sp_executesql @sql, N'@u NVARCHAR(255)', @u = @usernameParam;`
+        // Because QUOTENAME cannot be parameterized directly inside dynamic string easily with sp_executesql when using variables, we emulate manually
+        // Simpler approach: construct final SQL in JS with validated identifiers.
+        const finalSql = `DELETE FROM ${schemaName ? `[${schemaName}]` : '[dbo]'}.[${table_name}] WHERE [${matchedUserColumn}] = @username`;
+        const delDataResult = await requestTx
+          .input('username', sql.NVarChar, username)
+          .query(finalSql)
+        deletedDataRows = delDataResult.rowsAffected[0] || 0
+        cascadeReason = deletedDataRows === 0 ? 'No matching rows' : 'OK'
+      }
+
+      // Delete upload record itself
+      await new sql.Request(transaction).input("id", sql.Int, id).query(`DELETE FROM upload_records WHERE id = @id`)
+      await transaction.commit()
+      return NextResponse.json({ success: true, deletedDataRows, userColumn: matchedUserColumn, schema: schemaName, cascadeReason })
+    } catch (innerErr) {
+      await transaction.rollback()
+      console.error('Cascade delete failed', innerErr)
+      return NextResponse.json({ error: 'Failed during cascading delete' }, { status: 500 })
+    }
   } catch (error) {
     console.error("Failed to delete upload record", error)
     return NextResponse.json({ error: "Failed to delete record" }, { status: 500 })
