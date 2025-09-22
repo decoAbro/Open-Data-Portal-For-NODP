@@ -48,6 +48,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   const [deleteDialogRecord, setDeleteDialogRecord] = useState<UploadRecord | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deletingRecordId, setDeletingRecordId] = useState<number | null>(null)
 
   // Use SWR for caching and background refresh
   const { data, isLoading, mutate } = useSWR(
@@ -310,13 +311,20 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                         <Button
                           size="sm"
                           variant="destructive"
-                          disabled={record.status.toLowerCase() !== "rejected"}
+                          disabled={record.status.toLowerCase() !== "rejected" || deletingRecordId === record.id}
                           onClick={() => {
                             setDeleteError(null)
                             setDeleteDialogRecord(record)
                           }}
                         >
-                          Delete
+                          {deletingRecordId === record.id ? (
+                            <span className="flex items-center gap-1">
+                              <span className="h-3 w-3 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
+                              Deleting...
+                            </span>
+                          ) : (
+                            'Delete'
+                          )}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -463,6 +471,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
               onClick={async () => {
                 if (!deleteDialogRecord) return
                 setDeleting(true)
+                setDeletingRecordId(deleteDialogRecord.id)
                 setDeleteError(null)
                 try {
                   const res = await fetch(`/api/upload-history?id=${deleteDialogRecord.id}`, { method: 'DELETE' })
@@ -471,18 +480,26 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                   if (!res.ok) {
                     setDeleteError(data?.error || 'Failed to delete record')
                     setDeleting(false)
+                    setDeletingRecordId(null)
                     return
                   }
                   setDeleteDialogRecord(null)
                   setDeleting(false)
+                  setDeletingRecordId(null)
                   mutate()
                 } catch (err) {
                   setDeleteError('Network error deleting record')
                   setDeleting(false)
+                  setDeletingRecordId(null)
                 }
               }}
             >
-              {deleting ? 'Deleting...' : 'Delete'}
+              {deleting ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
+                  Deleting...
+                </span>
+              ) : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
