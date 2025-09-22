@@ -246,6 +246,8 @@ export default function TableUploadTracker({
   uploadDeadline,
 }: TableUploadTrackerProps) {
   const [uploadedTables, setUploadedTables] = useState<string[]>([])
+  // Map of tableName -> raw status string returned from upload history (e.g. In-Review, approved, rejected, success)
+  const [tableStatuses, setTableStatuses] = useState<Record<string, string>>({})
   const [dataNotAvailableTables, setDataNotAvailableTables] = useState<string[]>([])
   const [selectedTable, setSelectedTable] = useState<string | null>(null)
   const [showUploadDialog, setShowUploadDialog] = useState(false)
@@ -278,6 +280,22 @@ export default function TableUploadTracker({
   const [BuildingSummary, setBuildingSummary] = useState<BuildingSummary | null>(null)
   const [RepeaterSummary, setRepeaterSummary] = useState<RepeaterSummary | null>(null)
   const [TeachingNonTeachingCategorySummary, setTeachingNonTeachingCategorySummary] = useState<TeachingNonTeachingCategorySummary | null>(null)
+
+  // Derive the display label the user requested from raw status values
+  const getDisplayStatus = (rawStatus?: string): string => {
+    if (!rawStatus) return 'Uploaded';
+    const normalized = rawStatus.toLowerCase();
+    if (normalized === 'in-review' || normalized === 'in_review') {
+      return 'Uploaded and In-Review';
+    }
+    if (normalized === 'approved' || normalized === 'success') {
+      return 'Success';
+    }
+    if (normalized === 'rejected') {
+      return 'Rejected';
+    }
+    return rawStatus; // passthrough for other states like rejected / failed
+  };
   const [TeachingNonTeachingDesignationSummary, setTeachingNonTeachingDesignationSummary] = useState<TeachingNonTeachingDesignationSummary | null>(null)
   const [TeachersProfessionalQualificationSummary, setTeachersProfessionalQualificationSummary] = useState<TeachersProfessionalQualificationSummary | null>(null)
   const [TeachersAcademicQualificationSummary, setTeachersAcademicQualificationSummary] = useState<TeachersAcademicQualificationSummary | null>(null)
@@ -384,15 +402,27 @@ const hasAnyUnknowns =
           const res = await fetch(`/api/upload-history?username=${encodeURIComponent(username)}`);
           if (res.ok) {
             const json = await res.json();
-            const uploadedTableNames = (json.uploadHistory || [])
+            const uploadedTableNames: string[] = [];
+            const statusMap: Record<string, string> = {};
+            (json.uploadHistory || [])
               .filter((record: any) => String(record.censusYear) === String(currentYear))
-              .map((record: any) => record.tableName);
+              .forEach((record: any) => {
+                if (!uploadedTableNames.includes(record.tableName)) {
+                  uploadedTableNames.push(record.tableName);
+                  // Attempt several possible field names for status
+                  const rawStatus = record.status || record.Status || record.approvalStatus || record.approval_status;
+                  if (rawStatus) statusMap[record.tableName] = String(rawStatus);
+                }
+              });
             setUploadedTables(uploadedTableNames);
+            setTableStatuses(statusMap);
           } else {
             setUploadedTables([]);
+            setTableStatuses({});
           }
         } catch (err) {
           setUploadedTables([]);
+          setTableStatuses({});
         }
 
         // Load data not available tables for this user from backend
@@ -3969,15 +3999,26 @@ const hasAnyUnknowns =
         const res = await fetch(`/api/upload-history?username=${encodeURIComponent(username)}`);
         if (res.ok) {
           const json = await res.json();
-          const uploadedTableNames = (json.uploadHistory || [])
+          const uploadedTableNames: string[] = [];
+          const statusMap: Record<string, string> = {};
+          (json.uploadHistory || [])
             .filter((record: any) => String(record.censusYear) === String(currentYear))
-            .map((record: any) => record.tableName);
+            .forEach((record: any) => {
+              if (!uploadedTableNames.includes(record.tableName)) {
+                uploadedTableNames.push(record.tableName);
+                const rawStatus = record.status || record.Status || record.approvalStatus || record.approval_status;
+                if (rawStatus) statusMap[record.tableName] = String(rawStatus);
+              }
+            });
           setUploadedTables(uploadedTableNames);
+          setTableStatuses(statusMap);
         } else {
           setUploadedTables([]);
+          setTableStatuses({});
         }
       } catch (err) {
         setUploadedTables([]);
+        setTableStatuses({});
       }
       
       // Show toast notification with a slight delay to ensure state is updated
@@ -4267,6 +4308,8 @@ const hasAnyUnknowns =
                 {tables.map((tableName, index) => {
                   const isUploaded = uploadedTables.includes(tableName)
                   const isDataNotAvailable = dataNotAvailableTables.includes(tableName)
+                  const rawStatus = tableStatuses[tableName]
+                  const displayStatus = isUploaded ? getDisplayStatus(rawStatus) : undefined
 
                   return (
                     <tr
@@ -4277,10 +4320,41 @@ const hasAnyUnknowns =
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{tableName}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {isUploaded ? (
-                          <Badge className="bg-green-100 text-green-800 border-0">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Uploaded
-                          </Badge>
+                          (() => {
+                            const normalized = (displayStatus || '').toLowerCase();
+                            if (normalized === 'rejected') {
+                              return (
+                                <Badge className="bg-red-100 text-red-800 border-0">
+                                  {/* Using the AlertCircle for cross/alert indication; replace with an X icon if available */}
+                                  <AlertCircle className="h-3 w-3 mr-1" />
+                                  {displayStatus}
+                                </Badge>
+                              )
+                            }
+                            if (normalized === 'success') {
+                              return (
+                                <Badge className="bg-green-100 text-green-800 border-0">
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  {displayStatus}
+                                </Badge>
+                              )
+                            }
+                            if (normalized === 'uploaded and in-review') {
+                              return (
+                                <Badge className="bg-blue-100 text-blue-800 border-0">
+                                  <AlertCircle className="h-3 w-3 mr-1" />
+                                  {displayStatus}
+                                </Badge>
+                              )
+                            }
+                            // default uploaded styling
+                            return (
+                              <Badge className="bg-green-100 text-green-800 border-0">
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                {displayStatus}
+                              </Badge>
+                            )
+                          })()
                         ) : isDataNotAvailable ? (
                           <Badge className="bg-orange-100 text-orange-800 border-0">
                             <AlertCircle className="h-3 w-3 mr-1" />
