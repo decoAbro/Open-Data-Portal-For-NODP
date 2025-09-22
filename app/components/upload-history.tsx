@@ -299,13 +299,19 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                           variant="destructive"
                           disabled={record.status.toLowerCase() !== "rejected"}
                           onClick={async () => {
-                            if (!window.confirm("Are you sure you want to delete this record?")) return;
+                            if (!window.confirm("Are you sure you want to delete this record?")) return
                             try {
-                              const res = await fetch(`/api/upload-history/delete?id=${record.id}`, { method: "DELETE" });
-                              if (!res.ok) throw new Error("Failed to delete record");
-                              mutate(); // Revalidate cache after delete
+                              const res = await fetch(`/api/upload-history?id=${record.id}`, { method: "DELETE" })
+                              let data: any = null
+                              try { data = await res.json() } catch {}
+                              if (!res.ok) {
+                                const msg = data?.error || "Failed to delete record"
+                                alert(msg)
+                                return
+                              }
+                              mutate()
                             } catch (e) {
-                              alert("Could not delete record");
+                              alert("Could not delete record")
                             }
                           }}
                         >
