@@ -6,6 +6,16 @@ import { fetcher } from "@/utils/swr-fetcher"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Clock, FileText, CheckCircle, XCircle, AlertCircle, Eye, Database, Calendar, HardDrive } from "lucide-react"
@@ -35,6 +45,9 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [yearFilter, setYearFilter] = useState<string>("")
   const [downloadingAll, setDownloadingAll] = useState(false)
+  const [deleteDialogRecord, setDeleteDialogRecord] = useState<UploadRecord | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   // Use SWR for caching and background refresh
   const { data, isLoading, mutate } = useSWR(
@@ -298,21 +311,9 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                           size="sm"
                           variant="destructive"
                           disabled={record.status.toLowerCase() !== "rejected"}
-                          onClick={async () => {
-                            if (!window.confirm("Are you sure you want to delete this record?")) return
-                            try {
-                              const res = await fetch(`/api/upload-history?id=${record.id}`, { method: "DELETE" })
-                              let data: any = null
-                              try { data = await res.json() } catch {}
-                              if (!res.ok) {
-                                const msg = data?.error || "Failed to delete record"
-                                alert(msg)
-                                return
-                              }
-                              mutate()
-                            } catch (e) {
-                              alert("Could not delete record")
-                            }
+                          onClick={() => {
+                            setDeleteError(null)
+                            setDeleteDialogRecord(record)
                           }}
                         >
                           Delete
@@ -433,6 +434,59 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteDialogRecord} onOpenChange={(open) => { if (!open) { setDeleteDialogRecord(null); setDeleting(false); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Upload Record</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteDialogRecord ? (
+                <>
+                  You are about to permanently delete the upload for table <span className="font-semibold">{deleteDialogRecord.tableName}</span>
+                  {deleteDialogRecord.censusYear && <> (Census Year: {deleteDialogRecord.censusYear})</>}.
+                  This action cannot be undone.
+                </>
+              ) : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {deleteError && (
+            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2">
+              {deleteError}
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              disabled={deleting}
+              onClick={async () => {
+                if (!deleteDialogRecord) return
+                setDeleting(true)
+                setDeleteError(null)
+                try {
+                  const res = await fetch(`/api/upload-history?id=${deleteDialogRecord.id}`, { method: 'DELETE' })
+                  let data: any = null
+                  try { data = await res.json() } catch {}
+                  if (!res.ok) {
+                    setDeleteError(data?.error || 'Failed to delete record')
+                    setDeleting(false)
+                    return
+                  }
+                  setDeleteDialogRecord(null)
+                  setDeleting(false)
+                  mutate()
+                } catch (err) {
+                  setDeleteError('Network error deleting record')
+                  setDeleting(false)
+                }
+              }}
+            >
+              {deleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
