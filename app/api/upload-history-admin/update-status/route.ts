@@ -21,13 +21,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing id or status" }, { status: 400 });
     }
     pool = await sql.connect(dbConfig);
-    // Get username for notification
-    const userQuery = `SELECT username FROM upload_records WHERE id = @id`;
+    // Get username and table name for notification
+    const userQuery = `SELECT username, table_name FROM upload_records WHERE id = @id`;
     const userResult = await pool.request().input("id", sql.Int, id).query(userQuery);
     if (!userResult.recordset[0]) {
       return NextResponse.json({ error: "Record not found" }, { status: 404 });
     }
-    const username = userResult.recordset[0].username;
+    const { username, table_name } = userResult.recordset[0];
 
     // Update status
     const updateQuery = `UPDATE upload_records SET status = @status WHERE id = @id`;
@@ -39,14 +39,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Record not updated" }, { status: 404 });
     }
 
-    // Insert notification for user
+    // Insert notification for user with table name context
     let notifMsg = "";
-    if (status.toLowerCase() === "approved") {
-      notifMsg = "Your uploaded file has been approved.";
-    } else if (status.toLowerCase() === "rejected") {
-      notifMsg = "Your uploaded file has been rejected.";
+    const prettyTable = table_name || "(unknown table)";
+    const lowerStatus = status.toLowerCase();
+    if (lowerStatus === "approved") {
+      notifMsg = `Table ${prettyTable}: Your upload has been approved.`;
+    } else if (lowerStatus === "rejected") {
+      notifMsg = `Table ${prettyTable}: Your upload has been rejected.`;
+    } else if (lowerStatus === "in-review") {
+      notifMsg = `Table ${prettyTable}: Your upload is now in review.`;
     } else {
-      notifMsg = `Status updated to: ${status}`;
+      notifMsg = `Table ${prettyTable}: Status updated to ${status}.`;
     }
     const notifQuery = `INSERT INTO notifications (user_id, message, is_read, created_at) VALUES (@user_id, @message, 0, GETDATE())`;
     await pool.request()
