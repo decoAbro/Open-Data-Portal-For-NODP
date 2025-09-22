@@ -53,7 +53,9 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
         const res = await fetch(`/api/notifications?userId=${encodeURIComponent(username)}`);
         if (res.ok) {
           const json = await res.json();
-          setNotifications(json.notifications || []);
+          // Store only unread notifications so read ones never appear
+          const unread = (json.notifications || []).filter((n: Notification) => !n.is_read);
+          setNotifications(unread);
         }
       } catch (e) {
         setNotifications([]);
@@ -70,7 +72,8 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id })
     });
-    setNotifications((prev) => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+    // Remove notification from local state after marking read so it won't show again
+    setNotifications((prev) => prev.filter(n => n.id !== id));
   };
 
   // Clear notifications only on the client (does NOT delete from database)
@@ -208,7 +211,8 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
   }
 
   // Unread notification count
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  // Since we only keep unread notifications locally, unreadCount = notifications.length
+  const unreadCount = notifications.length;
 
   return (
     <div className="space-y-6">
@@ -239,21 +243,19 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
           </CardHeader>
           <CardContent>
             {notifications.length === 0 && !notifLoading && (
-              <div className="text-gray-500 text-sm">No notifications yet.</div>
+              <div className="text-gray-500 text-sm">No unread notifications.</div>
             )}
             {notifications.length > 0 && (
               <ul className="divide-y divide-gray-100">
                 {notifications.map((notif) => (
-                  <li key={notif.id} className={`py-2 flex items-center justify-between ${notif.is_read ? 'opacity-60' : ''}`}>
+                  <li key={notif.id} className={`py-2 flex items-center justify-between`}>
                     <div>
                       <span className="block text-sm">{notif.message}</span>
                       <span className="block text-xs text-gray-400">{new Date(notif.created_at).toLocaleString()}</span>
                     </div>
-                    {!notif.is_read && (
-                      <Button size="sm" variant="outline" className="ml-2" onClick={() => handleMarkNotifRead(notif.id)}>
-                        Mark as read
-                      </Button>
-                    )}
+                    <Button size="sm" variant="outline" className="ml-2" onClick={() => handleMarkNotifRead(notif.id)}>
+                      Mark as read
+                    </Button>
                   </li>
                 ))}
               </ul>
