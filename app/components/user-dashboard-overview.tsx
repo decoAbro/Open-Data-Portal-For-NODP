@@ -73,6 +73,11 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
     setNotifications((prev) => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
   };
 
+  // Clear notifications only on the client (does NOT delete from database)
+  const handleClearNotifications = () => {
+    setNotifications([]);
+  };
+
   const tables = getTablesList()
   const [currentYear, setCurrentYear] = useState("")
 
@@ -219,6 +224,18 @@ export default function UserDashboardOverview({ username }: UserDashboardOvervie
                 <span className="ml-2 bg-blue-600 text-white rounded-full px-2 py-0.5 text-xs">{unreadCount} new</span>
               ) : null}
             </CardTitle>
+            <div className="flex items-center gap-2">
+              {notifications.length > 0 && !notifLoading && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-xs h-7 px-2 text-blue-700 hover:text-blue-900"
+                  onClick={handleClearNotifications}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {notifications.length === 0 && !notifLoading && (
