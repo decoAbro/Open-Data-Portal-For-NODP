@@ -49,6 +49,13 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [deletingRecordId, setDeletingRecordId] = useState<number | null>(null)
+  const [inlineMessage, setInlineMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null)
+  const pushMessage = (m: { type: 'success' | 'error' | 'info'; text: string }) => {
+    setInlineMessage(m)
+    setTimeout(() => {
+      setInlineMessage(prev => (prev === m ? null : prev))
+    }, 6000)
+  }
 
   // Use SWR for caching and background refresh
   const { data, isLoading, mutate } = useSWR(
@@ -163,7 +170,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
             setDownloadingAll(true);
             const recordsToDownload = filteredUploadHistory.filter(r => r.pdf_file);
             if (recordsToDownload.length === 0) {
-              alert('No summaries available to download.');
+              pushMessage({ type: 'info', text: 'No summaries available to download.' })
               setDownloadingAll(false);
               return;
             }
@@ -195,7 +202,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
               a.remove();
               window.URL.revokeObjectURL(url);
             } catch (e) {
-              alert('Could not merge and download PDFs.');
+              pushMessage({ type: 'error', text: 'Could not merge and download PDFs.' })
             } finally {
               setDownloadingAll(false);
             }
@@ -292,7 +299,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                                 a.remove();
                                 window.URL.revokeObjectURL(url);
                               } catch (e) {
-                                alert('Could not download PDF');
+                                pushMessage({ type: 'error', text: 'Could not download PDF.' })
                               }
                             }}
                           >
@@ -395,7 +402,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                             a.remove();
                             window.URL.revokeObjectURL(url);
                           } catch (e) {
-                            alert('Could not download PDF');
+                            pushMessage({ type: 'error', text: 'Could not download PDF.' })
                           }
                         }}
                       >
@@ -443,6 +450,29 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
         </DialogContent>
       </Dialog>
 
+      {/* Inline Message Banner (replaces browser alerts) */}
+      {inlineMessage && (
+        <div
+          className={
+            'rounded-md border px-4 py-3 text-sm flex items-start gap-2 ' +
+            (inlineMessage.type === 'error'
+              ? 'border-red-200 bg-red-50 text-red-800'
+              : inlineMessage.type === 'success'
+              ? 'border-green-200 bg-green-50 text-green-800'
+              : 'border-blue-200 bg-blue-50 text-blue-800')
+          }
+        >
+          {inlineMessage.type === 'error' && <AlertCircle className="h-4 w-4 mt-0.5" />}
+          {inlineMessage.type === 'success' && <CheckCircle className="h-4 w-4 mt-0.5" />}
+          {inlineMessage.type === 'info' && <Clock className="h-4 w-4 mt-0.5" />}
+          <span>{inlineMessage.text}</span>
+          <button
+            onClick={() => setInlineMessage(null)}
+            className="ml-auto text-xs underline decoration-dotted hover:opacity-80"
+          >Dismiss</button>
+        </div>
+      )}
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteDialogRecord} onOpenChange={(open) => { if (!open) { setDeleteDialogRecord(null); setDeleting(false); } }}>
         <AlertDialogContent>
@@ -487,9 +517,9 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                     const rows = data.deletedDataRows ?? 0
                     const reason = data.cascadeReason
                     if (rows > 0) {
-                      alert(`Deleted record and ${rows} related data row${rows !== 1 ? 's' : ''}.`)
+                      pushMessage({ type: 'success', text: `Deleted record and ${rows} related data row${rows !== 1 ? 's' : ''}.` })
                     } else {
-                      alert(`Record deleted. No related rows removed (${reason || 'no match'}).`)
+                      pushMessage({ type: 'info', text: `Record deleted. No related rows removed (${reason || 'no match'}).` })
                     }
                   }
                   setDeleteDialogRecord(null)
