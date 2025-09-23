@@ -36,6 +36,7 @@ import {
   setAdminPassword,
   getAdminPassword,
   masterReset,
+  checkUploadDeadlines,
 } from "../../utils/storage"
 import UploadHistory from "./approval-history-management"
 
@@ -89,6 +90,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       const status = await getUploadWindowStatus()
       setIsWindowOpen(status.isOpen)
       setCurrentDeadline(status.deadline)
+      // Each time we refresh status, also ensure deadlines are enforced
+      await checkUploadDeadlines()
     }
 
     checkStatus()
@@ -112,6 +115,28 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
     return () => clearInterval(interval)
   }, [isClient])
+
+  // Schedule an exact auto-close when a deadline exists and window is open
+  useEffect(() => {
+    if (!isClient) return
+    if (!isWindowOpen || !currentDeadline) return
+
+    const deadlineDate = new Date(currentDeadline)
+    const now = new Date()
+    const msUntilDeadline = deadlineDate.getTime() - now.getTime()
+
+    if (msUntilDeadline <= 0) {
+      // Already passed, enforce immediately
+      checkUploadDeadlines()
+      return
+    }
+
+    const timeoutId = setTimeout(() => {
+      checkUploadDeadlines()
+    }, msUntilDeadline)
+
+    return () => clearTimeout(timeoutId)
+  }, [isClient, isWindowOpen, currentDeadline])
 
   const checkWindowStatus = async () => {
     if (!isClient) return

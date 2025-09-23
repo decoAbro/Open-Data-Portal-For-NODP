@@ -588,6 +588,13 @@ export async function checkUploadDeadlines() {
     const now = new Date();
     let hasExpiredUsers = false;
 
+    // If the server still thinks the window is open but the deadline has passed, formally close it.
+    if (serverState.isOpen && serverState.deadline && new Date(serverState.deadline) < now) {
+      // Attempt to close the window on the server and update local state.
+      await closeUploadWindow();
+      return; // closeUploadWindow already adjusts users & notifications.
+    }
+
     const updatedUsers = users.map((user) => {
       // If server shows window is closed or deadline has passed
       if (!serverState.isOpen || (serverState.deadline && new Date(serverState.deadline) < now)) {
