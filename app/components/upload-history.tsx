@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import useSWR from "swr"
-import { fetcher } from "@/utils/swr-fetcher"
+import usePersistentSWR from '@/hooks/usePersistentSWR'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -58,10 +57,10 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   }
 
   // Use SWR for caching and background refresh
-  const { data, isLoading, mutate } = useSWR(
+  const { data, isLoading, mutate } = usePersistentSWR(
     username ? `/api/upload-history?username=${encodeURIComponent(username)}` : null,
-    fetcher,
-    { refreshInterval: 60000 } // Optional: auto-refresh every 60s
+    (url: string) => fetch(url).then(r => r.json()),
+    { ttl: 5 * 60 * 1000, refreshInterval: 60_000 }
   )
   const uploadHistory: UploadRecord[] = data?.uploadHistory || []
 

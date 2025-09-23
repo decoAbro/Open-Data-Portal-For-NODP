@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import usePersistentSWR from '@/hooks/usePersistentSWR'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -30,8 +31,12 @@ interface UploadHistoryProps {
 }
 
 export default function UploadHistory({ username }: UploadHistoryProps) {
-  const [uploadHistory, setUploadHistory] = useState<UploadRecord[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data, isLoading, mutate } = usePersistentSWR<{ uploadHistory: UploadRecord[] }>(
+    username ? `/api/upload-history-admin?username=${encodeURIComponent(username)}` : null,
+    (url: string) => fetch(url).then(r => r.json()),
+    { ttl: 5 * 60 * 1000, refreshInterval: 60_000 }
+  )
+  const uploadHistory = data?.uploadHistory || []
   const [selectedRecord, setSelectedRecord] = useState<UploadRecord | null>(null)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [uploadedByFilter, setUploadedByFilter] = useState<string>("")
@@ -49,7 +54,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
       setInlineMessage(prev => (prev === m ? null : prev))
     }, 6000)
   }
-  // Update status handler
+
   const handleUpdateStatus = async (recordId: number, newStatus: string) => {
     setStatusUpdating(true)
     setStatusUpdateError(null)
@@ -60,37 +65,20 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
         body: JSON.stringify({ id: recordId, status: newStatus })
       })
       if (!res.ok) throw new Error("Failed to update status")
-      // Update local state for immediate feedback
-      setUploadHistory(prev => prev.map(r => r.id === recordId ? { ...r, status: newStatus } : r))
+      mutate(prev => {
+        if (!prev) return prev
+        return { ...prev, uploadHistory: prev.uploadHistory.map(r => r.id === recordId ? { ...r, status: newStatus } : r) }
+      }, { revalidate: false })
       if (selectedRecord && selectedRecord.id === recordId) {
         setSelectedRecord({ ...selectedRecord, status: newStatus })
       }
+      mutate() // background revalidate
+      pushMessage({ type: 'success', text: `Status set to ${newStatus}.` })
     } catch (e: any) {
-      setStatusUpdateError(e.message || "Error updating status")
+      setStatusUpdateError(e.message || 'Error updating status')
+      pushMessage({ type: 'error', text: 'Status update failed.' })
     } finally {
       setStatusUpdating(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchUploadHistory()
-  }, [username])
-
-  const fetchUploadHistory = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch(`/api/upload-history-admin?username=${encodeURIComponent(username)}`)
-
-      if (response.ok) {
-        const data = await response.json()
-        setUploadHistory(data.uploadHistory || [])
-      } else {
-        console.error("Failed to fetch upload history")
-      }
-    } catch (error) {
-      console.error("Error fetching upload history:", error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -155,7 +143,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
     }, 400)
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -319,7 +307,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
             } catch (e) {
               pushMessage({ type: 'error', text: 'Could not merge and download PDFs.' })
             } finally {
-              setDownloadingAll(false);
+              setDownloadingAll(false)
             }
           }}
         >
