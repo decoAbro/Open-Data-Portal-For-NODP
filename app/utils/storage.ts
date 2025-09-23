@@ -55,6 +55,7 @@ export interface DataNotAvailableRecord {
 
 // Storage keys
 const USERS_STORAGE_KEY = "pie-portal-users"
+const USERS_FETCHED_AT_KEY = "pie-portal-users-fetched-at"
 const NOTIFICATIONS_STORAGE_KEY = "pie-portal-notifications"
 const UPLOAD_HISTORY_KEY = "pie-portal-upload-history"
 const TABLE_UPLOADS_KEY = "pie-portal-table-uploads"
@@ -147,6 +148,15 @@ export function initializeStorage() {
     localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(initialUsers))
   }
 
+  // Attempt to refresh users from API in the background (non-blocking)
+  ;(async () => {
+    try {
+      await refreshUsersFromAPI()
+    } catch (e) {
+      console.warn("User sync from API failed during initializeStorage", e)
+    }
+  })()
+
   // Initialize notifications
   if (!localStorage.getItem(NOTIFICATIONS_STORAGE_KEY)) {
     localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify([]))
@@ -192,6 +202,70 @@ export function getUsers(): UserData[] {
   } catch (error) {
     console.error("Error getting users:", error)
     return initialUsers
+  }
+}
+
+// Internal helper to persist users and emit an event
+function storeUsers(users: UserData[]) {
+  localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users))
+  localStorage.setItem(USERS_FETCHED_AT_KEY, Date.now().toString())
+  // Notify interested components/hooks
+  window.dispatchEvent(new CustomEvent("usersUpdated"))
+}
+
+// Fetch users from the backend API and merge into local storage
+// force = true bypasses staleness checks
+export async function refreshUsersFromAPI(force = false): Promise<UserData[] | null> {
+  if (!isClient) return null
+  try {
+    // Basic staleness control: 5 minutes
+    const fetchedAtRaw = localStorage.getItem(USERS_FETCHED_AT_KEY)
+    const fetchedAt = fetchedAtRaw ? parseInt(fetchedAtRaw, 10) : 0
+    const isStale = Date.now() - fetchedAt > 5 * 60 * 1000
+    if (!force && !isStale) {
+      return getUsers()
+    }
+
+    const res = await fetch('/api/users', { cache: 'no-store' })
+    if (!res.ok) {
+      throw new Error(`Failed to fetch users: ${res.status}`)
+    }
+    const data = await res.json()
+    if (!data?.users || !Array.isArray(data.users)) {
+      throw new Error('Malformed users payload')
+    }
+
+    // Transform API users to local UserData shape
+    const transformed: UserData[] = data.users.map((u: any, idx: number) => {
+      const lastLoginISO = u.last_login || u.lastLogin || null
+      let lastLoginDisplay = ""
+      try {
+        lastLoginDisplay = lastLoginISO ? new Date(lastLoginISO).toLocaleString() : ""
+      } catch {
+        lastLoginDisplay = lastLoginISO || ""
+      }
+      return {
+        id: typeof u.id === 'number' ? u.id : idx + 1,
+        username: u.username || '',
+        lastLogin: lastLoginDisplay,
+        status: (u.status === 'inactive' ? 'inactive' : 'active'),
+        uploadPermission: false,
+        hasUploaded: false,
+      }
+    })
+
+    // Preserve existing client-only flags (uploadPermission, hasUploaded) if usernames match
+    const existing = getUsers()
+    const merged = transformed.map(apiUser => {
+      const match = existing.find(e => e.username === apiUser.username)
+      return match ? { ...apiUser, uploadPermission: match.uploadPermission, hasUploaded: match.hasUploaded, uploadDeadline: match.uploadDeadline } : apiUser
+    })
+
+    storeUsers(merged)
+    return merged
+  } catch (error) {
+    console.error('Error refreshing users from API:', error)
+    return null
   }
 }
 
