@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Clock, FileText, CheckCircle, XCircle, AlertCircle, Eye, Database, Calendar, HardDrive } from "lucide-react"
+import { PDFDocument } from 'pdf-lib'
 
 interface UploadRecord {
   id: number
@@ -40,6 +41,14 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null)
   const [viewLoadingId, setViewLoadingId] = useState<number | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("")
+  const [downloadingAll, setDownloadingAll] = useState(false)
+  const [inlineMessage, setInlineMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null)
+  const pushMessage = (m: { type: 'success' | 'error' | 'info'; text: string }) => {
+    setInlineMessage(m)
+    setTimeout(() => {
+      setInlineMessage(prev => (prev === m ? null : prev))
+    }, 6000)
+  }
   // Update status handler
   const handleUpdateStatus = async (recordId: number, newStatus: string) => {
     setStatusUpdating(true)
@@ -267,6 +276,63 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
           </select>
         </div>
       </div>
+      {/* Download All Summaries Button */}
+      <div className="flex justify-end mb-2">
+        <Button
+          size="sm"
+          className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+          variant="default"
+          disabled={downloadingAll}
+          onClick={async () => {
+            setDownloadingAll(true);
+            const recordsToDownload = filteredUploadHistory.filter(r => r.pdf_file);
+            if (recordsToDownload.length === 0) {
+              pushMessage({ type: 'info', text: 'No summaries available to download.' })
+              setDownloadingAll(false);
+              return;
+            }
+            try {
+              const pdfBuffers = await Promise.all(
+                recordsToDownload.map(async (record) => {
+                  const res = await fetch(record.pdf_file as string);
+                  if (!res.ok) throw new Error('Failed to download PDF');
+                  return await res.arrayBuffer();
+                })
+              );
+              const mergedPdf = await PDFDocument.create();
+              for (const pdfBytes of pdfBuffers) {
+                const pdf = await PDFDocument.load(pdfBytes);
+                const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                copiedPages.forEach((page) => mergedPdf.addPage(page));
+              }
+              const mergedPdfBytes = await mergedPdf.save();
+              const blob = new Blob([new Uint8Array(mergedPdfBytes)], { type: 'application/pdf' });
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'all-summaries.pdf';
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              window.URL.revokeObjectURL(url);
+              pushMessage({ type: 'success', text: 'Merged PDF downloaded.' })
+            } catch (e) {
+              pushMessage({ type: 'error', text: 'Could not merge and download PDFs.' })
+            } finally {
+              setDownloadingAll(false);
+            }
+          }}
+        >
+          {downloadingAll ? (
+            <span className="flex items-center">
+              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+              Downloading...
+            </span>
+          ) : (
+            'Download All Summaries'
+          )}
+        </Button>
+      </div>
       {/* Status Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
@@ -405,6 +471,29 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Inline Message Banner */}
+      {inlineMessage && (
+        <div
+          className={
+            'rounded-md border px-4 py-3 text-sm flex items-start gap-2 ' +
+            (inlineMessage.type === 'error'
+              ? 'border-red-200 bg-red-50 text-red-800'
+              : inlineMessage.type === 'success'
+              ? 'border-green-200 bg-green-50 text-green-800'
+              : 'border-blue-200 bg-blue-50 text-blue-800')
+          }
+        >
+          {inlineMessage.type === 'error' && <AlertCircle className="h-4 w-4 mt-0.5" />}
+          {inlineMessage.type === 'success' && <CheckCircle className="h-4 w-4 mt-0.5" />}
+          {inlineMessage.type === 'info' && <Clock className="h-4 w-4 mt-0.5" />}
+          <span>{inlineMessage.text}</span>
+          <button
+            onClick={() => setInlineMessage(null)}
+            className="ml-auto text-xs underline decoration-dotted hover:opacity-80"
+          >Dismiss</button>
+        </div>
+      )}
 
       {/* Details Dialog */}
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
