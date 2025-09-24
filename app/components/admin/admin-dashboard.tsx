@@ -79,6 +79,17 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [dbStatus, setDbStatus] = useState<DatabaseStatus | null>(null)
   const [dbLoading, setDbLoading] = useState(false)
   const [closingUploadWindow, setClosingUploadWindow] = useState(false)
+  const [pushing, setPushing] = useState(false)
+  const [pushResult, setPushResult] = useState<{
+    ok: boolean
+    startedAt?: string
+    finishedAt?: string
+    exitCode?: number | null
+    timedOut?: boolean
+    output?: string
+    error?: string
+    xmlPath?: string
+  } | null>(null)
 
 
   // Initialize client-side state
@@ -243,6 +254,20 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const year = e.target.value
     setCurrentYearState(year)
     setCurrentYear(year)
+  }
+
+  const handlePushNow = async () => {
+    setPushResult(null)
+    setPushing(true)
+    try {
+      const res = await fetch('/api/push-to-production', { method: 'POST' })
+      const data = await res.json()
+      setPushResult(data)
+    } catch (err: any) {
+      setPushResult({ ok: false, error: err?.message || 'Unknown error' })
+    } finally {
+      setPushing(false)
+    }
   }
 
 
@@ -613,13 +638,49 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         This feature allows admins to push approved data to production.
                       </AlertDescription>
                     </Alert>
-                    <div className="flex gap-2">
-                      <Button asChild>
-                        <a href="/push-to-production.html" target="_blank" rel="noopener noreferrer">
-                          <Rocket className="h-4 w-4 mr-2" />
-                          Push Now
-                        </a>
-                      </Button>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex gap-2">
+                        <Button onClick={handlePushNow} disabled={pushing} className="inline-flex items-center">
+                          {pushing ? (
+                            <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                          ) : (
+                            <Rocket className="h-4 w-4 mr-2" />
+                          )}
+                          {pushing ? 'Running…' : 'Push Now'}
+                        </Button>
+                      </div>
+                      {pushResult && (
+                        <div className="space-y-2">
+                          {pushResult.ok ? (
+                            <Alert className="bg-green-50 border-green-200">
+                              <AlertDescription className="text-green-800">
+                                Production push completed successfully.
+                                {pushResult.startedAt && pushResult.finishedAt && (
+                                  <span className="block text-xs text-green-900 mt-1">{new Date(pushResult.startedAt).toLocaleString()} → {new Date(pushResult.finishedAt).toLocaleString()}</span>
+                                )}
+                              </AlertDescription>
+                            </Alert>
+                          ) : (
+                            <Alert variant="destructive">
+                              <AlertDescription>
+                                Production push failed{typeof pushResult.exitCode !== 'undefined' && pushResult.exitCode !== null ? ` (code ${pushResult.exitCode})` : ''}{pushResult.timedOut ? ' — timed out' : ''}.
+                                {pushResult.error && (
+                                  <span className="block text-xs mt-1">{pushResult.error}</span>
+                                )}
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                          {(pushResult.output || pushResult.error) && (
+                            <details className="text-sm">
+                              <summary className="cursor-pointer select-none text-gray-700">Show detailed output</summary>
+                              <pre className="mt-2 whitespace-pre-wrap text-xs bg-gray-50 p-2 rounded border border-gray-200 max-h-64 overflow-auto">{(pushResult.output || '') + (pushResult.error ? `\nSTDERR:\n${pushResult.error}` : '')}</pre>
+                            </details>
+                          )}
+                          {pushResult.xmlPath && (
+                            <p className="text-xs text-gray-600">Config used: {pushResult.xmlPath}</p>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Logs Table */}
