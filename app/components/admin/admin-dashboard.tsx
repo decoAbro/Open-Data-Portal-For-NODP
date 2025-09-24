@@ -4,6 +4,9 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import useSWR from "swr"
+import { fetcher } from "@/utils/swr-fetcher"
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
@@ -17,11 +20,12 @@ import {
   FileJson,
   CheckCircle,
   XCircle,
-  Table,
+  Table as TableIcon,
   Bell,
   RotateCcw,
   AlertTriangle,
   Database,
+  Rocket,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -409,6 +413,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <Database className="h-4 w-4 mr-2" />
                 Stage Data Status
               </TabsTrigger>
+              <TabsTrigger value="push-to-production" className="flex items-center">
+                <Rocket className="h-4 w-4 mr-2" />
+                Push to Production
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="upload-management">
@@ -585,9 +593,113 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               <DatabaseDataStatus />
             </TabsContent>
 
+            <TabsContent value="push-to-production">
+              <div className="space-y-6">
+                <div>
+                  <h1 className="text-2xl font-bold text-blue-600 mb-2">Push to Production</h1>
+                  <p className="text-gray-600">Promote validated data from staging to the production database.</p>
+                </div>
+
+                <Card>
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center text-lg">
+                      <Rocket className="h-5 w-5 mr-2 text-blue-600" />
+                      Production Deployment
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Alert className="bg-blue-50 border-blue-200">
+                      <AlertDescription className="text-blue-800">
+                        This feature allows admins to push approved data to production.
+                      </AlertDescription>
+                    </Alert>
+                    <div className="flex gap-2">
+                      <Button asChild>
+                        <a href="/push-to-production.html" target="_blank" rel="noopener noreferrer">
+                          <Rocket className="h-4 w-4 mr-2" />
+                          Push Now
+                        </a>
+                      </Button>
+                    </div>
+
+                    {/* Logs Table */}
+                    <div className="pt-4">
+                      <LogsTable />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
           </Tabs>
         </div>
       </div>
     </TooltipProvider>
+  )
+}
+
+// LogsTable component for Push to Production tab
+function LogsTable() {
+  const { data, error, isLoading } = useSWR<{ logs: Array<{
+    id: number
+    timestamp: string
+    userId: number | null
+    tableName: string | null
+    instId: string | null
+    censusYear: number | null
+    errorMessage: string | null
+    javaErrorMessage: string | null
+  }> }>('/api/push-to-production/logs', fetcher)
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-gray-600">
+        <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></span>
+        Loading logs...
+      </div>
+    )
+  }
+
+  if (error) {
+    return <div className="text-sm text-red-600">Failed to load logs.</div>
+  }
+
+  const logs = data?.logs ?? []
+
+  return (
+    <div className="space-y-2">
+      <h2 className="text-sm font-semibold text-gray-700">Recent Push Activity</h2>
+      <Table>
+        <TableCaption>Latest 100 events</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[160px]">Time</TableHead>
+            <TableHead>User Id</TableHead>
+            <TableHead>Table</TableHead>
+            <TableHead>Inst Id</TableHead>
+            <TableHead>Census Year</TableHead>
+            <TableHead>Error Message</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {logs.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center text-sm text-gray-500">No events yet.</TableCell>
+            </TableRow>
+          ) : (
+            logs.map((log) => (
+              <TableRow key={log.id}>
+                <TableCell className="whitespace-nowrap">{new Date(log.timestamp).toLocaleString()}</TableCell>
+                <TableCell>{log.userId ?? '-'}</TableCell>
+                <TableCell className="max-w-[220px] truncate" title={log.tableName ?? undefined}>{log.tableName ?? '-'}</TableCell>
+                <TableCell className="max-w-[240px] truncate" title={log.instId ?? undefined}>{log.instId ?? '-'}</TableCell>
+                <TableCell>{log.censusYear ?? '-'}</TableCell>
+                <TableCell className="max-w-[360px] truncate" title={log.errorMessage ?? undefined}>{log.errorMessage ?? '-'}</TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
   )
 }
