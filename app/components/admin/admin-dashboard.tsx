@@ -415,6 +415,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <Database className="h-4 w-4 mr-2" />
                 Stage Data Status
               </TabsTrigger>
+              <TabsTrigger value="push-production" className="flex items-center">
+                <Upload className="h-4 w-4 mr-2" />
+                Push to Production
+              </TabsTrigger>
               {/* Deployment tab removed */}
             </TabsList>
 
@@ -590,6 +594,44 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
             <TabsContent value="database-status">
               <DatabaseDataStatus />
+            </TabsContent>
+
+            <TabsContent value="push-production">
+              <Card className="border-blue-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-lg">
+                    <Upload className="h-5 w-5 mr-2 text-blue-600" />
+                    Push Approved Data to Production
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Alert className="bg-blue-50 border-blue-200">
+                    <AlertDescription>
+                      This action will publish the latest approved / staged data to the public production environment.
+                      Ensure all validations and approvals are complete before proceeding.
+                    </AlertDescription>
+                  </Alert>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <p className="font-medium text-gray-800">Checklist before pushing:</p>
+                    <ul className="list-disc ml-6 space-y-1">
+                      <li>All required tables are present and validated in the staging environment.</li>
+                      <li>No pending critical approvals in the Approval & History Management tab.</li>
+                      <li>Database connection is healthy (see indicator in header).</li>
+                      <li>Any schema migrations (if needed) have already been applied.</li>
+                    </ul>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Button
+                      disabled
+                      className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                      title="Implementation pending"
+                    >
+                      Push Now (Coming Soon)
+                    </Button>
+                    <p className="text-xs text-gray-500">This button will trigger a production sync once implemented.</p>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Deployment content removed */}
