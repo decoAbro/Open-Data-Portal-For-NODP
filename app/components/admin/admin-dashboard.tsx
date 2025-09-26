@@ -80,6 +80,33 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [closingUploadWindow, setClosingUploadWindow] = useState(false)
   const [pushingProd, setPushingProd] = useState(false)
   const [pushResult, setPushResult] = useState<null | { success: boolean; message: string; details?: any }>(null)
+  const [pipelineLogs, setPipelineLogs] = useState<Array<{ logID: number; tableName: string; eventType: string; eventMessage: string; createdAt: string }>>([])
+  const [pipelineLogsLoading, setPipelineLogsLoading] = useState(false)
+  const [pipelineLogsError, setPipelineLogsError] = useState<string | null>(null)
+
+  const fetchPipelineLogs = async () => {
+    setPipelineLogsLoading(true)
+    setPipelineLogsError(null)
+    try {
+      const res = await fetch('/api/pipeline-logs?limit=100', { cache: 'no-store' })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to fetch logs')
+      }
+      setPipelineLogs(data.logs)
+    } catch (e) {
+      setPipelineLogsError(e instanceof Error ? e.message : 'Unknown error')
+    } finally {
+      setPipelineLogsLoading(false)
+    }
+  }
+
+  // Load logs when switching to push-production tab
+  useEffect(() => {
+    if (activeTab === 'push-production' && isClient) {
+      fetchPipelineLogs()
+    }
+  }, [activeTab, isClient])
   // Removed legacy deployment feature state
 
 
@@ -644,6 +671,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           } else {
                             const totalRows = data.tables?.reduce((acc: number, t: any) => acc + (t.loaded || 0), 0) || 0
                             setPushResult({ success: true, message: `Production push completed. Tables: ${data.tables?.length || 0}, Rows loaded: ${totalRows}` })
+                            // Refresh logs after successful push
+                            fetchPipelineLogs()
                           }
                         } catch (e) {
                           setPushResult({ success: false, message: e instanceof Error ? e.message : 'Unknown error' })
@@ -660,6 +689,62 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   {pushingProd && (
                     <p className="text-xs text-gray-500">This may take several minutes. Please don&apos;t close the page.</p>
                   )}
+                  {/* Pipeline Logs Section */}
+                  <div className="mt-6 border-t pt-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-gray-700 flex items-center">Pipeline Logs</h3>
+                      <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="sm" onClick={fetchPipelineLogs} disabled={pipelineLogsLoading}>
+                          {pipelineLogsLoading ? 'Refreshing...' : 'Refresh Logs'}
+                        </Button>
+                      </div>
+                    </div>
+                    {pipelineLogsError && (
+                      <Alert variant="destructive" className="mb-2">
+                        <AlertDescription>{pipelineLogsError}</AlertDescription>
+                      </Alert>
+                    )}
+                    <div className="max-h-80 overflow-auto border rounded-md bg-white">
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-100 sticky top-0 z-10">
+                          <tr>
+                            <th className="text-left px-2 py-1 w-36">Time</th>
+                            <th className="text-left px-2 py-1 w-32">Table</th>
+                            <th className="text-left px-2 py-1 w-24">Type</th>
+                            <th className="text-left px-2 py-1">Message</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pipelineLogsLoading && pipelineLogs.length === 0 && (
+                            <tr>
+                              <td colSpan={4} className="px-2 py-4 text-center text-gray-500">Loading logs...</td>
+                            </tr>
+                          )}
+                          {!pipelineLogsLoading && pipelineLogs.length === 0 && !pipelineLogsError && (
+                            <tr>
+                              <td colSpan={4} className="px-2 py-4 text-center text-gray-500">No logs found</td>
+                            </tr>
+                          )}
+                          {pipelineLogs.map(log => {
+                            const dt = new Date(log.createdAt)
+                            const displayTime = isNaN(dt.getTime()) ? log.createdAt : dt.toLocaleString()
+                            const truncated = log.eventMessage && log.eventMessage.length > 250 ? log.eventMessage.slice(0,247) + '...' : log.eventMessage || ''
+                            return (
+                              <tr key={log.logID} className="border-t hover:bg-gray-50">
+                                <td className="px-2 py-1 align-top whitespace-nowrap text-xs text-gray-600">{displayTime}</td>
+                                <td className="px-2 py-1 align-top font-medium text-gray-800">{log.tableName}</td>
+                                <td className="px-2 py-1 align-top">
+                                  <span className={`px-2 py-0.5 rounded text-xs font-semibold ${log.eventType === 'ERROR' ? 'bg-red-100 text-red-700' : log.eventType === 'INFO' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{log.eventType}</span>
+                                </td>
+                                <td className="px-2 py-1 align-top text-gray-700 text-xs">{truncated}</td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="mt-1 text-[10px] text-gray-400">Showing latest {pipelineLogs.length} entries. Stored in Stage.dbo.Pipeline_Log.</p>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
