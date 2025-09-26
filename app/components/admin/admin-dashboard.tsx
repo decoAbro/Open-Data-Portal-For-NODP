@@ -27,6 +27,9 @@ import {
   Database,
   FileSpreadsheet,
   Trash2,
+  LogOut,
+  Key,
+  Lock,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -105,6 +108,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [pipelineSearchTokens, setPipelineSearchTokens] = useState<string[]>([])
   // (debounce handled via useEffect)
   const [selectedLogIds, setSelectedLogIds] = useState<Set<number>>(new Set())
+  // Newly arrived logs (for flash highlight when auto-refresh is enabled)
+  const [newlyFlashedLogIds, setNewlyFlashedLogIds] = useState<Set<number>>(new Set())
   const [deletingLogs, setDeletingLogs] = useState(false)
   const allPageSelected = pipelineLogs.length > 0 && pipelineLogs.every(l => selectedLogIds.has(l.logID))
   const toggleSelectAllPage = () => {
@@ -173,10 +178,13 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
   }
 
-  const fetchPipelineLogs = async (opts?: { page?: number; resetPage?: boolean }) => {
-    setPipelineLogsLoading(true)
+  const fetchPipelineLogs = async (opts?: { page?: number; resetPage?: boolean; silent?: boolean }) => {
+    if (!opts?.silent) {
+      setPipelineLogsLoading(true)
+    }
     setPipelineLogsError(null)
     try {
+      const prevIds = new Set(pipelineLogs.map(l => l.logID))
       const page = opts?.page ?? (opts?.resetPage ? 1 : pipelineLogPage)
       const tableParam = pipelineFilterTable !== 'ALL' ? `&table=${encodeURIComponent(pipelineFilterTable)}` : ''
       const eventTypeParam = pipelineFilterEventType !== 'ALL' ? `&eventType=${encodeURIComponent(pipelineFilterEventType)}` : ''
@@ -193,28 +201,55 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       setPipelineTablesDistinct(data.tablesDistinct || [])
       setPipelineEventTypesDistinct(data.eventTypesDistinct || [])
       setPipelineSearchTokens(data.searchTokens || [])
+      // Highlight new rows only during auto-refresh (avoid noise on manual filter/search changes)
+      if (autoRefreshLogs) {
+        const incomingIds: number[] = (data.logs || []).map((l: any) => l.logID)
+        const newlyArrived = incomingIds.filter(id => !prevIds.has(id))
+        if (newlyArrived.length > 0) {
+          setNewlyFlashedLogIds(prev => {
+            const next = new Set(prev)
+            newlyArrived.forEach(id => {
+              if (!next.has(id)) {
+                next.add(id)
+                // Remove highlight after 1800ms
+                setTimeout(() => {
+                  setNewlyFlashedLogIds(current => {
+                    if (!current.has(id)) return current
+                    const copy = new Set(current)
+                    copy.delete(id)
+                    return copy
+                  })
+                }, 1800)
+              }
+            })
+            return next
+          })
+        }
+      }
     } catch (e) {
       setPipelineLogsError(e instanceof Error ? e.message : 'Unknown error')
     } finally {
-      setPipelineLogsLoading(false)
+      if (!opts?.silent) setPipelineLogsLoading(false)
     }
   }
 
-  // Load logs when switching to push-production tab
+  // Initial load & on filter/search/page size changes
   useEffect(() => {
     if (activeTab === 'push-production' && isClient) {
-      fetchPipelineLogs()
+      fetchPipelineLogs({ resetPage: true })
     }
-  }, [activeTab, isClient])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, isClient, pipelineFilterTable, pipelineFilterEventType, pipelineMessageSearch, pipelineLogPageSize])
 
-  // Auto refresh interval
+  // Silent polling (reintroduced after removing SSE stream)
   useEffect(() => {
     if (activeTab !== 'push-production' || !autoRefreshLogs) return
     const id = setInterval(() => {
-      fetchPipelineLogs()
-    }, 10000) // 10 seconds
+      // Only poll first page context; pagination fetches are manual via Prev/Next buttons
+      fetchPipelineLogs({ silent: true })
+    }, 2000) // 2s balanced interval
     return () => clearInterval(id)
-  }, [activeTab, autoRefreshLogs, pipelineLogPage, pipelineLogPageSize, pipelineFilterTable, pipelineFilterEventType])
+  }, [activeTab, autoRefreshLogs, pipelineLogPageSize, pipelineFilterTable, pipelineFilterEventType, pipelineMessageSearch])
 
   // Debounce message search input (400ms)
   useEffect(() => {
@@ -226,6 +261,13 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     return () => clearTimeout(handle)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pipelineMessageSearchInput])
+  
+  // Force auto refresh (stream) always on when viewing push-production tab (checkbox removed)
+  useEffect(() => {
+    if (activeTab === 'push-production' && !autoRefreshLogs) {
+      setAutoRefreshLogs(true)
+    }
+  }, [activeTab, autoRefreshLogs])
   // Removed legacy deployment feature state
 
 
@@ -469,7 +511,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
                 <Dialog open={showPasswordChange} onOpenChange={setShowPasswordChange}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <Key className="h-4 w-4" />
                       Change Password
                     </Button>
                   </DialogTrigger>
@@ -535,7 +578,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   </DialogContent>
                 </Dialog>
 
-                <Button variant="destructive" size="sm" onClick={onLogout}>
+                <Button variant="destructive" size="sm" onClick={onLogout} className="flex items-center gap-2">
+                  <LogOut className="h-4 w-4" />
                   Logout
                 </Button>
               </div>
@@ -608,7 +652,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         >
                           {closingUploadWindow ? (
                             <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-                          ) : null}
+                          ) : (
+                            <Lock className="h-4 w-4 mr-2" />
+                          )}
                           {closingUploadWindow ? "Closing..." : "Close Upload Window"}
                         </Button>
                       </div>
@@ -824,7 +870,11 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         }
                       }}
                     >
-                      {pushingProd && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>}
+                      {pushingProd ? (
+                        <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                      ) : (
+                        <Upload className="h-4 w-4 mr-2" />
+                      )}
                       {pushingProd ? 'Pushing...' : 'Push Now'}
                     </Button>
                     <p className="text-xs text-gray-500">Runs pipeline: copies staged tables to production.</p>
@@ -973,18 +1023,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                             {[25,50,100,150,200].map(sz => <option key={sz} value={sz}>{sz}</option>)}
                           </select>
                         </label>
-                        <label className="text-[11px] text-gray-600 flex items-center space-x-1">
-                          <input
-                            type="checkbox"
-                            className="accent-blue-600"
-                            checked={autoRefreshLogs}
-                            onChange={(e) => setAutoRefreshLogs(e.target.checked)}
-                          />
-                          <span>Auto (10s)</span>
-                        </label>
-                        <Button variant="outline" size="sm" onClick={() => fetchPipelineLogs()} disabled={pipelineLogsLoading}>
-                          {pipelineLogsLoading ? 'Refreshing...' : 'Refresh'}
-                        </Button>
                         <Button
                           variant="destructive"
                           size="icon"
@@ -1025,18 +1063,17 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                             <th className="text-left px-2 py-1 w-32">Table</th>
                             <th className="text-left px-2 py-1 w-24">Type</th>
                             <th className="text-left px-2 py-1">Message</th>
-                            <th className="text-left px-2 py-1 w-12">View</th>
                           </tr>
                         </thead>
                         <tbody>
                           {pipelineLogsLoading && pipelineLogs.length === 0 && (
                             <tr>
-                              <td colSpan={6} className="px-2 py-4 text-center text-gray-500">Loading logs...</td>
+                              <td colSpan={5} className="px-2 py-4 text-center text-gray-500">Loading logs...</td>
                             </tr>
                           )}
                           {!pipelineLogsLoading && pipelineLogs.length === 0 && !pipelineLogsError && (
                             <tr>
-                              <td colSpan={6} className="px-2 py-4 text-center text-gray-500">No logs found</td>
+                              <td colSpan={5} className="px-2 py-4 text-center text-gray-500">No logs found</td>
                             </tr>
                           )}
                           {pipelineLogs.map(log => {
@@ -1070,7 +1107,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                return parts
                              }
                             return (
-                              <tr key={log.logID} className="border-t hover:bg-gray-50">
+                              <tr key={log.logID} className={`border-t hover:bg-gray-50 transition-colors ${newlyFlashedLogIds.has(log.logID) ? 'bg-yellow-50' : ''}`}>
                                 <td className="px-2 py-1 align-top"><input type="checkbox" checked={selectedLogIds.has(log.logID)} onChange={() => toggleSelectOne(log.logID)} /></td>
                                 <td className="px-2 py-1 align-top whitespace-nowrap text-xs text-gray-600">{displayTime}</td>
                                 <td className="px-2 py-1 align-top font-medium text-gray-800">{log.tableName}</td>
@@ -1078,14 +1115,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                   <span className={`px-2 py-0.5 rounded text-xs font-semibold ${log.eventType === 'ERROR' ? 'bg-red-100 text-red-700' : log.eventType === 'INFO' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{log.eventType}</span>
                                 </td>
                                 <td className="px-2 py-1 align-top text-gray-700 text-xs">{renderHighlighted()}</td>
-                                <td className="px-2 py-1 align-top text-right">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-[10px] px-1 py-0 h-auto"
-                                    onClick={() => setSelectedLog(log)}
-                                  >View</Button>
-                                </td>
                               </tr>
                             )
                           })}
