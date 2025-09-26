@@ -30,6 +30,7 @@ import {
   LogOut,
   Key,
   Lock,
+  Copy,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -103,6 +104,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [pipelineFilterEventType, setPipelineFilterEventType] = useState<string>('ALL')
   const [autoRefreshLogs, setAutoRefreshLogs] = useState(false)
   const [selectedLog, setSelectedLog] = useState<null | { logID: number; tableName: string; eventType: string; eventMessage: string; createdAt: string }>(null)
+  const [copiedLogId, setCopiedLogId] = useState<number | null>(null)
   const [pipelineMessageSearch, setPipelineMessageSearch] = useState('')
   const [pipelineMessageSearchInput, setPipelineMessageSearchInput] = useState('')
   const [pipelineSearchTokens, setPipelineSearchTokens] = useState<string[]>([])
@@ -154,6 +156,27 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     } finally {
       setDeletingLogs(false)
     }
+  }
+  const handleResetPipelineFilters = () => {
+    const defaults = {
+      table: 'ALL',
+      eventType: 'ALL',
+      pageSize: 50,
+      search: ''
+    }
+    let changed = false
+    if (pipelineFilterTable !== defaults.table) { setPipelineFilterTable(defaults.table); changed = true }
+    if (pipelineFilterEventType !== defaults.eventType) { setPipelineFilterEventType(defaults.eventType); changed = true }
+    if (pipelineLogPageSize !== defaults.pageSize) { setPipelineLogPageSize(defaults.pageSize); changed = true }
+    if (pipelineMessageSearchInput !== defaults.search || pipelineMessageSearch !== defaults.search) {
+      setPipelineMessageSearchInput(defaults.search)
+      setPipelineMessageSearch(defaults.search)
+      setPipelineSearchTokens([])
+      changed = true
+    }
+    if (pipelineLogPage !== 1) { setPipelineLogPage(1); changed = true }
+    // Always fetch fresh list (avoid relying on multiple effects firing)
+    fetchPipelineLogs({ resetPage: true })
   }
   const handleExportCsv = async () => {
     try {
@@ -1024,17 +1047,34 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           </select>
                         </label>
                         <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleResetPipelineFilters}
+                          className="text-xs flex items-center gap-1"
+                          title="Reset table, type, page size & search"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" /> Reset Filters
+                        </Button>
+                        <Button
                           variant="destructive"
                           size="icon"
                           onClick={handleBulkDelete}
                           disabled={selectedLogIds.size===0 || deletingLogs}
                           title={selectedLogIds.size ? `Delete ${selectedLogIds.size} selected log(s)` : 'Select logs to delete'}
-                          className="h-8 w-8"
+                          className="h-8 w-8 relative"
                         >
                           {deletingLogs ? (
                             <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
                           ) : (
                             <Trash2 className="h-4 w-4" />
+                          )}
+                          {selectedLogIds.size > 0 && !deletingLogs && (
+                            <span
+                              className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-600 text-white text-[10px] leading-4 font-semibold flex items-center justify-center shadow"
+                              aria-label={`${selectedLogIds.size} selected`}
+                            >
+                              {selectedLogIds.size > 99 ? '99+' : selectedLogIds.size}
+                            </span>
                           )}
                         </Button>
                         <Button
@@ -1147,7 +1187,30 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               <Dialog open={!!selectedLog} onOpenChange={(open) => { if(!open) setSelectedLog(null) }}>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
-                    <DialogTitle>Log Entry #{selectedLog.logID}</DialogTitle>
+                    <div className="flex items-start justify-between gap-4">
+                      <DialogTitle className="flex-1">Log Entry #{selectedLog.logID}</DialogTitle>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (!selectedLog) return
+                          const copyText = `LogID: ${selectedLog.logID}\nTime: ${new Date(selectedLog.createdAt).toLocaleString()}\nTable: ${selectedLog.tableName}\nType: ${selectedLog.eventType}\nMessage:\n${selectedLog.eventMessage}`
+                          navigator.clipboard.writeText(copyText).then(() => {
+                            setCopiedLogId(selectedLog.logID)
+                            setTimeout(() => setCopiedLogId(prev => prev === selectedLog.logID ? null : prev), 1600)
+                          }).catch(() => {
+                            // Fallback: nothing fancy, could add toast later
+                            alert('Failed to copy to clipboard')
+                          })
+                        }}
+                        title="Copy log entry to clipboard"
+                        className="shrink-0 flex items-center gap-1"
+                      >
+                        <Copy className={`h-4 w-4 ${copiedLogId === selectedLog.logID ? 'text-green-600' : ''}`} />
+                        <span className="text-xs">{copiedLogId === selectedLog.logID ? 'Copied' : 'Copy'}</span>
+                      </Button>
+                    </div>
                   </DialogHeader>
                   <div className="space-y-2 text-sm">
                     <p><span className="font-semibold">Time:</span> {new Date(selectedLog.createdAt).toLocaleString()}</p>
