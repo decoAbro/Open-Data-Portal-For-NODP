@@ -102,6 +102,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [pipelineEventTypesDistinct, setPipelineEventTypesDistinct] = useState<string[]>([])
   const [pipelineFilterTable, setPipelineFilterTable] = useState<string>('ALL')
   const [pipelineFilterEventType, setPipelineFilterEventType] = useState<string>('ALL')
+  const [pipelineSince, setPipelineSince] = useState<string>('') // ISO timestamp for quick relative window
+  const [pipelineSinceLabel, setPipelineSinceLabel] = useState<'All' | '15m' | '1h' | '24h'>('All')
   const [autoRefreshLogs, setAutoRefreshLogs] = useState(false)
   const [selectedLog, setSelectedLog] = useState<null | { logID: number; tableName: string; eventType: string; eventMessage: string; createdAt: string }>(null)
   const [copiedLogId, setCopiedLogId] = useState<number | null>(null)
@@ -168,6 +170,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (pipelineFilterTable !== defaults.table) { setPipelineFilterTable(defaults.table); changed = true }
     if (pipelineFilterEventType !== defaults.eventType) { setPipelineFilterEventType(defaults.eventType); changed = true }
     if (pipelineLogPageSize !== defaults.pageSize) { setPipelineLogPageSize(defaults.pageSize); changed = true }
+    if (pipelineSince) { setPipelineSince(''); setPipelineSinceLabel('All'); changed = true }
     if (pipelineMessageSearchInput !== defaults.search || pipelineMessageSearch !== defaults.search) {
       setPipelineMessageSearchInput(defaults.search)
       setPipelineMessageSearch(defaults.search)
@@ -182,7 +185,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     try {
       const tableParam = pipelineFilterTable !== 'ALL' ? `&table=${encodeURIComponent(pipelineFilterTable)}` : ''
       const eventTypeParam = pipelineFilterEventType !== 'ALL' ? `&eventType=${encodeURIComponent(pipelineFilterEventType)}` : ''
-      const res = await fetch(`/api/pipeline-logs/export?limit=1000${tableParam}${eventTypeParam}`, { cache: 'no-store' })
+      const sinceParam = pipelineSince ? `&since=${encodeURIComponent(pipelineSince)}` : ''
+      const res = await fetch(`/api/pipeline-logs/export?limit=1000${tableParam}${eventTypeParam}${sinceParam}`, { cache: 'no-store' })
       if (!res.ok) {
         alert('Failed to export logs')
         return
@@ -211,8 +215,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       const page = opts?.page ?? (opts?.resetPage ? 1 : pipelineLogPage)
       const tableParam = pipelineFilterTable !== 'ALL' ? `&table=${encodeURIComponent(pipelineFilterTable)}` : ''
       const eventTypeParam = pipelineFilterEventType !== 'ALL' ? `&eventType=${encodeURIComponent(pipelineFilterEventType)}` : ''
-  const qParam = pipelineMessageSearch ? `&q=${encodeURIComponent(pipelineMessageSearch)}` : ''
-  const res = await fetch(`/api/pipeline-logs?page=${page}&pageSize=${pipelineLogPageSize}${tableParam}${eventTypeParam}${qParam}`, { cache: 'no-store' })
+    const sinceParam = pipelineSince ? `&since=${encodeURIComponent(pipelineSince)}` : ''
+    const qParam = pipelineMessageSearch ? `&q=${encodeURIComponent(pipelineMessageSearch)}` : ''
+    const res = await fetch(`/api/pipeline-logs?page=${page}&pageSize=${pipelineLogPageSize}${tableParam}${eventTypeParam}${sinceParam}${qParam}`, { cache: 'no-store' })
       const data = await res.json()
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Failed to fetch logs')
@@ -262,7 +267,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       fetchPipelineLogs({ resetPage: true })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, isClient, pipelineFilterTable, pipelineFilterEventType, pipelineMessageSearch, pipelineLogPageSize])
+  }, [activeTab, isClient, pipelineFilterTable, pipelineFilterEventType, pipelineMessageSearch, pipelineLogPageSize, pipelineSince])
 
   // Silent polling (reintroduced after removing SSE stream)
   useEffect(() => {
@@ -1046,12 +1051,43 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                             {[25,50,100,150,200].map(sz => <option key={sz} value={sz}>{sz}</option>)}
                           </select>
                         </label>
+                        <div className="flex items-center space-x-1 text-[10px]">
+                          {(['15m','1h','24h','All'] as const).map(range => {
+                            const active = pipelineSinceLabel === range
+                            return (
+                              <button
+                                key={range}
+                                type="button"
+                                className={`px-1.5 py-0.5 rounded border font-medium transition-colors ${active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white hover:bg-gray-100 text-gray-700 border-gray-300'}`}
+                                onClick={() => {
+                                  if (range === 'All') {
+                                    setPipelineSince('')
+                                    setPipelineSinceLabel('All')
+                                    setPipelineLogPage(1)
+                                    fetchPipelineLogs({ resetPage: true })
+                                    return
+                                  }
+                                  let ms = 0
+                                  if (range === '15m') ms = 15*60*1000
+                                  else if (range === '1h') ms = 60*60*1000
+                                  else if (range === '24h') ms = 24*60*60*1000
+                                  const sinceISO = new Date(Date.now() - ms).toISOString()
+                                  setPipelineSince(sinceISO)
+                                  setPipelineSinceLabel(range)
+                                  setPipelineLogPage(1)
+                                  fetchPipelineLogs({ resetPage: true })
+                                }}
+                                title={range === 'All' ? 'Show all logs' : `Show logs from last ${range}`}
+                              >{range}</button>
+                            )
+                          })}
+                        </div>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={handleResetPipelineFilters}
                           className="text-xs flex items-center gap-1"
-                          title="Reset table, type, page size & search"
+                          title="Reset table, type, time span, page size & search"
                         >
                           <RotateCcw className="h-3.5 w-3.5" /> Reset Filters
                         </Button>
