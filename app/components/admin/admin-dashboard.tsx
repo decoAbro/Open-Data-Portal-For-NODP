@@ -25,6 +25,8 @@ import {
   RotateCcw,
   AlertTriangle,
   Database,
+  FileSpreadsheet,
+  Trash2,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -83,17 +85,109 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [pipelineLogs, setPipelineLogs] = useState<Array<{ logID: number; tableName: string; eventType: string; eventMessage: string; createdAt: string }>>([])
   const [pipelineLogsLoading, setPipelineLogsLoading] = useState(false)
   const [pipelineLogsError, setPipelineLogsError] = useState<string | null>(null)
+  const [pipelineLogPage, setPipelineLogPage] = useState(1)
+  const [pipelineLogPageSize, setPipelineLogPageSize] = useState(50)
+  const [pipelineLogTotalPages, setPipelineLogTotalPages] = useState(1)
+  const [pipelineLogHasMore, setPipelineLogHasMore] = useState(false)
+  const [pipelineTablesDistinct, setPipelineTablesDistinct] = useState<string[]>([])
+  const [pipelineEventTypesDistinct, setPipelineEventTypesDistinct] = useState<string[]>([])
+  const [pipelineFilterTable, setPipelineFilterTable] = useState<string>('ALL')
+  const [pipelineFilterEventType, setPipelineFilterEventType] = useState<string>('ALL')
+  const [autoRefreshLogs, setAutoRefreshLogs] = useState(false)
+  const [selectedLog, setSelectedLog] = useState<null | { logID: number; tableName: string; eventType: string; eventMessage: string; createdAt: string }>(null)
+  const [pipelineMessageSearch, setPipelineMessageSearch] = useState('')
+  const [pipelineMessageSearchInput, setPipelineMessageSearchInput] = useState('')
+  const [pipelineSearchTokens, setPipelineSearchTokens] = useState<string[]>([])
+  // (debounce handled via useEffect)
+  const [selectedLogIds, setSelectedLogIds] = useState<Set<number>>(new Set())
+  const [deletingLogs, setDeletingLogs] = useState(false)
+  const allPageSelected = pipelineLogs.length > 0 && pipelineLogs.every(l => selectedLogIds.has(l.logID))
+  const toggleSelectAllPage = () => {
+    const newSet = new Set(selectedLogIds)
+    if (allPageSelected) {
+      pipelineLogs.forEach(l => newSet.delete(l.logID))
+    } else {
+      pipelineLogs.forEach(l => newSet.add(l.logID))
+    }
+    setSelectedLogIds(newSet)
+  }
+  const toggleSelectOne = (id: number) => {
+    const newSet = new Set(selectedLogIds)
+    if (newSet.has(id)) {
+      newSet.delete(id)
+    } else {
+      newSet.add(id)
+    }
+    setSelectedLogIds(newSet)
+  }
+  const clearSelection = () => setSelectedLogIds(new Set())
+  const handleBulkDelete = async () => {
+    if (selectedLogIds.size === 0) return
+    if (!confirm(`Delete ${selectedLogIds.size} selected log(s)? This cannot be undone.`)) return
+    setDeletingLogs(true)
+    try {
+      const res = await fetch('/api/pipeline-logs/bulk-delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: Array.from(selectedLogIds) }) })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        alert(data.error || 'Bulk delete failed')
+      }
+      clearSelection()
+      // If current page empties, go back a page if possible
+      await fetchPipelineLogs({ page: pipelineLogPage })
+      if (pipelineLogs.length === selectedLogIds.size && pipelineLogPage > 1) {
+        const newPage = pipelineLogPage - 1
+        setPipelineLogPage(newPage)
+        await fetchPipelineLogs({ page: newPage })
+      }
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Unknown error')
+    } finally {
+      setDeletingLogs(false)
+    }
+  }
+  const handleExportCsv = async () => {
+    try {
+      const tableParam = pipelineFilterTable !== 'ALL' ? `&table=${encodeURIComponent(pipelineFilterTable)}` : ''
+      const eventTypeParam = pipelineFilterEventType !== 'ALL' ? `&eventType=${encodeURIComponent(pipelineFilterEventType)}` : ''
+      const res = await fetch(`/api/pipeline-logs/export?limit=1000${tableParam}${eventTypeParam}`, { cache: 'no-store' })
+      if (!res.ok) {
+        alert('Failed to export logs')
+        return
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'pipeline_logs.csv'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Unknown error exporting')
+    }
+  }
 
-  const fetchPipelineLogs = async () => {
+  const fetchPipelineLogs = async (opts?: { page?: number; resetPage?: boolean }) => {
     setPipelineLogsLoading(true)
     setPipelineLogsError(null)
     try {
-      const res = await fetch('/api/pipeline-logs?limit=100', { cache: 'no-store' })
+      const page = opts?.page ?? (opts?.resetPage ? 1 : pipelineLogPage)
+      const tableParam = pipelineFilterTable !== 'ALL' ? `&table=${encodeURIComponent(pipelineFilterTable)}` : ''
+      const eventTypeParam = pipelineFilterEventType !== 'ALL' ? `&eventType=${encodeURIComponent(pipelineFilterEventType)}` : ''
+  const qParam = pipelineMessageSearch ? `&q=${encodeURIComponent(pipelineMessageSearch)}` : ''
+  const res = await fetch(`/api/pipeline-logs?page=${page}&pageSize=${pipelineLogPageSize}${tableParam}${eventTypeParam}${qParam}`, { cache: 'no-store' })
       const data = await res.json()
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Failed to fetch logs')
       }
       setPipelineLogs(data.logs)
+      setPipelineLogPage(data.page)
+      setPipelineLogTotalPages(data.totalPages)
+      setPipelineLogHasMore(data.hasMore)
+      setPipelineTablesDistinct(data.tablesDistinct || [])
+      setPipelineEventTypesDistinct(data.eventTypesDistinct || [])
+      setPipelineSearchTokens(data.searchTokens || [])
     } catch (e) {
       setPipelineLogsError(e instanceof Error ? e.message : 'Unknown error')
     } finally {
@@ -107,6 +201,26 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       fetchPipelineLogs()
     }
   }, [activeTab, isClient])
+
+  // Auto refresh interval
+  useEffect(() => {
+    if (activeTab !== 'push-production' || !autoRefreshLogs) return
+    const id = setInterval(() => {
+      fetchPipelineLogs()
+    }, 10000) // 10 seconds
+    return () => clearInterval(id)
+  }, [activeTab, autoRefreshLogs, pipelineLogPage, pipelineLogPageSize, pipelineFilterTable, pipelineFilterEventType])
+
+  // Debounce message search input (400ms)
+  useEffect(() => {
+    if (activeTab !== 'push-production') return
+    const handle = setTimeout(() => {
+      setPipelineMessageSearch(pipelineMessageSearchInput)
+      fetchPipelineLogs({ resetPage: true })
+    }, 400)
+    return () => clearTimeout(handle)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pipelineMessageSearchInput])
   // Removed legacy deployment feature state
 
 
@@ -672,7 +786,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                             const totalRows = data.tables?.reduce((acc: number, t: any) => acc + (t.loaded || 0), 0) || 0
                             setPushResult({ success: true, message: `Production push completed. Tables: ${data.tables?.length || 0}, Rows loaded: ${totalRows}` })
                             // Refresh logs after successful push
-                            fetchPipelineLogs()
+                            fetchPipelineLogs({ resetPage: true })
                           }
                         } catch (e) {
                           setPushResult({ success: false, message: e instanceof Error ? e.message : 'Unknown error' })
@@ -693,9 +807,99 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   <div className="mt-6 border-t pt-4">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-sm font-semibold text-gray-700 flex items-center">Pipeline Logs</h3>
-                      <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm" onClick={fetchPipelineLogs} disabled={pipelineLogsLoading}>
-                          {pipelineLogsLoading ? 'Refreshing...' : 'Refresh Logs'}
+                      <div className="flex items-center space-x-2 flex-wrap">
+                        <div className="flex items-center space-x-1">
+                          <input
+                            type="text"
+                            placeholder="Search message..."
+                            value={pipelineMessageSearchInput}
+                            onChange={(e) => {
+                              const v = e.target.value
+                              setPipelineMessageSearchInput(v)
+                              if (v === '') {
+                                // Immediate reset to full list when cleared
+                                setPipelineMessageSearch('')
+                                setPipelineSearchTokens([])
+                                fetchPipelineLogs({ resetPage: true })
+                              }
+                            }}
+                            className="border rounded px-2 py-0.5 text-xs bg-white w-48"
+                          />
+                          {pipelineMessageSearch && !pipelineLogsLoading && (
+                            <Button variant="outline" size="sm" onClick={() => { setPipelineMessageSearch(''); setPipelineMessageSearchInput(''); fetchPipelineLogs({ resetPage: true }) }}>Clear</Button>
+                          )}
+                        </div>
+                        <label className="text-[11px] text-gray-600 flex items-center space-x-1">
+                          <span>Table:</span>
+                          <select
+                            className="border rounded px-1 py-0.5 text-xs bg-white"
+                            value={pipelineFilterTable}
+                            onChange={(e) => { setPipelineFilterTable(e.target.value); fetchPipelineLogs({ resetPage: true }) }}
+                          >
+                            <option value="ALL">All</option>
+                            {pipelineTablesDistinct.map(t => (
+                              <option key={t} value={t}>{t}</option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="text-[11px] text-gray-600 flex items-center space-x-1">
+                          <span>Type:</span>
+                          <select
+                            className="border rounded px-1 py-0.5 text-xs bg-white"
+                            value={pipelineFilterEventType}
+                            onChange={(e) => { setPipelineFilterEventType(e.target.value); fetchPipelineLogs({ resetPage: true }) }}
+                          >
+                            <option value="ALL">All</option>
+                            {pipelineEventTypesDistinct.map(t => (
+                              <option key={t} value={t}>{t}</option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="text-[11px] text-gray-600 flex items-center space-x-1">
+                          <span>Page size:</span>
+                          <select
+                            className="border rounded px-1 py-0.5 text-xs bg-white"
+                            value={pipelineLogPageSize}
+                            onChange={(e) => { setPipelineLogPageSize(parseInt(e.target.value,10)); fetchPipelineLogs({ resetPage: true }) }}
+                          >
+                            {[25,50,100,150,200].map(sz => <option key={sz} value={sz}>{sz}</option>)}
+                          </select>
+                        </label>
+                        <label className="text-[11px] text-gray-600 flex items-center space-x-1">
+                          <input
+                            type="checkbox"
+                            className="accent-blue-600"
+                            checked={autoRefreshLogs}
+                            onChange={(e) => setAutoRefreshLogs(e.target.checked)}
+                          />
+                          <span>Auto (10s)</span>
+                        </label>
+                        <Button variant="outline" size="sm" onClick={() => fetchPipelineLogs()} disabled={pipelineLogsLoading}>
+                          {pipelineLogsLoading ? 'Refreshing...' : 'Refresh'}
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={handleBulkDelete}
+                          disabled={selectedLogIds.size===0 || deletingLogs}
+                          title={selectedLogIds.size ? `Delete ${selectedLogIds.size} selected log(s)` : 'Select logs to delete'}
+                          className="h-8 w-8"
+                        >
+                          {deletingLogs ? (
+                            <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={handleExportCsv}
+                          disabled={pipelineLogsLoading}
+                          className="bg-green-600 hover:bg-green-700 text-white border border-green-600 flex items-center gap-1"
+                          title="Export visible (filtered) logs to CSV"
+                        >
+                          <FileSpreadsheet className="h-4 w-4" />
+                          Export CSV
                         </Button>
                       </div>
                     </div>
@@ -708,46 +912,121 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <table className="w-full text-sm">
                         <thead className="bg-gray-100 sticky top-0 z-10">
                           <tr>
+                            <th className="text-left px-2 py-1 w-4"><input type="checkbox" checked={allPageSelected} onChange={toggleSelectAllPage} /></th>
                             <th className="text-left px-2 py-1 w-36">Time</th>
                             <th className="text-left px-2 py-1 w-32">Table</th>
                             <th className="text-left px-2 py-1 w-24">Type</th>
                             <th className="text-left px-2 py-1">Message</th>
+                            <th className="text-left px-2 py-1 w-12">View</th>
                           </tr>
                         </thead>
                         <tbody>
                           {pipelineLogsLoading && pipelineLogs.length === 0 && (
                             <tr>
-                              <td colSpan={4} className="px-2 py-4 text-center text-gray-500">Loading logs...</td>
+                              <td colSpan={6} className="px-2 py-4 text-center text-gray-500">Loading logs...</td>
                             </tr>
                           )}
                           {!pipelineLogsLoading && pipelineLogs.length === 0 && !pipelineLogsError && (
                             <tr>
-                              <td colSpan={4} className="px-2 py-4 text-center text-gray-500">No logs found</td>
+                              <td colSpan={6} className="px-2 py-4 text-center text-gray-500">No logs found</td>
                             </tr>
                           )}
                           {pipelineLogs.map(log => {
                             const dt = new Date(log.createdAt)
                             const displayTime = isNaN(dt.getTime()) ? log.createdAt : dt.toLocaleString()
-                            const truncated = log.eventMessage && log.eventMessage.length > 250 ? log.eventMessage.slice(0,247) + '...' : log.eventMessage || ''
+                             const truncated = log.eventMessage && log.eventMessage.length > 250 ? log.eventMessage.slice(0,247) + '...' : log.eventMessage || ''
+                             const highlightTokens = pipelineSearchTokens
+                               .map(t => t.trim())
+                               .filter(t => t.length > 0)
+                               .sort((a,b) => b.length - a.length)
+                             const renderHighlighted = () => {
+                               if (highlightTokens.length === 0) return truncated
+                               let parts: (string | JSX.Element)[] = [truncated]
+                               highlightTokens.forEach((tok, tokIdx) => {
+                                 const safe = tok.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                                 const regex = new RegExp(safe, 'gi')
+                                 const nextParts: (string | JSX.Element)[] = []
+                                 parts.forEach(p => {
+                                   if (typeof p !== 'string') { nextParts.push(p); return }
+                                   let lastIndex = 0
+                                   let m: RegExpExecArray | null
+                                   while ((m = regex.exec(p)) !== null) {
+                                     if (m.index > lastIndex) nextParts.push(p.slice(lastIndex, m.index))
+                                     nextParts.push(<span key={`hl-${log.logID}-${tokIdx}-${m.index}-${m[0]}`} className="bg-yellow-200 dark:bg-yellow-600/40 px-0.5 rounded">{m[0]}</span>)
+                                     lastIndex = m.index + m[0].length
+                                   }
+                                   if (lastIndex < p.length) nextParts.push(p.slice(lastIndex))
+                                 })
+                                 parts = nextParts
+                               })
+                               return parts
+                             }
                             return (
                               <tr key={log.logID} className="border-t hover:bg-gray-50">
+                                <td className="px-2 py-1 align-top"><input type="checkbox" checked={selectedLogIds.has(log.logID)} onChange={() => toggleSelectOne(log.logID)} /></td>
                                 <td className="px-2 py-1 align-top whitespace-nowrap text-xs text-gray-600">{displayTime}</td>
                                 <td className="px-2 py-1 align-top font-medium text-gray-800">{log.tableName}</td>
                                 <td className="px-2 py-1 align-top">
                                   <span className={`px-2 py-0.5 rounded text-xs font-semibold ${log.eventType === 'ERROR' ? 'bg-red-100 text-red-700' : log.eventType === 'INFO' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{log.eventType}</span>
                                 </td>
-                                <td className="px-2 py-1 align-top text-gray-700 text-xs">{truncated}</td>
+                                <td className="px-2 py-1 align-top text-gray-700 text-xs">{renderHighlighted()}</td>
+                                <td className="px-2 py-1 align-top text-right">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-[10px] px-1 py-0 h-auto"
+                                    onClick={() => setSelectedLog(log)}
+                                  >View</Button>
+                                </td>
                               </tr>
                             )
                           })}
                         </tbody>
                       </table>
                     </div>
-                    <p className="mt-1 text-[10px] text-gray-400">Showing latest {pipelineLogs.length} entries. Stored in Stage.dbo.Pipeline_Log.</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-[10px] text-gray-400">Page {pipelineLogPage} of {pipelineLogTotalPages} {pipelineLogHasMore && '(more available)'} | {pipelineLogs.length} rows shown</p>
+                      <div className="space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={pipelineLogPage <= 1 || pipelineLogsLoading}
+                          onClick={() => { const newPage = pipelineLogPage - 1; setPipelineLogPage(newPage); fetchPipelineLogs({ page: newPage }) }}
+                        >Prev</Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={!pipelineLogHasMore || pipelineLogsLoading}
+                          onClick={() => { const newPage = pipelineLogPage + 1; setPipelineLogPage(newPage); fetchPipelineLogs({ page: newPage }) }}
+                        >Next</Button>
+                      </div>
+                    </div>
+                    <p className="mt-1 text-[10px] text-gray-400">Logs stored in Stage.dbo.Pipeline_Log.</p>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
+            {selectedLog && (
+              <Dialog open={!!selectedLog} onOpenChange={(open) => { if(!open) setSelectedLog(null) }}>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Log Entry #{selectedLog.logID}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="font-semibold">Time:</span> {new Date(selectedLog.createdAt).toLocaleString()}</p>
+                    <p><span className="font-semibold">Table:</span> {selectedLog.tableName}</p>
+                    <p><span className="font-semibold">Type:</span> {selectedLog.eventType}</p>
+                    <div>
+                      <p className="font-semibold mb-1">Message:</p>
+                      <pre className="whitespace-pre-wrap bg-gray-100 p-2 rounded max-h-96 overflow-auto text-xs">{selectedLog.eventMessage}</pre>
+                    </div>
+                    <div className="flex justify-end">
+                      <Button variant="outline" onClick={() => setSelectedLog(null)}>Close</Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
 
             {/* Deployment content removed */}
 
