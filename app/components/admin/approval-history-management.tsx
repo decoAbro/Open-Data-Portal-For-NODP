@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Clock, FileText, CheckCircle, XCircle, AlertCircle, Eye, Database, Calendar, HardDrive } from "lucide-react"
+import { Clock, FileText, CheckCircle, XCircle, AlertCircle, Eye, Database, Calendar, HardDrive, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react"
 import { PDFDocument } from 'pdf-lib'
 
 interface UploadRecord {
@@ -48,6 +48,9 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   const [statusFilter, setStatusFilter] = useState<string>("")
   const [downloadingAll, setDownloadingAll] = useState(false)
   const [inlineMessage, setInlineMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null)
+  // Multi-column sorting state: earlier items have higher precedence
+  type SortKey = 'tableName' | 'uploadDate' | 'recordCount' | 'status'
+  const [sortOrder, setSortOrder] = useState<{ key: SortKey; direction: 'asc' | 'desc' }[]>([])
   const pushMessage = (m: { type: 'success' | 'error' | 'info'; text: string }) => {
     setInlineMessage(m)
     setTimeout(() => {
@@ -197,6 +200,58 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
     const byStatus = statusFilter ? (r.status || "").toLowerCase() === statusFilter : true
     return byUser && byTable && byYear && byStatus
   })
+
+  // Apply multi-column sorting
+  const sortedUploadHistory = sortOrder.length === 0 ? filteredUploadHistory : [...filteredUploadHistory].sort((a, b) => {
+    for (const { key, direction } of sortOrder) {
+      let av: any = a[key]
+      let bv: any = b[key]
+      // Normalize values
+      if (key === 'uploadDate') {
+        av = new Date(av).getTime() || 0
+        bv = new Date(bv).getTime() || 0
+      }
+      if (key === 'status') {
+        av = (av || '').toLowerCase()
+        bv = (bv || '').toLowerCase()
+      }
+      if (av === bv) continue
+      const cmp = av > bv ? 1 : -1
+      return direction === 'asc' ? cmp : -cmp
+    }
+    return 0
+  })
+
+  const cycleDirection = (current?: 'asc' | 'desc'): 'asc' | 'desc' | null => {
+    if (!current) return 'asc'
+    if (current === 'asc') return 'desc'
+    return null // remove
+  }
+
+  const toggleSort = (key: SortKey, additive: boolean) => {
+    setSortOrder(prev => {
+      let existing = prev.find(s => s.key === key)
+      const nextDir = cycleDirection(existing?.direction)
+      let next: { key: SortKey; direction: 'asc' | 'desc' }[]
+      if (!additive) {
+        // Replace entire ordering
+        if (!nextDir) return [] // cleared
+        return [{ key, direction: nextDir }]
+      }
+      // Additive (Shift-click): modify within array
+      if (!existing) {
+        if (!nextDir) return prev // nothing to add
+        return [...prev, { key, direction: nextDir }]
+      }
+      // Existing present
+      if (!nextDir) {
+        return prev.filter(s => s.key !== key) // remove
+      }
+      return prev.map(s => (s.key === key ? { ...s, direction: nextDir } : s))
+    })
+  }
+
+  const getSortMeta = (key: SortKey) => sortOrder.find(s => s.key === key)
 
   // Status counts for summary cards
   const approvedCount = filteredUploadHistory.filter(r => r.status?.toLowerCase() === "approved").length;
@@ -374,23 +429,119 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {sortOrder.length > 0 && (
+            <div className="mb-3 text-xs text-gray-500 flex flex-wrap items-center gap-2">
+              <span className="font-medium">Sorting:</span>
+              {sortOrder.map((s, idx) => (
+                <span key={s.key} className="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-1">
+                  <span className="font-mono text-gray-700">{s.key}</span>
+                  <span className="text-gray-500">{s.direction}</span>
+                  <button
+                    onClick={() => toggleSort(s.key, true)}
+                    className="text-gray-400 hover:text-gray-600"
+                    title="Cycle direction / remove"
+                  >
+                    {s.direction === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                  </button>
+                  {idx < sortOrder.length - 1 && <span className="text-gray-300">→</span>}
+                </span>
+              ))}
+              <button
+                onClick={() => setSortOrder([])}
+                className="ml-2 text-blue-600 hover:underline"
+              >Clear</button>
+              <span className="ml-auto italic text-gray-400">Tip: Shift+Click to multi-sort</span>
+            </div>
+          )}
           {filteredUploadHistory.length > 0 ? (
             <div className="overflow-x-auto" style={{ minWidth: '1200px', width: '100%' }}>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Table Name</TableHead>
+                    <TableHead
+                      className="cursor-pointer select-none"
+                      onClick={(e) => toggleSort('tableName', e.shiftKey)}
+                      aria-sort={getSortMeta('tableName') ? (getSortMeta('tableName')!.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+                      title="Sort by table name"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Table Name
+                        {getSortMeta('tableName') ? (
+                          getSortMeta('tableName')!.direction === 'asc' ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="h-3 w-3 text-gray-300" />
+                        )}
+                      </span>
+                    </TableHead>
                     <TableHead>Uploaded By</TableHead>
-                    <TableHead>Upload Date</TableHead>
-                    <TableHead>Records</TableHead>
+                    <TableHead
+                      className="cursor-pointer select-none"
+                      onClick={(e) => toggleSort('uploadDate', e.shiftKey)}
+                      aria-sort={getSortMeta('uploadDate') ? (getSortMeta('uploadDate')!.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+                      title="Sort by upload date"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Upload Date
+                        {getSortMeta('uploadDate') ? (
+                          getSortMeta('uploadDate')!.direction === 'asc' ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="h-3 w-3 text-gray-300" />
+                        )}
+                      </span>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer select-none"
+                      onClick={(e) => toggleSort('recordCount', e.shiftKey)}
+                      aria-sort={getSortMeta('recordCount') ? (getSortMeta('recordCount')!.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+                      title="Sort by record count"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Records
+                        {getSortMeta('recordCount') ? (
+                          getSortMeta('recordCount')!.direction === 'asc' ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="h-3 w-3 text-gray-300" />
+                        )}
+                      </span>
+                    </TableHead>
                     <TableHead>Year</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead
+                      className="cursor-pointer select-none"
+                      onClick={(e) => toggleSort('status', e.shiftKey)}
+                      aria-sort={getSortMeta('status') ? (getSortMeta('status')!.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+                      title="Sort by status"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Status
+                        {getSortMeta('status') ? (
+                          getSortMeta('status')!.direction === 'asc' ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="h-3 w-3 text-gray-300" />
+                        )}
+                      </span>
+                    </TableHead>
                     <TableHead>Download Data Summary</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUploadHistory.map((record) => (
+                  {sortedUploadHistory.map((record) => (
                     <TableRow key={record.id}>
                       <TableCell className="font-medium">{record.tableName}</TableCell>
                        <TableCell className="font-medium">{record.username}</TableCell>
