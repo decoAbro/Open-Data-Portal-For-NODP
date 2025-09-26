@@ -78,6 +78,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [dbStatus, setDbStatus] = useState<DatabaseStatus | null>(null)
   const [dbLoading, setDbLoading] = useState(false)
   const [closingUploadWindow, setClosingUploadWindow] = useState(false)
+  const [pushingProd, setPushingProd] = useState(false)
+  const [pushResult, setPushResult] = useState<null | { success: boolean; message: string; details?: any }>(null)
   // Removed legacy deployment feature state
 
 
@@ -620,16 +622,44 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <li>Any schema migrations (if needed) have already been applied.</li>
                     </ul>
                   </div>
+                  {pushResult && (
+                    <Alert className={pushResult.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}>
+                      <AlertDescription className={pushResult.success ? 'text-green-800' : 'text-red-800'}>
+                        {pushResult.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
                   <div className="flex items-center space-x-3">
                     <Button
-                      disabled
-                      className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
-                      title="Implementation pending"
+                      disabled={pushingProd}
+                      className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed flex items-center"
+                      onClick={async () => {
+                        setPushResult(null)
+                        setPushingProd(true)
+                        try {
+                          const res = await fetch('/api/push-production', { method: 'POST' })
+                          const data = await res.json()
+                          if (!res.ok || !data.success) {
+                            setPushResult({ success: false, message: data.error || 'Production push failed', details: data })
+                          } else {
+                            const totalRows = data.tables?.reduce((acc: number, t: any) => acc + (t.loaded || 0), 0) || 0
+                            setPushResult({ success: true, message: `Production push completed. Tables: ${data.tables?.length || 0}, Rows loaded: ${totalRows}` })
+                          }
+                        } catch (e) {
+                          setPushResult({ success: false, message: e instanceof Error ? e.message : 'Unknown error' })
+                        } finally {
+                          setPushingProd(false)
+                        }
+                      }}
                     >
-                      Push Now (Coming Soon)
+                      {pushingProd && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>}
+                      {pushingProd ? 'Pushing...' : 'Push Now'}
                     </Button>
-                    <p className="text-xs text-gray-500">This button will trigger a production sync once implemented.</p>
+                    <p className="text-xs text-gray-500">Runs pipeline: copies staged tables to production.</p>
                   </div>
+                  {pushingProd && (
+                    <p className="text-xs text-gray-500">This may take several minutes. Please don&apos;t close the page.</p>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
