@@ -194,24 +194,24 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                 <TableBody>
                   {skeletonRows.map((_, idx) => (
                     <TableRow key={idx}>
-                      <TableCell><Skeleton className="h-4 w-40 shimmer" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-32 shimmer" /></TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
+                      <TableCell className="text-center"><Skeleton className="h-4 w-40 shimmer mx-auto" /></TableCell>
+                      <TableCell className="text-center"><Skeleton className="h-4 w-32 shimmer mx-auto" /></TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-2">
                           <Skeleton className="h-4 w-4 rounded-full shimmer" />
                           <Skeleton className="h-4 w-44 shimmer" />
                         </div>
                       </TableCell>
-                      <TableCell><Skeleton className="h-4 w-16 shimmer" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-12 shimmer" /></TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
+                      <TableCell className="text-center"><Skeleton className="h-4 w-16 shimmer mx-auto" /></TableCell>
+                      <TableCell className="text-center"><Skeleton className="h-4 w-12 shimmer mx-auto" /></TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-2">
                           <Skeleton className="h-6 w-20 shimmer" />
                           <Skeleton className="h-6 w-14 shimmer" />
                           <Skeleton className="h-6 w-14 shimmer" />
                         </div>
                       </TableCell>
-                      <TableCell><Skeleton className="h-6 w-32 shimmer" /></TableCell>
+                      <TableCell className="text-center"><Skeleton className="h-6 w-32 shimmer mx-auto" /></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -564,7 +564,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                 <TableHeader>
                   <TableRow>
                     <TableHead
-                      className="cursor-pointer select-none"
+                      className="cursor-pointer select-none text-center"
                       onClick={(e) => toggleSort('tableName', e.shiftKey)}
                       aria-sort={getSortMeta('tableName') ? (getSortMeta('tableName')!.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
                       title="Sort by table name"
@@ -582,9 +582,9 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                         )}
                       </span>
                     </TableHead>
-                    <TableHead>Uploaded By</TableHead>
+                    <TableHead className="text-center">Uploaded By</TableHead>
                     <TableHead
-                      className="cursor-pointer select-none"
+                      className="cursor-pointer select-none text-center"
                       onClick={(e) => toggleSort('uploadDate', e.shiftKey)}
                       aria-sort={getSortMeta('uploadDate') ? (getSortMeta('uploadDate')!.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
                       title="Sort by upload date"
@@ -603,7 +603,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                       </span>
                     </TableHead>
                     <TableHead
-                      className="cursor-pointer select-none"
+                      className="cursor-pointer select-none text-center"
                       onClick={(e) => toggleSort('recordCount', e.shiftKey)}
                       aria-sort={getSortMeta('recordCount') ? (getSortMeta('recordCount')!.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
                       title="Sort by record count"
@@ -621,9 +621,9 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                         )}
                       </span>
                     </TableHead>
-                    <TableHead>Year</TableHead>
+                    <TableHead className="text-center">Year</TableHead>
                     <TableHead
-                      className="cursor-pointer select-none"
+                      className="cursor-pointer select-none text-center"
                       onClick={(e) => toggleSort('status', e.shiftKey)}
                       aria-sort={getSortMeta('status') ? (getSortMeta('status')!.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
                       title="Sort by status"
@@ -641,7 +641,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                         )}
                       </span>
                     </TableHead>
-                    <TableHead>Download Data Summary</TableHead>
+                    <TableHead className="text-center">Download Data Summary</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -652,18 +652,18 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                       className="cursor-pointer hover:bg-gray-50 transition-colors"
                       title="Click to view details"
                     >
-                      <TableCell className="font-medium">{record.tableName}</TableCell>
-                      <TableCell className="font-medium">{record.username}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
+                      <TableCell className="font-medium text-center">{record.tableName}</TableCell>
+                      <TableCell className="font-medium text-center">{record.username}</TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center">
                           <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                           {new Date(record.uploadDate).toLocaleString()}
                         </div>
                       </TableCell>
-                      <TableCell>{record.recordCount?.toLocaleString() || "N/A"}</TableCell>
-                      <TableCell>{record.censusYear}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="text-center">{record.recordCount?.toLocaleString() || "N/A"}</TableCell>
+                      <TableCell className="text-center">{record.censusYear}</TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
                           {getStatusBadge(record.status)}
                           {record.status?.toLowerCase() === 'in-review' && (
                             <div className="flex items-center gap-1">
@@ -699,7 +699,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         {record.pdf_file ? (
                           <Button
                             size="sm"
