@@ -640,10 +640,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <Upload className="h-4 w-4 mr-2" />
                 Push to Production
               </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Analytics
-              </TabsTrigger>
               {/* Deployment tab removed */}
             </TabsList>
 
@@ -1223,63 +1219,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
-            <TabsContent value="analytics">
-              <div className="space-y-6">
-                <div>
-                  <h1 className="text-2xl font-bold text-blue-600 mb-2 flex items-center gap-2">
-                    <BarChart3 className="h-6 w-6 text-blue-600" />
-                    Analytics
-                  </h1>
-                  <p className="text-gray-600 max-w-2xl text-sm">High-level insights about uploads, approvals, rejections, processing throughput and pipeline performance will appear here. This is a placeholder section – we can integrate charts (e.g. daily uploads, approval funnel, processing durations) once metrics endpoints are defined.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-blue-800">Coming Soon</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-xs text-blue-700 leading-relaxed">Add time-series charts, status distribution, per-table volume and processing latency stats here.</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-green-800">Suggested Metrics</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="text-xs text-green-800 list-disc ml-4 space-y-1">
-                        <li>Uploads per day (last 30d)</li>
-                        <li>Approval conversion rate</li>
-                        <li>Average time In-Review</li>
-                        <li>Top tables by row volume</li>
-                        <li>Pipeline error rate</li>
-                      </ul>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-yellow-800">Next Steps</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ol className="text-xs text-yellow-800 list-decimal ml-4 space-y-1">
-                        <li>Expose metrics API (aggregations)</li>
-                        <li>Design chart data shapes</li>
-                        <li>Implement caching (SWR)</li>
-                        <li>Add interactive time range filters</li>
-                        <li>Incorporate export (CSV / PNG)</li>
-                      </ol>
-                    </CardContent>
-                  </Card>
-                </div>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Roadmap</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-xs text-gray-600">If you already have metric queries or raw log tables we can wire them in directly. Let me know and I will replace this scaffold with real charts (we have a chart UI component available).</p>
-                  </CardContent>
-                </Card>
-              </div>
             </TabsContent>
             {selectedLog && (
               <Dialog open={!!selectedLog} onOpenChange={(open) => { if(!open) setSelectedLog(null) }}>
