@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Clock, FileText, CheckCircle, XCircle, AlertCircle, Eye, Database, Calendar, HardDrive, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 import { PDFDocument } from 'pdf-lib'
 
 interface UploadRecord {
@@ -44,7 +45,6 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   const [yearFilter, setYearFilter] = useState<string>("")
   const [statusUpdating, setStatusUpdating] = useState(false)
   const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null)
-  const [viewLoadingId, setViewLoadingId] = useState<number | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("")
   const [downloadingAll, setDownloadingAll] = useState(false)
   const [inlineMessage, setInlineMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null)
@@ -137,19 +137,88 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   }
 
   const handleViewDetails = (record: UploadRecord) => {
-    setViewLoadingId(record.id)
-    // Simulate async loading for UX, or replace with real fetch if needed
-    setTimeout(() => {
-      setSelectedRecord(record)
-      setShowDetailsDialog(true)
-      setViewLoadingId(null)
-    }, 400)
+    setSelectedRecord(record)
+    setShowDetailsDialog(true)
   }
 
   if (isLoading) {
+    // Reduced skeleton row count for performance
+    const skeletonRows = Array.from({ length: 5 })
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="space-y-6">
+        {/* Progressive reveal: show table skeleton immediately, summary cards shimmer separately */}
+        {/* Filter Bar Skeleton (shimmer) */}
+        <div className="flex flex-wrap items-center gap-4 mb-2">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="flex flex-col gap-1">
+              <Skeleton className="h-3 w-20 shimmer" />
+              <Skeleton className="h-8 w-36 shimmer" />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => (
+            <Card key={i} className="h-full">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-24 shimmer" />
+                  <Skeleton className="h-4 w-4 rounded-full shimmer" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-7 w-16 mb-2 shimmer" />
+                <Skeleton className="h-3 w-24 shimmer" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-gray-400" />
+              <span>Upload History</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto" style={{ minWidth: '1200px', width: '100%' }}>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {['Table Name','Uploaded By','Upload Date','Records','Year','Status','Download Data Summary'].map(h => (
+                      <TableHead key={h}>
+                        <Skeleton className="h-4 w-28 shimmer" />
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {skeletonRows.map((_, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell><Skeleton className="h-4 w-40 shimmer" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-32 shimmer" /></TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-4 w-4 rounded-full shimmer" />
+                          <Skeleton className="h-4 w-44 shimmer" />
+                        </div>
+                      </TableCell>
+                      <TableCell><Skeleton className="h-4 w-16 shimmer" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-12 shimmer" /></TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-6 w-20 shimmer" />
+                          <Skeleton className="h-6 w-14 shimmer" />
+                          <Skeleton className="h-6 w-14 shimmer" />
+                        </div>
+                      </TableCell>
+                      <TableCell><Skeleton className="h-6 w-32 shimmer" /></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -537,14 +606,18 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                       </span>
                     </TableHead>
                     <TableHead>Download Data Summary</TableHead>
-                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sortedUploadHistory.map((record) => (
-                    <TableRow key={record.id}>
+                    <TableRow
+                      key={record.id}
+                      onClick={() => handleViewDetails(record)}
+                      className="cursor-pointer hover:bg-gray-50 transition-colors"
+                      title="Click to view details"
+                    >
                       <TableCell className="font-medium">{record.tableName}</TableCell>
-                       <TableCell className="font-medium">{record.username}</TableCell>
+                      <TableCell className="font-medium">{record.username}</TableCell>
                       <TableCell>
                         <div className="flex items-center">
                           <Calendar className="h-4 w-4 mr-2 text-gray-500" />
@@ -553,25 +626,64 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                       </TableCell>
                       <TableCell>{record.recordCount?.toLocaleString() || "N/A"}</TableCell>
                       <TableCell>{record.censusYear}</TableCell>
-                      <TableCell>{getStatusBadge(record.status)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                          {getStatusBadge(record.status)}
+                          {record.status?.toLowerCase() === 'in-review' && (
+                            <div className="flex items-center gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-6 px-2 text-green-700 border-green-300 hover:bg-green-50 leading-none"
+                                disabled={statusUpdating}
+                                onClick={() => handleUpdateStatus(record.id, 'Approved')}
+                                title="Approve this upload"
+                              >
+                                {statusUpdating ? (
+                                  <span className="animate-spin h-3 w-3 border-b-2 border-green-600 rounded-full" />
+                                ) : (
+                                  'Approve'
+                                )}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-6 px-2 text-red-700 border-red-300 hover:bg-red-50 leading-none"
+                                disabled={statusUpdating}
+                                onClick={() => handleUpdateStatus(record.id, 'Rejected')}
+                                title="Reject this upload"
+                              >
+                                {statusUpdating ? (
+                                  <span className="animate-spin h-3 w-3 border-b-2 border-red-600 rounded-full" />
+                                ) : (
+                                  'Reject'
+                                )}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         {record.pdf_file ? (
-                          <Button size="sm" variant="outline"
-                            onClick={async () => {
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async (e) => {
+                              e.stopPropagation()
                               try {
-                                const res = await fetch(record.pdf_file as string);
-                                if (!res.ok) throw new Error('Failed to download PDF');
-                                const blob = await res.blob();
-                                const url = window.URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = (record.filename || 'file') + '.pdf';
-                                document.body.appendChild(a);
-                                a.click();
-                                a.remove();
-                                window.URL.revokeObjectURL(url);
+                                const res = await fetch(record.pdf_file as string)
+                                if (!res.ok) throw new Error('Failed to download PDF')
+                                const blob = await res.blob()
+                                const url = window.URL.createObjectURL(blob)
+                                const a = document.createElement('a')
+                                a.href = url
+                                a.download = (record.filename || 'file') + '.pdf'
+                                document.body.appendChild(a)
+                                a.click()
+                                a.remove()
+                                window.URL.revokeObjectURL(url)
                               } catch (e) {
-                                alert('Could not download PDF');
+                                alert('Could not download PDF')
                               }
                             }}
                           >
@@ -580,21 +692,6 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                         ) : (
                           <span className="text-gray-400">N/A</span>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          variant="default"
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                          onClick={() => handleViewDetails(record)}
-                          disabled={viewLoadingId === record.id}
-                        >
-                          {viewLoadingId === record.id ? (
-                            <span className="flex items-center"><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>Viewing...</span>
-                          ) : (
-                            "View"
-                          )}
-                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -660,7 +757,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Record Count</label>
-                  <p className="text-sm text-gray-900 mt-1">{selectedRecord.recordCount?.toLocaleString() || "N/A"}</p>
+                  <p className="text-sm text-gray-900 mt-1">{selectedRecord.recordCount?.toLocaleString() || 'N/A'}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Census Year</label>
@@ -670,13 +767,13 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                   <label className="text-sm font-medium text-gray-700">Status</label>
                   <div className="mt-1 flex items-center gap-2">
                     {getStatusBadge(selectedRecord.status)}
-                    {selectedRecord.status.toLowerCase() === "in-review" && (
+                    {selectedRecord.status.toLowerCase() === 'in-review' && (
                       <>
                         <Button
                           size="sm"
                           variant="outline"
                           disabled={statusUpdating}
-                          onClick={() => handleUpdateStatus(selectedRecord.id, "Approved")}
+                          onClick={() => handleUpdateStatus(selectedRecord.id, 'Approved')}
                         >
                           Approve
                         </Button>
@@ -684,37 +781,37 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                           size="sm"
                           variant="destructive"
                           disabled={statusUpdating}
-                          onClick={() => handleUpdateStatus(selectedRecord.id, "Rejected")}
+                          onClick={() => handleUpdateStatus(selectedRecord.id, 'Rejected')}
                         >
                           Reject
                         </Button>
                       </>
                     )}
                   </div>
-                  {statusUpdateError && (
-                    <div className="text-xs text-red-600 mt-1">{statusUpdateError}</div>
-                  )}
+                  {statusUpdateError && <div className="text-xs text-red-600 mt-1">{statusUpdateError}</div>}
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">PDF File</label>
                   <div className="mt-1">
                     {selectedRecord.pdf_file ? (
-                      <Button size="sm" variant="outline"
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={async () => {
                           try {
-                            const res = await fetch(selectedRecord.pdf_file!);
-                            if (!res.ok) throw new Error('Failed to download PDF');
-                            const blob = await res.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = (selectedRecord.filename || 'file') + '.pdf';
-                            document.body.appendChild(a);
-                            a.click();
-                            a.remove();
-                            window.URL.revokeObjectURL(url);
+                            const res = await fetch(selectedRecord.pdf_file!)
+                            if (!res.ok) throw new Error('Failed to download PDF')
+                            const blob = await res.blob()
+                            const url = window.URL.createObjectURL(blob)
+                            const a = document.createElement('a')
+                            a.href = url
+                            a.download = (selectedRecord.filename || 'file') + '.pdf'
+                            document.body.appendChild(a)
+                            a.click()
+                            a.remove()
+                            window.URL.revokeObjectURL(url)
                           } catch (e) {
-                            alert('Could not download PDF');
+                            alert('Could not download PDF')
                           }
                         }}
                       >
@@ -726,7 +823,6 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                   </div>
                 </div>
               </div>
-
               {selectedRecord.errorMessage && (
                 <div>
                   <label className="text-sm font-medium text-gray-700">Error Message</label>
@@ -735,7 +831,6 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                   </div>
                 </div>
               )}
-
               {selectedRecord?.json_data && (
                 <div>
                   <label className="text-sm font-medium text-gray-700">JSON Data</label>
