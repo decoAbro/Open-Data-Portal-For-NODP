@@ -376,19 +376,35 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
             ))}
           </select>
         </div>
-        <div>
-          <label htmlFor="statusFilter" className="text-sm font-medium text-gray-700 mr-2">Status:</label>
-          <select
-            id="statusFilter"
-            className="border rounded px-2 py-1 text-sm"
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-          >
-            <option value="">All</option>
-            {uniqueStatuses.map((s) => (
-              <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-            ))}
-          </select>
+        {/* Status Pills */}
+        <div className="flex flex-col gap-1">
+          <span className="text-sm font-medium text-gray-700">Status:</span>
+          <div className="flex flex-wrap gap-1">
+            {[
+              { label: 'All', value: '' },
+              { label: 'In-Review', value: 'in-review' },
+              { label: 'Approved', value: 'approved' },
+              { label: 'Rejected', value: 'rejected' }
+            ].map(pill => {
+              const active = statusFilter === pill.value
+              return (
+                <button
+                  key={pill.label}
+                  type="button"
+                  onClick={() => setStatusFilter(pill.value)}
+                  className={
+                    'text-xs px-3 py-1 rounded-full border transition-colors ' +
+                    (active
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                      : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50')
+                  }
+                  aria-pressed={active}
+                >
+                  {pill.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
         {filtersActive && (
           <Button
