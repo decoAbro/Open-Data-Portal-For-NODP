@@ -9,7 +9,7 @@ import { validateAdminCredentials } from "./utils/storage"
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [userCredentials, setUserCredentials] = useState<{ username: string; password: string } | null>(null)
+  const [userCredentials, setUserCredentials] = useState<{ username: string; password: string; role?: string } | null>(null)
   const [adminPassword, setAdminPassword] = useState("Sapphire123")
   const [isLoading, setIsLoading] = useState(true)
   const [loginError, setLoginError] = useState("")
@@ -33,8 +33,28 @@ export default function App() {
     setIsLoading(false)
   }, [])
 
-  const verifyStoredCredentials = async (credentials: { username: string; password: string }) => {
+  const verifyStoredCredentials = async (credentials: { username: string; password: string; role?: string }) => {
     try {
+      if (credentials.role && /admin/i.test(credentials.role)) {
+        // If stored role already indicates admin privileges, trust but verify login still valid
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: credentials.username, password: credentials.password }),
+        })
+        const data = await response.json()
+        if (data.success) {
+          setUserCredentials({ ...credentials, role: data.user.role })
+          setIsAuthenticated(true)
+          setIsAdmin(/admin/i.test(data.user.role || ''))
+          // Refresh stored credentials with latest role
+          localStorage.setItem("pie-portal-credentials", JSON.stringify({ username: credentials.username, password: credentials.password, role: data.user.role }))
+          return
+        } else {
+          localStorage.removeItem("pie-portal-credentials")
+          return
+        }
+      }
       if (credentials.username === "admin") {
         if (validateAdminCredentials(credentials.username, credentials.password)) {
           setUserCredentials(credentials)
@@ -51,10 +71,14 @@ export default function App() {
           body: JSON.stringify(credentials),
         })
 
-        if (response.ok) {
-          setUserCredentials(credentials)
+        const data = await response.json()
+        if (response.ok && data.success) {
+          const role = data.user?.role || 'user'
+          setUserCredentials({ ...credentials, role })
           setIsAuthenticated(true)
-          setIsAdmin(false)
+          setIsAdmin(/admin/i.test(role))
+          // Persist role
+          localStorage.setItem("pie-portal-credentials", JSON.stringify({ username: credentials.username, password: credentials.password, role }))
         } else {
           localStorage.removeItem("pie-portal-credentials")
         }
@@ -94,18 +118,16 @@ export default function App() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(credentials),
         })
-
         const data = await response.json()
-
         if (data.success) {
-          setUserCredentials(credentials)
-          setIsAuthenticated(true)
-          setIsAdmin(false)
-
-          if (typeof window !== "undefined") {
-            localStorage.setItem("pie-portal-credentials", JSON.stringify(credentials))
-          }
-          setShowAuthLoadingOverlay(false)
+          const role = data.user?.role || 'user'
+            setUserCredentials({ ...credentials, role })
+            setIsAuthenticated(true)
+            setIsAdmin(/admin/i.test(role))
+            if (typeof window !== "undefined") {
+              localStorage.setItem("pie-portal-credentials", JSON.stringify({ username, password, role }))
+            }
+            setShowAuthLoadingOverlay(false)
         } else {
           setLoginError(data.error || "Login failed")
           setShowAuthLoadingOverlay(false)
@@ -154,7 +176,7 @@ export default function App() {
   }
 
   if (isAdmin) {
-    return <AdminDashboard onLogout={handleLogout} onPasswordChange={handlePasswordChange} />
+    return <AdminDashboard onLogout={handleLogout} />
   }
 
   return (

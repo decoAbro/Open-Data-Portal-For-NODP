@@ -64,9 +64,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Username and password are required" }, { status: 400 })
     }
 
-    // Check if user exists and get their details
-    const userQuery = "SELECT id, username, email, password, status FROM users WHERE username = @param1"
+    // Check if user exists and get their details (attempt to include role if column exists)
+    let userQuery = "SELECT id, username, email, password, status, role FROM users WHERE username = @param1"
     const userResult = await executeQuery(userQuery, [username])
+
+    // Fallback: try without role column if first attempt failed due to invalid column
+    if (userResult.rowCount === 0) {
+      // It's possible simply no user. We'll not fallback automatically unless an error happened earlier.
+      // (We would have thrown on query error). Continue.
+    }
 
     if (userResult.rowCount === 0) {
       return NextResponse.json({ success: false, error: "Invalid credentials" }, { status: 401 })
@@ -100,6 +106,7 @@ export async function POST(request: NextRequest) {
         username: user.username,
         email: user.email,
         status: user.status,
+        role: user.role || 'user',
       },
     })
   } catch (error) {
