@@ -261,6 +261,9 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
   const uniqueYears = filterForDropdowns(filteredForYears).years;
   const uniqueStatuses = filterForDropdowns(filteredForStatuses).statuses;
 
+  // Determine if any filters are active (for showing Clear Filters button)
+  const filtersActive = !!(uploadedByFilter || tableNameFilter || yearFilter || statusFilter)
+
   // Filtered upload history
   const filteredUploadHistory = uploadHistory.filter((r) => {
     const byUser = uploadedByFilter ? r.username === uploadedByFilter : true
@@ -387,6 +390,23 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
             ))}
           </select>
         </div>
+        {filtersActive && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="ml-auto"
+            onClick={() => {
+              setUploadedByFilter('')
+              setTableNameFilter('')
+              setYearFilter('')
+              setStatusFilter('')
+            }}
+            title="Clear all active filters"
+          >
+            Clear Filters
+          </Button>
+        )}
       </div>
       {/* Download All Summaries Button */}
       <div className="flex justify-end mb-2">
