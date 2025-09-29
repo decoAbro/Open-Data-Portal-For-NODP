@@ -22,6 +22,10 @@ interface UploadRecord {
   censusYear: string
   status: string
   errorMessage?: string
+  // lightweight flags (detail deferred)
+  hasPdf?: boolean
+  hasJson?: boolean
+  // populated only after detail fetch
   json_data?: string | null
   pdf_file?: string | null
 }
@@ -136,9 +140,24 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
     }
   }
 
-  const handleViewDetails = (record: UploadRecord) => {
+  const handleViewDetails = async (record: UploadRecord) => {
     setSelectedRecord(record)
     setShowDetailsDialog(true)
+    // If heavy fields missing, fetch detail
+    if (record.hasJson && record.json_data === undefined) {
+      try {
+        const res = await fetch(`/api/upload-history-admin/detail?id=${record.id}`)
+        if (res.ok) {
+          const data = await res.json()
+            ;(record as any).json_data = data.record.json_data
+            ;(record as any).pdf_file = data.record.pdf_file
+          // force state update
+          setSelectedRecord({ ...(record as any) })
+        }
+      } catch (e) {
+        console.warn('Failed to load detail', e)
+      }
+    }
   }
 
   if (isLoading) {
@@ -433,20 +452,30 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
           disabled={downloadingAll}
           onClick={async () => {
             setDownloadingAll(true);
-            const recordsToDownload = filteredUploadHistory.filter(r => r.pdf_file);
+            const recordsToDownload = filteredUploadHistory.filter(r => r.hasPdf);
             if (recordsToDownload.length === 0) {
               pushMessage({ type: 'info', text: 'No summaries available to download.' })
               setDownloadingAll(false);
               return;
             }
             try {
-              const pdfBuffers = await Promise.all(
-                recordsToDownload.map(async (record) => {
-                  const res = await fetch(record.pdf_file as string);
-                  if (!res.ok) throw new Error('Failed to download PDF');
-                  return await res.arrayBuffer();
-                })
-              );
+              const pdfBuffers = [] as ArrayBuffer[]
+              for (const record of recordsToDownload) {
+                if (!record.pdf_file) {
+                  try {
+                    const resDetail = await fetch(`/api/upload-history-admin/detail?id=${record.id}`)
+                    if (resDetail.ok) {
+                      const d = await resDetail.json()
+                      ;(record as any).pdf_file = d.record.pdf_file
+                    }
+                  } catch {}
+                }
+                if (!record.pdf_file) continue
+                const res = await fetch(record.pdf_file as string)
+                if (!res.ok) continue
+                pdfBuffers.push(await res.arrayBuffer())
+              }
+              if (pdfBuffers.length === 0) throw new Error('No PDFs collected')
               const mergedPdf = await PDFDocument.create();
               for (const pdfBytes of pdfBuffers) {
                 const pdf = await PDFDocument.load(pdfBytes);
@@ -700,13 +729,22 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        {record.pdf_file ? (
+                        {record.hasPdf ? (
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={async (e) => {
                               e.stopPropagation()
                               try {
+                                // ensure pdf link present (fetch detail if not yet)
+                                if (!record.pdf_file) {
+                                  const resDetail = await fetch(`/api/upload-history-admin/detail?id=${record.id}`)
+                                  if (resDetail.ok) {
+                                    const d = await resDetail.json()
+                                    ;(record as any).pdf_file = d.record.pdf_file
+                                  }
+                                }
+                                if (!record.pdf_file) throw new Error('No PDF link')
                                 const res = await fetch(record.pdf_file as string)
                                 if (!res.ok) throw new Error('Failed to download PDF')
                                 const blob = await res.blob()
@@ -829,13 +867,21 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                 <div>
                   <label className="text-sm font-medium text-gray-700">PDF File</label>
                   <div className="mt-1">
-                    {selectedRecord.pdf_file ? (
+                    {selectedRecord.hasPdf ? (
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={async () => {
                           try {
-                            const res = await fetch(selectedRecord.pdf_file!)
+                            if (!selectedRecord.pdf_file) {
+                              const resDetail = await fetch(`/api/upload-history-admin/detail?id=${selectedRecord.id}`)
+                              if (resDetail.ok) {
+                                const d = await resDetail.json()
+                                setSelectedRecord(prev => prev ? { ...prev, pdf_file: d.record.pdf_file, json_data: prev.json_data ?? d.record.json_data } : prev)
+                              }
+                            }
+                            if (!selectedRecord.pdf_file) throw new Error('No PDF link')
+                            const res = await fetch(selectedRecord.pdf_file)
                             if (!res.ok) throw new Error('Failed to download PDF')
                             const blob = await res.blob()
                             const url = window.URL.createObjectURL(blob)

@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
     }
 
 
-    // Query upload_records table for all users
+    // Lightweight query (omit large json_data & binary pdf_file) for faster initial load
     const query = `
       SELECT 
         id,
@@ -82,15 +82,15 @@ export async function GET(request: NextRequest) {
         census_year,
         status,
         error_message,
-        json_data,
-        pdf_file
+        CASE WHEN pdf_file IS NOT NULL THEN 1 ELSE 0 END AS has_pdf,
+        CASE WHEN json_data IS NOT NULL THEN 1 ELSE 0 END AS has_json
       FROM upload_records 
       ORDER BY upload_date DESC
     `
 
     const result = await pool.request().query(query)
 
-    // Format the data for the frontend
+    // Format the data for the frontend (no heavy fields)
     const uploadHistory = result.recordset.map((record) => ({
       id: record.id,
       username: record.username,
@@ -102,8 +102,9 @@ export async function GET(request: NextRequest) {
       censusYear: record.census_year,
       status: record.status,
       errorMessage: record.error_message,
-      json_data: record.json_data,
-      pdf_file: record.pdf_file ? `/api/upload-history-admin?downloadPdfId=${record.id}` : null,
+      hasPdf: record.has_pdf === 1,
+      hasJson: record.has_json === 1,
+      // detail fields deferred
     }))
 
     return NextResponse.json({ uploadHistory })
