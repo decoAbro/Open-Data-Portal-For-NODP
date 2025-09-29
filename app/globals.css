@@ -26,6 +26,16 @@
   }
 }
 
+/* Hide native Edge/IE password reveal & clear icons so custom toggle button is the only one visible */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+  width: 0;
+  height: 0;
+}
+/* Defensive: some Chromium variants may expose a reveal button class in enterprise modes */
+input[type="password"]::-o-clear-button { display: none; }
+
 @layer base {
   :root {
     --background: 0 0% 100%;

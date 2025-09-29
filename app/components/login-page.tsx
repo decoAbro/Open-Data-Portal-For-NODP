@@ -4,11 +4,12 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Eye, EyeOff, HelpCircle } from "lucide-react"
+import { Eye, EyeOff, HelpCircle, AlertTriangle } from "lucide-react"
 import Image from "next/image"
 import { addNotification } from "../utils/storage"
 
@@ -24,6 +25,7 @@ export default function LoginPage({ onLogin, error }: LoginPageProps) {
   const [localError, setLocalError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false)
+  const [capsLockOn, setCapsLockOn] = useState(false)
 
   // Forgot password states
   const [showForgotPassword, setShowForgotPassword] = useState(false)
@@ -84,6 +86,7 @@ export default function LoginPage({ onLogin, error }: LoginPageProps) {
             date: new Date().toLocaleString(),
             read: false,
             type: "general",
+            year: new Date().getFullYear().toString(),
           })
         }
 
@@ -161,8 +164,17 @@ export default function LoginPage({ onLogin, error }: LoginPageProps) {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.getModifierState) setCapsLockOn(e.getModifierState('CapsLock'))
+                    }}
+                    onKeyUp={(e) => {
+                      if (e.getModifierState) setCapsLockOn(e.getModifierState('CapsLock'))
+                    }}
+                    onBlur={() => setCapsLockOn(false)}
                     disabled={isLoading}
+                    autoComplete="current-password"
                     className="h-11 pr-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    aria-describedby={capsLockOn ? 'caps-lock-warning' : undefined}
                   />
                   <Button
                     type="button"
@@ -179,6 +191,17 @@ export default function LoginPage({ onLogin, error }: LoginPageProps) {
                     )}
                   </Button>
                 </div>
+                {capsLockOn && (
+                  <div
+                    id="caps-lock-warning"
+                    role="alert"
+                    className="mt-1 text-xs text-amber-700 flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-1 rounded"
+                  >
+                    <AlertTriangle className="h-3 w-3" />
+                    Caps Lock is ON
+                  </div>
+                )}
+                {/* Password strength meter removed from login page */}
               </div>
 
               {displayError && (
