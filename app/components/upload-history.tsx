@@ -255,27 +255,29 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
         </CardHeader>
         <CardContent>
           {filteredUploadHistory.length > 0 ? (
-            <div className="overflow-x-auto" style={{ minWidth: '1200px', width: '100%' }}>
-              <Table>
+            <div className="w-full overflow-x-auto">
+              {/* Keep a reasonable min-width so columns don't squash, but allow card to scroll instead of overflowing */}
+              <Table className="min-w-[900px]">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Table Name</TableHead>
-                    <TableHead>Upload Date</TableHead>
-                    <TableHead>Records</TableHead>
-                    <TableHead>Census Year</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Download Data Summary</TableHead>
-                    <TableHead>View Data Summary</TableHead>
+                    <TableHead className="whitespace-nowrap">Table Name</TableHead>
+                    <TableHead className="whitespace-nowrap">Upload Date</TableHead>
+                    <TableHead className="whitespace-nowrap">Records</TableHead>
+                    <TableHead className="whitespace-nowrap">Census Year</TableHead>
+                    <TableHead className="whitespace-nowrap">Status</TableHead>
+                    <TableHead className="whitespace-nowrap">Download Data Summary</TableHead>
+                    <TableHead className="whitespace-nowrap">View Data Summary</TableHead>
+                    <TableHead className="whitespace-nowrap">Delete</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredUploadHistory.map((record) => (
                     <TableRow key={record.id}>
-                      <TableCell className="font-medium">{record.tableName}</TableCell>
+                      <TableCell className="font-medium max-w-[200px] truncate" title={record.tableName}>{record.tableName}</TableCell>
                       <TableCell>
                         <div className="flex items-center">
                           <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                          {new Date(record.uploadDate).toLocaleString()}
+                          <span className="whitespace-nowrap">{new Date(record.uploadDate).toLocaleString()}</span>
                         </div>
                       </TableCell>
                       <TableCell>{record.recordCount?.toLocaleString() || "N/A"}</TableCell>
