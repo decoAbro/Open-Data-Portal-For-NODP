@@ -180,8 +180,8 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto" style={{ minWidth: '1200px', width: '100%' }}>
-              <Table>
+            <div className="overflow-x-auto">
+              <Table className="w-full mx-auto table-auto">
                 <TableHeader>
                   <TableRow>
                     {['Table Name','Uploaded By','Upload Date','Records','Year','Status','Download Data Summary'].map(h => (
@@ -559,8 +559,8 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
             </div>
           )}
           {filteredUploadHistory.length > 0 ? (
-            <div className="overflow-x-auto" style={{ minWidth: '1200px', width: '100%' }}>
-              <Table>
+            <div className="overflow-x-auto">
+              <Table className="w-full mx-auto table-auto">
                 <TableHeader>
                   <TableRow>
                     <TableHead
