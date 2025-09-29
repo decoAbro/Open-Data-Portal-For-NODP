@@ -24,6 +24,17 @@
     0% { transform: translateX(0); }
     100% { transform: translateX(100%); }
   }
+  @keyframes auth-wobble {
+    0% { transform: scale(1) rotate(0deg); }
+    20% { transform: scale(1.04) rotate(2deg); }
+    40% { transform: scale(1.06) rotate(-2deg); }
+    60% { transform: scale(1.05) rotate(1deg); }
+    80% { transform: scale(1.04) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  .animate-auth-wobble {
+    animation: auth-wobble 1.4s ease-in-out infinite;
+  }
 }
 
 /* Hide native Edge/IE password reveal & clear icons so custom toggle button is the only one visible */

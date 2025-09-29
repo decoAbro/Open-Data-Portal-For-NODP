@@ -121,13 +121,16 @@ export default function LoginPage({ onLogin, error }: LoginPageProps) {
         <Card className="bg-white shadow-lg border-0">
           <CardContent className="p-8">
             {/* Logo */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-8 group">
               <Image
                 src="/pie-logo.png"
                 alt="Pakistan Institute of Education"
                 width={120}
                 height={120}
-                className="object-contain mx-auto mb-6"
+                className={`object-contain mx-auto mb-6 transition-transform duration-500 ease-out group-hover:scale-[1.06] group-hover:rotate-3 will-change-transform ${
+                  (isLoading || showLoadingOverlay) ? 'animate-auth-wobble' : ''
+                }`}
+                priority
               />
               <h1 className="text-2xl font-bold text-blue-600 mb-2">National Open Data Portal</h1>
               <p className="text-green-600 font-medium">Data Upload Portal</p>
