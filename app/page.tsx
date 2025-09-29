@@ -176,7 +176,7 @@ export default function App() {
   }
 
   if (isAdmin) {
-    return <AdminDashboard onLogout={handleLogout} />
+    return <AdminDashboard onLogout={handleLogout} username={userCredentials?.username || 'Administrator'} />
   }
 
   return (

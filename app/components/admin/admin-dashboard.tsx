@@ -53,6 +53,7 @@ import UploadHistory from "./approval-history-management"
 
 interface AdminDashboardProps {
   onLogout: () => void
+  username?: string
 }
 
 interface DatabaseStatus {
@@ -66,7 +67,7 @@ interface DatabaseStatus {
   details?: string
 }
 
-export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
+export default function AdminDashboard({ onLogout, username = 'Administrator' }: AdminDashboardProps) {
   const [showUploadWindow, setShowUploadWindow] = useState(false)
   const [openingUploadWindow, setOpeningUploadWindow] = useState(false)
   const [uploadDeadlineDate, setUploadDeadlineDate] = useState("")
@@ -495,6 +496,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <div>
                   <h1 className="text-lg font-bold text-blue-600">National Open Data Portal</h1>
                   <p className="text-sm text-green-600 font-medium">Administrator Panel</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Welcome, {username}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
