@@ -68,13 +68,13 @@ async function executeQuery(query: string, params: any[] = []) {
   }
 }
 
-// GET - Fetch all users (using only basic columns that should exist)
+// GET - Fetch all users (including role if the column exists)
 export async function GET() {
   try {
     console.log("GET /api/users - Starting to fetch users...")
 
-    // Start with basic columns that are most likely to exist
-    const query = `SELECT id, username, email, status, created_at, last_login FROM users ORDER BY id`
+    // Try selecting role as well; if the column does not exist the fallback path below will be used
+    const query = `SELECT id, username, email, status, created_at, last_login, role FROM users ORDER BY id`
     console.log("Executing query:", query)
 
     const result = await executeQuery(query)
@@ -88,6 +88,7 @@ export async function GET() {
       status: user.status || "active",
       created_at: user.created_at,
       last_login: user.last_login || null,
+      role: user.role || user.Role || "user",
     }))
 
     console.log("Transformed users:", users)
@@ -107,12 +108,13 @@ export async function GET() {
       const fallbackResult = await executeQuery(fallbackQuery)
 
       const users = fallbackResult.rows.map((user: any) => ({
-        id: user.id || 0,
+        id: user.id || user.ID || 0,
         username: user.username || user.Username || "",
         email: user.email || user.Email || "",
         status: user.status || user.Status || "active",
         created_at: user.created_at || user.CreatedAt || user.created_date || new Date().toISOString(),
         last_login: user.last_login || user.LastLogin || null,
+        role: user.role || user.Role || "user",
       }))
 
       return NextResponse.json({
@@ -140,7 +142,7 @@ export async function GET() {
 // POST - Create new user (using only basic columns)
 export async function POST(request: NextRequest) {
   try {
-    const { username, email, password, status = "active" } = await request.json()
+  const { username, email, password, status = "active", role = "user" } = await request.json()
 
     if (!username || !email || !password) {
       return NextResponse.json({ success: false, error: "Username, email, and password are required" }, { status: 400 })
@@ -157,13 +159,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Insert new user with basic columns
-    const insertQuery = `
-      INSERT INTO users (username, email, password, status, created_at) 
-      OUTPUT INSERTED.id, INSERTED.username, INSERTED.email, INSERTED.status, INSERTED.created_at
-      VALUES (@param1, @param2, @param3, @param4, GETDATE())
+    // Attempt insert including role column (if it exists). If it fails we'll fallback below.
+    let insertQuery = `
+      INSERT INTO users (username, email, password, status, role, created_at) 
+      OUTPUT INSERTED.id, INSERTED.username, INSERTED.email, INSERTED.status, INSERTED.created_at, INSERTED.role
+      VALUES (@param1, @param2, @param3, @param4, @param5, GETDATE())
     `
-    const result = await executeQuery(insertQuery, [username, email, password, status])
+    let result
+    try {
+      result = await executeQuery(insertQuery, [username, email, password, status, role])
+    } catch (e) {
+      console.warn("Insert with role column failed, attempting without role column (maybe column missing)")
+      insertQuery = `
+        INSERT INTO users (username, email, password, status, created_at) 
+        OUTPUT INSERTED.id, INSERTED.username, INSERTED.email, INSERTED.status, INSERTED.created_at
+        VALUES (@param1, @param2, @param3, @param4, GETDATE())
+      `
+      result = await executeQuery(insertQuery, [username, email, password, status])
+    }
 
     return NextResponse.json({
       success: true,
@@ -204,7 +217,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update user
 export async function PUT(request: NextRequest) {
   try {
-    const { id, username, email, password, status } = await request.json()
+  const { id, username, email, password, status, role } = await request.json()
 
     if (!id) {
       return NextResponse.json({ success: false, error: "User ID is required" }, { status: 400 })
@@ -233,6 +246,11 @@ export async function PUT(request: NextRequest) {
     if (status) {
       updates.push(`status = @param${paramCount}`)
       params.push(status)
+      paramCount++
+    }
+    if (role) {
+      updates.push(`role = @param${paramCount}`)
+      params.push(role)
       paramCount++
     }
 
