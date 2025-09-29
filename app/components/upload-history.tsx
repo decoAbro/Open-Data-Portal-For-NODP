@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Clock, FileText, CheckCircle, XCircle, AlertCircle, Eye, Database, Calendar, HardDrive } from "lucide-react"
+import { Clock, FileText, CheckCircle, XCircle, AlertCircle, Eye, Database, Calendar, HardDrive, Trash2 } from "lucide-react"
 import { PDFDocument } from 'pdf-lib';
 
 interface UploadRecord {
@@ -162,7 +162,7 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
       <div className="flex justify-end mb-2">
         <Button
           size="sm"
-          className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+          className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600 gap-2"
           variant="default"
           disabled={downloadingAll}
           onClick={async () => {
@@ -209,11 +209,14 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
         >
           {downloadingAll ? (
             <span className="flex items-center">
-              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
               Downloading...
             </span>
           ) : (
-            'Download All Summaries'
+            <span className="flex items-center">
+              <FileText className="h-4 w-4" />
+              Download All Summaries
+            </span>
           )}
         </Button>
       </div>
@@ -260,33 +263,43 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
               <Table className="min-w-[900px]">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="whitespace-nowrap">Table Name</TableHead>
-                    <TableHead className="whitespace-nowrap">Upload Date</TableHead>
-                    <TableHead className="whitespace-nowrap">Records</TableHead>
-                    <TableHead className="whitespace-nowrap">Census Year</TableHead>
-                    <TableHead className="whitespace-nowrap">Status</TableHead>
-                    <TableHead className="whitespace-nowrap">Download Data Summary</TableHead>
-                    <TableHead className="whitespace-nowrap">View Data Summary</TableHead>
-                    <TableHead className="whitespace-nowrap">Delete</TableHead>
+                    <TableHead className="whitespace-nowrap text-center">Table Name</TableHead>
+                    <TableHead className="whitespace-nowrap text-center">Upload Date</TableHead>
+                    <TableHead className="whitespace-nowrap text-center">Records</TableHead>
+                    <TableHead className="whitespace-nowrap text-center">Census Year</TableHead>
+                    <TableHead className="whitespace-nowrap text-center">Status</TableHead>
+                    <TableHead className="whitespace-nowrap text-center">Download Summary</TableHead>
+                    <TableHead className="whitespace-nowrap text-center">Delete</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredUploadHistory.map((record) => (
-                    <TableRow key={record.id}>
-                      <TableCell className="font-medium max-w-[200px] truncate" title={record.tableName}>{record.tableName}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
+                    <TableRow
+                      key={record.id}
+                      onClick={() => handleViewDetails(record)}
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleViewDetails(record); } }}
+                    >
+                      <TableCell className="font-medium max-w-[200px] truncate text-center" title={record.tableName}>{record.tableName}</TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center">
                           <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                           <span className="whitespace-nowrap">{new Date(record.uploadDate).toLocaleString()}</span>
                         </div>
                       </TableCell>
-                      <TableCell>{record.recordCount?.toLocaleString() || "N/A"}</TableCell>
-                      <TableCell>{record.censusYear}</TableCell>
-                      <TableCell>{getStatusBadge(record.status)}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">{record.recordCount?.toLocaleString() || "N/A"}</TableCell>
+                      <TableCell className="text-center">{record.censusYear}</TableCell>
+                      <TableCell className="text-center">{getStatusBadge(record.status)}</TableCell>
+                      <TableCell className="text-center">
                         {record.pdf_file ? (
-                          <Button size="sm" variant="outline"
-                            onClick={async () => {
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600 gap-1"
+                            onClick={async (e) => {
+                              e.stopPropagation();
                               try {
                                 const res = await fetch(record.pdf_file as string);
                                 if (!res.ok) throw new Error('Failed to download PDF');
@@ -304,23 +317,20 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                               }
                             }}
                           >
-                            Download Summary
+                            <FileText className="h-4 w-4" />
+                            <span>Download Summary</span>
                           </Button>
                         ) : (
                           <span className="text-gray-400">N/A</span>
                         )}
                       </TableCell>
-                      <TableCell>
-                        <Button size="sm" variant="outline" onClick={() => handleViewDetails(record)}>
-                          View Summary
-                        </Button>
-                      </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         <Button
                           size="sm"
                           variant="destructive"
                           disabled={record.status.toLowerCase() !== "rejected" || deletingRecordId === record.id}
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setDeleteError(null)
                             setDeleteDialogRecord(record)
                           }}
@@ -331,7 +341,10 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                               Deleting...
                             </span>
                           ) : (
-                            'Delete'
+                            <span className="flex items-center gap-1">
+                              <Trash2 className="h-4 w-4" />
+                              Delete
+                            </span>
                           )}
                         </Button>
                       </TableCell>

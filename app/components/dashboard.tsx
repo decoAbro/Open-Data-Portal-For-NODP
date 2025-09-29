@@ -7,37 +7,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Progress } from "@/components/ui/progress"
+// Removed Progress (bulk upload removed)
 import UploadHistory from "./upload-history"
-import {
-  Upload,
-  CheckCircle,
-  XCircle,
-  Info,
-  AlertCircle,
-  Bell,
-  Clock,
-  Settings,
-  Eye,
-  EyeOff,
-  FileJson,
-  Table,
-  BarChart3,
-} from "lucide-react"
+import { CheckCircle, Info, AlertCircle, Bell, Clock, Settings, Eye, EyeOff, FileJson, Table, BarChart3 } from "lucide-react"
 import Image from "next/image"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import {
-  getUserByUsername,
-  getNotificationsForUser,
-  markNotificationAsRead,
-  markUserHasUploaded,
-  initializeStorage,
-  clearNotificationsForUser,
-  checkUploadDeadlines,
-  getCurrentYear,
-  addUploadRecord,
-  type Notification,
-} from "../utils/storage"
+import { getUserByUsername, getNotificationsForUser, markNotificationAsRead, initializeStorage, clearNotificationsForUser, checkUploadDeadlines, getCurrentYear, type Notification } from "../utils/storage"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import JsonConverterContent from "../json-converter/components/json-converter-content"
 import TableUploadTracker from "./table-upload-tracker"
@@ -60,11 +35,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ userCredentials, onLogout }: DashboardProps) {
-  const [file, setFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle")
-  const [statusMessage, setStatusMessage] = useState("")
-  const [progress, setProgress] = useState(0)
+  // Bulk upload states removed
   const [hasUploadPermission, setHasUploadPermission] = useState(false)
   const [hasUploaded, setHasUploaded] = useState(false)
   const [uploadDeadline, setUploadDeadline] = useState<string | null>(null)
@@ -130,227 +101,17 @@ export default function Dashboard({ userCredentials, onLogout }: DashboardProps)
     setUnreadCount(userNotifications.filter((n) => !n.read).length)
   }
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0]
-    if (selectedFile) {
-      if (selectedFile.type === "application/json" || selectedFile.name.endsWith(".json")) {
-        const reader = new FileReader()
-        reader.onload = async (e) => {
-          try {
-            const content = e.target?.result as string
-            JSON.parse(content) // Just validate it's valid JSON
-            setFile(selectedFile)
-            setUploadStatus("idle")
-            setStatusMessage("")
-          } catch (error) {
-            setUploadStatus("error")
-            setStatusMessage(`Invalid JSON format: ${error instanceof Error ? error.message : "Unknown error"}`)
-            setFile(null)
-          }
-        }
-        reader.onerror = () => {
-          setUploadStatus("error")
-          setStatusMessage("Failed to read the file.")
-          setFile(null)
-        }
-        reader.readAsText(selectedFile)
-      } else {
-        setUploadStatus("error")
-        setStatusMessage("Please select a valid JSON file")
-        setFile(null)
-      }
-    }
-  }
-
-  const validateJsonData = async (jsonContent: string): Promise<boolean> => {
-    try {
-      const data = JSON.parse(jsonContent)
-
-      // Just check if data exists and is valid JSON
-      if (data) {
-        return true
-      } else {
-        setUploadStatus("error")
-        setStatusMessage(`Error: Invalid JSON data`)
-        return false
-      }
-    } catch (error) {
-      setUploadStatus("error")
-      setStatusMessage(`Error validating JSON: ${error instanceof Error ? error.message : "Unknown error"}`)
-      return false
-    }
-  }
-
-  const handleUpload = async () => {
-    if (!file) {
-      setUploadStatus("error")
-      setStatusMessage("Please select a JSON file")
-      return
-    }
-
-    if (!hasUploadPermission) {
-      setUploadStatus("error")
-      setStatusMessage(
-        "You don't have permission to upload data. Please wait for the administrator to open an upload window.",
-      )
-      return
-    }
-
-    if (hasUploaded) {
-      setUploadStatus("error")
-      setStatusMessage("You have already uploaded data for this window.")
-      return
-    }
-
-    // Check if deadline has passed
-    if (uploadDeadline) {
-      const deadline = new Date(uploadDeadline)
-      const now = new Date()
-      if (now > deadline) {
-        setUploadStatus("error")
-        setStatusMessage("Upload deadline has passed. The upload window is now closed.")
-        return
-      }
-    }
-
-    let jsonContent: string
-    try {
-      jsonContent = await new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          try {
-            const content = e.target?.result as string
-            JSON.parse(content) // Validate JSON format
-            resolve(content)
-          } catch (error) {
-            reject(new Error("Invalid JSON format"))
-          }
-        }
-        reader.onerror = () => reject(new Error("Failed to read file"))
-        reader.readAsText(file)
-      })
-
-      // Validate the census_year in the JSON
-      const isValidJson = await validateJsonData(jsonContent)
-      if (!isValidJson) {
-        return
-      }
-    } catch (error) {
-      setUploadStatus("error")
-      setStatusMessage(`File error: ${error instanceof Error ? error.message : "Unknown error"}`)
-      return
-    }
-
-    setUploading(true)
-    setProgress(0)
-    setUploadStatus("idle")
-
-    let progressInterval: NodeJS.Timeout | null = null
-
-    try {
-      progressInterval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 90) {
-            clearInterval(progressInterval!)
-            return 90
-          }
-          return prev + 10
-        })
-      }, 200)
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          jsonData: JSON.parse(jsonContent),
-          username: userCredentials.username,
-          password: userCredentials.password,
-        }),
-      })
-
-      clearInterval(progressInterval!)
-      setProgress(100)
-
-      if (response.ok) {
-        const result = await response.text()
-        setUploadStatus("success")
-        setStatusMessage(`Upload successful! ${result}`)
-
-        // Add to upload history
-        addUploadRecord({
-          username: userCredentials.username,
-          filename: file.name,
-          uploadDate: new Date().toLocaleString(),
-          fileSize: `${(file.size / 1024).toFixed(1)} KB`,
-          year: currentYear,
-          status: "success",
-          message: "Upload successful",
-        })
-
-        // Mark user as having uploaded
-        markUserHasUploaded(userCredentials.username)
-        setHasUploaded(true)
-        setHasUploadPermission(false)
-      } else {
-        const errorText = await response.text()
-        setUploadStatus("error")
-        setStatusMessage(`Upload failed: ${response.status} - ${errorText}`)
-
-        // Add failed upload to history
-        addUploadRecord({
-          username: userCredentials.username,
-          filename: file.name,
-          uploadDate: new Date().toLocaleString(),
-          fileSize: `${(file.size / 1024).toFixed(1)} KB`,
-          year: currentYear,
-          status: "failed",
-          message: `Failed: ${errorText}`,
-        })
-      }
-    } catch (error) {
-      clearInterval(progressInterval!)
-      setProgress(0)
-      setUploadStatus("error")
-      setStatusMessage(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`)
-
-      // Add failed upload to history
-      addUploadRecord({
-        username: userCredentials.username,
-        filename: file.name,
-        uploadDate: new Date().toLocaleString(),
-        fileSize: `${(file.size / 1024).toFixed(1)} KB`,
-        year: currentYear,
-        status: "failed",
-        message: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
-      })
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  const handleNotificationRead = (id: number) => {
-    if (!isClient) return
-
-    markNotificationAsRead(id)
-    loadNotifications()
-  }
-
+  // Bulk upload handlers removed; add back notification clearer helper
   const handleClearNotifications = () => {
     if (!isClient) return
-
     clearNotificationsForUser(userCredentials.username)
     loadNotifications()
   }
 
-  const resetForm = () => {
-    setFile(null)
-    setUploadStatus("idle")
-    setStatusMessage("")
-    setProgress(0)
-    const fileInput = document.getElementById("json-file") as HTMLInputElement
-    if (fileInput) fileInput.value = ""
+  const handleNotificationRead = (id: number) => {
+    if (!isClient) return
+    markNotificationAsRead(id)
+    loadNotifications()
   }
 
   const handlePasswordChange = async () => {
@@ -741,10 +502,6 @@ export default function Dashboard({ userCredentials, onLogout }: DashboardProps)
               <Table className="h-4 w-4 mr-2" />
               Table Uploads
             </TabsTrigger>
-            <TabsTrigger value="bulk" className="flex items-center">
-              <Upload className="h-4 w-4 mr-2" />
-              Bulk Upload
-            </TabsTrigger>
             <TabsTrigger value="json-converter" className="flex items-center">
               <FileJson className="h-4 w-4 mr-2" />
               JSON Converter
@@ -769,126 +526,7 @@ export default function Dashboard({ userCredentials, onLogout }: DashboardProps)
             />
           </TabsContent>
 
-          <TabsContent value="bulk">
-            <Card>
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-xl font-bold">Bulk Data Upload</h2>
-                      <p className="text-gray-500 text-sm mt-1">
-                        Upload your data file for {currentYear} in JSON format
-                      </p>
-                    </div>
-                    {uploadDeadline && (
-                      <div className="flex items-center text-sm">
-                        <Clock className="h-4 w-4 mr-1 text-amber-600" />
-                        <span className="text-amber-600 font-medium">{getTimeRemaining()}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Upload Status */}
-                  {uploadStatus === "success" && (
-                    <Alert className="bg-green-50 border-green-200">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <AlertDescription className="text-green-800">{statusMessage}</AlertDescription>
-                    </Alert>
-                  )}
-
-                  {uploadStatus === "error" && (
-                    <Alert variant="destructive">
-                      <XCircle className="h-4 w-4" />
-                      <AlertDescription>{statusMessage}</AlertDescription>
-                    </Alert>
-                  )}
-
-                  {/* File Upload */}
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-4" />
-                    <div className="space-y-2">
-                      <Label htmlFor="json-file" className="cursor-pointer">
-                        <span className="text-blue-600 hover:text-blue-700 font-medium">Click to upload</span>
-                        <span className="text-gray-600"> or drag and drop</span>
-                      </Label>
-                      <Input
-                        id="json-file"
-                        type="file"
-                        accept=".json,application/json"
-                        onChange={handleFileChange}
-                        disabled={uploading || !hasUploadPermission || hasUploaded}
-                        className="hidden"
-                      />
-                      <p className="text-sm text-gray-500">JSON files only</p>
-                    </div>
-                  </div>
-
-                  {/* Selected File */}
-                  {file && (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                        <div>
-                          <p className="font-medium text-green-900">{file.name}</p>
-                          <p className="text-sm text-green-700">{(file.size / 1024).toFixed(1)} KB</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Upload Progress */}
-                  {uploading && (
-                    <div>
-                      <Label className="text-sm font-medium text-gray-700 mb-2 block">Upload Progress</Label>
-                      <Progress value={progress} className="w-full h-3 mb-2" />
-                      <p className="text-sm text-gray-600 text-center">{progress}% complete</p>
-                    </div>
-                  )}
-
-                  {/* Upload Button */}
-                  <div className="flex justify-end space-x-3">
-                    <Button variant="outline" onClick={resetForm} disabled={uploading || !file}>
-                      Reset
-                    </Button>
-                    <Button onClick={handleUpload} disabled={!file || uploading || !hasUploadPermission || hasUploaded}>
-                      {uploading ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                          Uploading...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="h-4 w-4 mr-2" />
-                          Upload
-                        </>
-                      )}
-                    </Button>
-                  </div>
-
-                  {/* Upload Status Messages */}
-                  {!hasUploadPermission && !hasUploaded && (
-                    <Alert className="border-amber-200 bg-amber-50">
-                      <AlertCircle className="h-4 w-4 text-amber-600" />
-                      <AlertDescription className="text-amber-800">
-                        You don't have permission to upload data. Please wait for the administrator to open an upload
-                        window.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  {hasUploaded && (
-                    <Alert className="border-green-200 bg-green-50">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <AlertDescription className="text-green-800">
-                        You have already uploaded data for this window. If you need to make changes, please contact the
-                        administrator.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+          {/* Bulk upload tab removed */}
 
           <TabsContent value="json-converter">
             <JsonConverterContent />
