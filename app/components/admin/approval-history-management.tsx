@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Clock, FileText, CheckCircle, XCircle, AlertCircle, Eye, Database, Calendar, HardDrive, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react"
+import { Clock, FileText, CheckCircle, XCircle, AlertCircle, Eye, Database, Calendar, HardDrive, ArrowUpDown, ChevronUp, ChevronDown, Download } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PDFDocument } from 'pdf-lib'
 
@@ -506,7 +506,10 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
               Downloading...
             </span>
           ) : (
-            'Download All Summaries'
+            <span className="flex items-center">
+              <Download className="h-4 w-4 mr-1" />
+              Download All Summaries
+            </span>
           )}
         </Button>
       </div>
@@ -732,7 +735,9 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                         {record.hasPdf ? (
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="default"
+                            className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                            title="Download summary PDF"
                             onClick={async (e) => {
                               e.stopPropagation()
                               try {
@@ -761,7 +766,10 @@ export default function UploadHistory({ username }: UploadHistoryProps) {
                               }
                             }}
                           >
-                            Download Summary
+                            <span className="flex items-center">
+                              <Download className="h-4 w-4 mr-1" />
+                              Download Summary
+                            </span>
                           </Button>
                         ) : (
                           <span className="text-gray-400">N/A</span>
