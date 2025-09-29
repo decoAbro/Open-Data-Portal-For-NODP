@@ -10,6 +10,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import DatabaseDataStatus from "./database-data-status"
@@ -751,6 +752,30 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                             />
                           </div>
                         </div>
+                      </div>
+
+                      {/* Upload Message */}
+                      <div className="space-y-2">
+                        <Label htmlFor="upload-message" className="text-sm font-medium flex items-center justify-between">
+                          <span>Message to Display to Users</span>
+                          <span className="text-[10px] text-gray-500">{uploadMessage.length}/600</span>
+                        </Label>
+                        <Textarea
+                          id="upload-message"
+                          placeholder="Explain the purpose, required tables, deadlines, and any special instructions for this upload window..."
+                          value={uploadMessage}
+                          maxLength={600}
+                          onChange={(e) => setUploadMessage(e.target.value)}
+                          className="bg-white min-h-[120px] resize-y"
+                        />
+                        <p className="text-xs text-gray-600">
+                          This message is shown to users while the window is open. Provide clear instructions and expectations.
+                        </p>
+                        {!uploadMessage && (
+                          <p className="text-xs text-amber-600 flex items-center gap-1">
+                            <AlertTriangle className="h-3.5 w-3.5" /> A message is required before opening the window.
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex justify-end">
