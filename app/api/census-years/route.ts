@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server
 import sql from "mssql"
 
 // Database configuration - using the same config as your working routes
