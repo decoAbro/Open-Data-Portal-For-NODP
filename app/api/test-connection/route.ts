@@ -25,7 +25,7 @@ const dbConfig = {
 // Update the GET function with better error handling
 export async function GET() {
   try {
-    console.log("Attempting to connect to SQL Server at 192.168.1.28...")
+    console.log("Attempting to connect to SQL Server at 172.16.17.32...")
 
     // Test database connection with timeout
     const pool = new sql.ConnectionPool(dbConfig)
@@ -65,7 +65,6 @@ export async function GET() {
       message: "Database connection successful",
       tableExists,
       userCount,
-      server: "192.168.1.28",
       database: "Stage",
     })
   } catch (error) {
