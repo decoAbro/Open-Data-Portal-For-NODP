@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send data to the external API endpoint
-    const externalApiResponse = await fetch("http://dataload.sapphirecs.net:5000/upload_data", {
+    const externalApiResponse = await fetch("http://172.16.17.101:5000/upload_data", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
