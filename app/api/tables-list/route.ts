@@ -3,10 +3,10 @@ import sql from "mssql"
 
 // SQL Server database configuration
 const dbConfig = {
-  server: "192.168.1.28",
+  server: "172.16.17.32",
   database: "Stage",
-  user: "Stage",
-  password: "Sapphire123",
+  user: "NODP",
+  password: "Prod123",
   options: {
     encrypt: false,
     trustServerCertificate: true,

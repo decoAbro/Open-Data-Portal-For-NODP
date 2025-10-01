@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 export async function GET() {
   try {
     // Try to connect to your API to check status
-    const response = await fetch("http://dataload.sapphirecs.net:5000/upload_data", {
+    const response = await fetch("http://172.16.17.101:5000/upload_data", {
       method: "HEAD", // Use HEAD to just check if server is responding
     })
 

@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import sql from 'mssql';
 
 const stageConfig: sql.config = {
-  user: process.env.SOURCE_DB_USER || 'Stage',
-  password: process.env.SOURCE_DB_PASSWORD || 'Sapphire123',
-  server: process.env.SOURCE_DB_SERVER || '192.168.1.28',
+  user: process.env.SOURCE_DB_USER || 'NODP',
+  password: process.env.SOURCE_DB_PASSWORD || 'Prod123',
+  server: process.env.SOURCE_DB_SERVER || '172.16.17.32',
   database: process.env.SOURCE_DB_NAME || 'Stage',
   options: { encrypt: false, trustServerCertificate: true },
   pool: { max: 5, min: 0, idleTimeoutMillis: 30000 }

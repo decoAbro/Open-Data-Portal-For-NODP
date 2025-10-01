@@ -7,9 +7,9 @@ export const dynamic = 'force-dynamic';
 
 // Source (staging) DB config
 const sourceConfig: sql.config = {
-  user: process.env.SOURCE_DB_USER || 'Stage',
-  password: process.env.SOURCE_DB_PASSWORD || 'Sapphire123',
-  server: process.env.SOURCE_DB_SERVER || '192.168.1.28',
+  user: process.env.SOURCE_DB_USER || 'NODP',
+  password: process.env.SOURCE_DB_PASSWORD || 'Prod123',
+  server: process.env.SOURCE_DB_SERVER || '172.16.17.32',
   database: process.env.SOURCE_DB_NAME || 'Stage',
   options: { encrypt: false, trustServerCertificate: true },
   pool: { max: 5, min: 0, idleTimeoutMillis: 30000 }
@@ -18,9 +18,9 @@ const sourceConfig: sql.config = {
 // Destination (production) DB config (currently "Empty_Database")
 const destConfig: sql.config = {
   user: process.env.DEST_DB_USER || 'NODP',
-  password: process.env.DEST_DB_PASSWORD || 'Sapphire123',
-  server: process.env.DEST_DB_SERVER || '192.168.1.28',
-  database: process.env.DEST_DB_NAME || 'Empty_Database',
+  password: process.env.DEST_DB_PASSWORD || 'Prod123',
+  server: process.env.DEST_DB_SERVER || '172.16.17.32',
+  database: process.env.DEST_DB_NAME || 'Superset_DB_Constraints_Destination',
   options: { encrypt: false, trustServerCertificate: true },
   pool: { max: 5, min: 0, idleTimeoutMillis: 30000 }
 };
