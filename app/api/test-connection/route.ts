@@ -84,7 +84,6 @@ export async function GET() {
         success: false,
         error: `Failed to connect to database: ${errorMessage}`,
         details: errorDetails,
-        server: "192.168.1.28",
         database: "Stage",
       },
       { status: 500 },
