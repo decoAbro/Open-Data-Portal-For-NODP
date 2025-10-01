@@ -97,7 +97,20 @@ export async function GET() {
       console.error("Error getting upload details:", error)
     }
 
-    return NextResponse.json({ tableData })
+    // Get last reset audit info if audit table exists
+    let lastReset: any = null
+    try {
+      const auditCheck = await pool
+        .request()
+        .query(`IF OBJECT_ID('dbo.data_reset_audit','U') IS NOT NULL SELECT TOP 1 actor, reset_all, tables, total_deleted, created_at FROM dbo.data_reset_audit ORDER BY created_at DESC`)
+      if (auditCheck.recordset && auditCheck.recordset.length > 0) {
+        lastReset = auditCheck.recordset[0]
+      }
+    } catch (auditErr) {
+      console.error("Error fetching last reset audit:", auditErr)
+    }
+
+    return NextResponse.json({ tableData, lastReset })
   } catch (error) {
     console.error("Error fetching database data status:", error)
     return NextResponse.json({ error: "Failed to fetch database data status" }, { status: 500 })
@@ -111,15 +124,129 @@ export async function GET() {
 export async function DELETE(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const Province_Id = searchParams.get("Province_Id")
-  const uploadedBy = searchParams.get("Uploaded_By")
+  const uploadedBy = searchParams.get("Uploaded_By") || searchParams.get("uploadedBy")
   const tableName = searchParams.get("tableName")
+  const resetAll = searchParams.get("resetAll") === "true"
+  const tablesParam = searchParams.get("tables") // comma separated list for selective reset
+  const actorHeader = request.headers.get("x-actor") || request.headers.get("x-username") || "unknown"
 
+  // Whitelisted Stage tables that can be mass-reset (physical table names as they exist in Stage.dbo)
+  const resetWhitelist = [
+    "Institutions",
+    "Building",
+    "Corporal_Punishment",
+    "ECE_Facilities",
+    "EnrolAgeWise",
+    "Enrolment_Difficulty",
+    "Enrolment_ECEExperience",
+    "Enrolment_Refugee",
+    "Enrolment_Religion",
+    "Facilities",
+    "ICT_Facilities",
+    "Institutions_Otherfacilities",
+    "Institution_Attack",
+    "Institution_Security",
+    "Non_Teachers_Profile",
+    "Repeaters",
+    "Rooms",
+    "Sanctioned_Teaching_Non_Teaching",
+    "Student_Profile",
+    "Teachers_AcademicQualification",
+    "Teachers_ProfessionalQualification",
+    "Teachers_Profile",
+    "TeachingNonTeaching_Category",
+    "TeachingNonTeaching_Designation",
+  ] as const
+
+  type ResetTable = (typeof resetWhitelist)[number]
+
+  // New reset modes take precedence (resetAll OR tables list). These do not require Province_Id / uploadedBy
+  if (resetAll || tablesParam) {
+    let pool: sql.ConnectionPool | null = null
+    try {
+      pool = await sql.connect(dbConfig)
+      const tablesToReset: ResetTable[] = resetAll
+        ? [...resetWhitelist]
+        : (tablesParam || "")
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t): t is ResetTable => (resetWhitelist as readonly string[]).includes(t))
+            .filter((v, i, arr) => arr.indexOf(v) === i) // unique
+
+      if (tablesToReset.length === 0) {
+        return NextResponse.json({ error: "No valid tables specified for reset" }, { status: 400 })
+      }
+
+      const transaction = new sql.Transaction(pool)
+      await transaction.begin()
+      const details: Array<{ table: string; before: number; deleted: number }> = []
+      try {
+        // Ensure audit table exists
+        await new sql.Request(transaction).query(`
+          IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'data_reset_audit' AND schema_id = SCHEMA_ID('dbo'))
+          BEGIN
+            CREATE TABLE dbo.data_reset_audit (
+              id INT IDENTITY(1,1) PRIMARY KEY,
+              actor NVARCHAR(100) NOT NULL,
+              reset_all BIT NOT NULL,
+              tables NVARCHAR(MAX) NOT NULL,
+              total_deleted INT NOT NULL,
+              created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
+            );
+          END
+        `)
+        for (const t of tablesToReset) {
+          const requestCount = new sql.Request(transaction)
+          const countResult = await requestCount.query(`SELECT COUNT(*) as count FROM Stage.dbo.[${t}]`)
+          const before = countResult.recordset[0]?.count || 0
+          if (before > 0) {
+            const requestDelete = new sql.Request(transaction)
+            await requestDelete.query(`DELETE FROM Stage.dbo.[${t}]`)
+          }
+            // After delete, number deleted equals before (since full delete)
+          details.push({ table: t, before, deleted: before })
+        }
+        const totalDeleted = details.reduce((sum, d) => sum + d.deleted, 0)
+        // Insert audit log
+        await new sql.Request(transaction)
+          .input("actor", sql.NVarChar, actorHeader)
+          .input("reset_all", sql.Bit, resetAll ? 1 : 0)
+          .input("tables", sql.NVarChar, tablesToReset.join(","))
+          .input("total_deleted", sql.Int, totalDeleted)
+          .query(
+            `INSERT INTO dbo.data_reset_audit (actor, reset_all, tables, total_deleted) VALUES (@actor, @reset_all, @tables, @total_deleted); SELECT SCOPE_IDENTITY() AS id;`
+          )
+        await transaction.commit()
+        const totalDeleted2 = details.reduce((sum, d) => sum + d.deleted, 0)
+        return NextResponse.json({
+          message: resetAll
+            ? `Stage reset completed. Deleted ${totalDeleted2} rows across ${details.length} tables.`
+            : `Deleted ${totalDeleted2} rows from ${details.length} selected table(s).`,
+          totalDeleted: totalDeleted2,
+          tables: details,
+          resetAll,
+          actor: actorHeader,
+        })
+      } catch (err) {
+        await transaction.rollback()
+        throw err
+      }
+    } catch (error) {
+      console.error("Error resetting tables:", error)
+      return NextResponse.json({ error: "Failed to reset tables" }, { status: 500 })
+    } finally {
+      // close pool if opened inside this block
+      // (avoid closing if reused below - but here we always return above, so safe)
+    }
+  }
+
+  // Legacy targeted deletion requires both a tableName and either Province_Id or uploadedBy
   if (!Province_Id && !uploadedBy) {
-    return NextResponse.json({ error: "Either provinceId or uploadedBy parameter is required" }, { status: 400 })
+    return NextResponse.json({ error: "Either provinceId or uploadedBy parameter is required (or use resetAll/tables)" }, { status: 400 })
   }
 
   if (!tableName) {
-    return NextResponse.json({ error: "tableName parameter is required" }, { status: 400 })
+    return NextResponse.json({ error: "tableName parameter is required (or use resetAll/tables)" }, { status: 400 })
   }
 
   let pool: sql.ConnectionPool | null = null
@@ -155,10 +282,34 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Deletion not supported for this table" }, { status: 400 })
     }
 
-    return NextResponse.json({
-      message: `Successfully deleted ${deletedCount} records from ${tableName}`,
-      deletedCount,
-    })
+    // Audit legacy targeted deletions as well
+    try {
+      await pool.request().query(`
+        IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'data_reset_audit' AND schema_id = SCHEMA_ID('dbo'))
+        BEGIN
+          CREATE TABLE dbo.data_reset_audit (
+            id INT IDENTITY(1,1) PRIMARY KEY,
+            actor NVARCHAR(100) NOT NULL,
+            reset_all BIT NOT NULL,
+            tables NVARCHAR(MAX) NOT NULL,
+            total_deleted INT NOT NULL,
+            created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
+          );
+        END`)
+      await pool
+        .request()
+        .input("actor", sql.NVarChar, actorHeader)
+        .input("reset_all", sql.Bit, 0)
+        .input("tables", sql.NVarChar, tableName)
+        .input("total_deleted", sql.Int, deletedCount)
+        .query(
+          "INSERT INTO dbo.data_reset_audit (actor, reset_all, tables, total_deleted) VALUES (@actor, @reset_all, @tables, @total_deleted)"
+        )
+    } catch (auditErr) {
+      console.error("Audit log insert failed:", auditErr)
+    }
+
+    return NextResponse.json({ message: `Successfully deleted ${deletedCount} records from ${tableName}`, deletedCount })
   } catch (error) {
     console.error("Error deleting data:", error)
     return NextResponse.json({ error: "Failed to delete data" }, { status: 500 })
