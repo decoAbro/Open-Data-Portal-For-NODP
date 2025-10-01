@@ -3,9 +3,9 @@ import sql from "mssql"
 
 // Database configuration - using the same config as other routes
 const dbConfig = {
-  user: "Stage",
-  password: "Sapphire123",
-  server: "192.168.1.28",
+  user: "NODP",
+  password: "Prod123",
+  server: "172.16.17.32",
   database: "Stage",
   options: {
     encrypt: true,

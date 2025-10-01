@@ -36,7 +36,7 @@ export async function GET() {
       success: true,
       message: "Alternative connection method successful",
       sqlVersion,
-      server: "192.168.1.28",
+      server: "172.16.17.32",
       database: "Stage",
     })
   } catch (error) {
@@ -55,7 +55,7 @@ export async function GET() {
         success: false,
         error: `Alternative connection failed: ${errorMessage}`,
         details: errorDetails,
-        server: "192.168.1.28",
+        server: "172.16.17.32",
         database: "Stage",
       },
       { status: 500 },

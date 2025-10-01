@@ -154,7 +154,7 @@ export default function DatabaseStatus() {
               <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium text-gray-900 mb-2">Troubleshooting Tips:</h4>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Ensure SQL Server is running on 192.168.1.28</li>
+                  <li>• Ensure SQL Server is running</li>
                   <li>• Verify the database "Stage" exists</li>
                   <li>• Check if user "Stage" has proper permissions</li>
                   <li>• Ensure network connectivity to the database server</li>
