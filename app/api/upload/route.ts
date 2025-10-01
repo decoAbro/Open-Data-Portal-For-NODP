@@ -3,9 +3,9 @@ import sql from "mssql"
 
 // Database configuration - using the same config as your working routes
 const dbConfig = {
-  user: "Stage",
-  password: "Sapphire123",
-  server: "192.168.1.28",
+  user: "NODP",
+  password: "Prod123",
+  server: "172.16.17.32",
   database: "Stage",
   options: {
     encrypt: true,
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("Sending data to external API:", {
-      endpoint: "http://dataload.sapphirecs.net:5000/upload_data",
+      endpoint: "http://172.16.17.32:5000/upload_data",
       username,
       tableName: tableName || "bulk_upload",
       dataSize: JSON.stringify(jsonData).length,
