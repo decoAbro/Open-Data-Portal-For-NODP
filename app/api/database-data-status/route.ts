@@ -21,7 +21,30 @@ export async function GET() {
 
     // Get data counts from all main tables
     const queries = [
-      { name: "Building Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Building" },
+      { name: "1. Institution Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Institutions" },
+      { name: "2. Building Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Building" },
+      { name: "3. Corporal Punishment Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Corporal_Punishment" },
+      { name: "4. ECE Facilities Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.ECE_Facilities" },
+      { name: "5. EnrolAgeWise Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.EnrolAgeWise" },
+      { name: "6. Enrolment Difficulty Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Enrolment_Difficulty" },
+      { name: "7. Enrolment ECE Experience Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Enrolment_ECEExperience" },
+      { name: "8. Enrolment Refugee Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Enrolment_Refugee" },
+      { name: "9. Enrolment Religion Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Enrolment_Religion" },
+      { name: "10. Facilities Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Facilities" },
+      { name: "11. ICT Facilities Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.ICT_Facilities" },
+      { name: "12. Institutions Other Facilities Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Institutions_Otherfacilities" },
+      { name: "13. Institution Attacks Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Institution_Attack" },
+      { name: "14. Institution Security Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Institution_Security" },
+      { name: "15. Non Teachers Profile Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Non_Teachers_Profile" },
+      { name: "16. Repeaters Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Repeaters" },
+      { name: "17. Rooms Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Rooms" },
+      { name: "18. Sanctioned Teaching Non Teaching Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Sanctioned_Teaching_Non_Teaching" },
+      { name: "19. Student Profile Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Student_Profile" },
+      { name: "20. Teachers Academic Qualification Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Teachers_AcademicQualification" },
+      { name: "21. Teachers Professional Qualification Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Teachers_ProfessionalQualification" },
+      { name: "22. Teachers Profile Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.Teachers_Profile" },
+      { name: "23. Teaching Non Teaching Category Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.TeachingNonTeaching_Category" },
+      { name: "24. Teaching Non Teaching Designation Table", query: "SELECT COUNT(*) as count FROM Stage.dbo.TeachingNonTeaching_Designation" },
     ]
 
     const tableData = []
