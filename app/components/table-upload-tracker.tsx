@@ -441,21 +441,34 @@ const hasAnyUnknowns =
           setDataNotAvailableTables([]);
         }
 
-      // Check upload window status from server
-      const windowStatus = await getUploadWindowStatus();
+      // Check upload window status from server with user context
+      let windowStatus: any;
+      try {
+        const res = await fetch(`/api/upload-window?username=${encodeURIComponent(username)}`, { cache: 'no-store' });
+        if (res.ok) {
+          windowStatus = await res.json();
+        } else {
+          windowStatus = await getUploadWindowStatus(); // fallback to local helper
+        }
+      } catch {
+        windowStatus = await getUploadWindowStatus();
+      }
+
       if (windowStatus.year && windowStatus.year !== currentYear) {
-        // Year has changed, update local state
         setCurrentYear(windowStatus.year);
       }
-      
-      // Update permissions based on window status
-      if (!windowStatus.isOpen) {
+
+      // Determine permission considering selective scope
+      const isOpen = !!windowStatus.isOpen;
+      const scope = windowStatus.scope || 'global';
+      if (typeof window !== 'undefined') {
+        (window as any).__latestUploadWindowScope = scope;
+      }
+      const userAllowed = scope === 'global' ? isOpen : (isOpen && windowStatus.userAllowed === true);
+      if (!userAllowed) {
         updateUserByUsername(username, { uploadPermission: false, uploadDeadline: undefined });
       } else {
-        updateUserByUsername(username, { 
-          uploadPermission: true, 
-          uploadDeadline: windowStatus.deadline || undefined 
-        });
+        updateUserByUsername(username, { uploadPermission: true, uploadDeadline: windowStatus.deadline || undefined });
       }
     }
 
@@ -3736,7 +3749,9 @@ const hasAnyUnknowns =
       // Check upload permissions first
       if (!hasUploadPermission) {
         throw new Error(
-          "You don't have permission to upload data. Please wait for the administrator to open an upload window.",
+          (typeof window !== 'undefined' && (window as any).__latestUploadWindowScope === 'selective')
+            ? "You are not included in the current selective upload window. Contact the administrator if you believe you should have access."
+            : "You don't have permission to upload data. Please wait for the administrator to open an upload window.",
         )
       }
 

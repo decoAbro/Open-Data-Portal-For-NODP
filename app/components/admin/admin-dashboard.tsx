@@ -76,6 +76,46 @@ export default function AdminDashboard({ onLogout, username = 'Administrator' }:
   const [uploadYear, setUploadYear] = useState("")
   const [isWindowOpen, setIsWindowOpen] = useState(false)
   const [currentDeadline, setCurrentDeadline] = useState<string | null>(null)
+  const [windowScope, setWindowScope] = useState<'global' | 'selective'>('global')
+  const [windowSelectedUserCount, setWindowSelectedUserCount] = useState<number | null>(null)
+  const [windowSelectedUsersPreview, setWindowSelectedUsersPreview] = useState<string[]>([])
+  const [showAllowedUsersDialog, setShowAllowedUsersDialog] = useState(false)
+  const [allowedUsersDetailed, setAllowedUsersDetailed] = useState<Array<{id:number; username:string; role?:string}>>([])
+  const [allowedUsersLoading, setAllowedUsersLoading] = useState(false)
+  const [allowedUsersError, setAllowedUsersError] = useState<string | null>(null)
+  const [allowedUsersSearch, setAllowedUsersSearch] = useState('')
+  const [lastPreviewIdsKey, setLastPreviewIdsKey] = useState<string>('')
+  const [lastStatusCheckAt, setLastStatusCheckAt] = useState<Date | null>(null)
+  const [isEditingScopeUsers, setIsEditingScopeUsers] = useState(false)
+  const editingDebounceRef = (typeof window !== 'undefined' ? (window as any) : {})
+
+  const loadAllowedUsersDetailed = async () => {
+    setAllowedUsersLoading(true)
+    setAllowedUsersError(null)
+    try {
+      const resState = await fetch('/api/upload-window', { cache: 'no-store' })
+      if (!resState.ok) throw new Error('Failed to load window state')
+      const state = await resState.json()
+      if (!Array.isArray(state.allowedUserIds) || state.allowedUserIds.length === 0) {
+        setAllowedUsersDetailed([])
+        return
+      }
+      const idsSet = new Set<number>(state.allowedUserIds)
+      const resUsers = await fetch('/api/users', { cache: 'no-store' })
+      if (!resUsers.ok) throw new Error('Failed to load users list')
+      const usersData = await resUsers.json()
+      if (!Array.isArray(usersData?.users)) {
+        setAllowedUsersDetailed([])
+        return
+      }
+      const filtered = usersData.users.filter((u: any) => idsSet.has(u.id)).map((u: any) => ({ id: u.id, username: u.username || `user-${u.id}`, role: u.role || u.Role }))
+      setAllowedUsersDetailed(filtered)
+    } catch (e) {
+      setAllowedUsersError(e instanceof Error ? e.message : 'Unknown error')
+    } finally {
+      setAllowedUsersLoading(false)
+    }
+  }
   const [currentYear, setCurrentYearState] = useState("")
   const [showPasswordChange, setShowPasswordChange] = useState(false)
   const [newPassword, setNewPassword] = useState("")
@@ -118,6 +158,12 @@ export default function AdminDashboard({ onLogout, username = 'Administrator' }:
   // Newly arrived logs (for flash highlight when auto-refresh is enabled)
   const [newlyFlashedLogIds, setNewlyFlashedLogIds] = useState<Set<number>>(new Set())
   const [deletingLogs, setDeletingLogs] = useState(false)
+  const [uploadScope, setUploadScope] = useState<'global' | 'selective'>('global')
+  const [allUsersForScope, setAllUsersForScope] = useState<{id:number; username:string}[]>([])
+  const [loadingUsersForScope, setLoadingUsersForScope] = useState(false)
+  const [selectedUserIdsForScope, setSelectedUserIdsForScope] = useState<number[]>([])
+  const [usersLoadError, setUsersLoadError] = useState<string | null>(null)
+  const [userScopeSearch, setUserScopeSearch] = useState('')
   const allPageSelected = pipelineLogs.length > 0 && pipelineLogs.every(l => selectedLogIds.has(l.logID))
   const toggleSelectAllPage = () => {
     const newSet = new Set(selectedLogIds)
@@ -315,10 +361,11 @@ export default function AdminDashboard({ onLogout, username = 'Administrator' }:
       const status = await getUploadWindowStatus()
       setIsWindowOpen(status.isOpen)
       setCurrentDeadline(status.deadline)
-      // Each time we refresh status, also ensure deadlines are enforced
       await checkUploadDeadlines()
     }
 
+    // NEW: fetch authoritative server state (scope + allowed users) immediately
+    checkWindowStatus({ background: false })
     checkStatus()
     checkDatabaseConnection()
     const year = getCurrentYear()
@@ -334,7 +381,9 @@ export default function AdminDashboard({ onLogout, username = 'Administrator' }:
     setUploadDeadlineTime(now.toTimeString().slice(0, 5))
 
     const interval = setInterval(() => {
+      if (showUploadWindow) return
       checkStatus()
+      checkWindowStatus({ background: true })
       checkDatabaseConnection()
     }, 30000) // Check every 30 seconds
 
@@ -363,12 +412,59 @@ export default function AdminDashboard({ onLogout, username = 'Administrator' }:
     return () => clearTimeout(timeoutId)
   }, [isClient, isWindowOpen, currentDeadline])
 
-  const checkWindowStatus = async () => {
+  // Replace old checkWindowStatus with split helpers
+  const fetchWindowState = async () => {
+    const res = await fetch('/api/upload-window', { cache: 'no-store' })
+    if (!res.ok) throw new Error('window state fetch failed')
+    return res.json()
+  }
+  const applyWindowState = async (status: any, opts?: { background?: boolean }) => {
+    setIsWindowOpen(!!status.isOpen)
+    setCurrentDeadline(status.deadline || null)
+    const ids: number[] = Array.isArray(status.allowedUserIds) ? status.allowedUserIds : []
+    if (status.scope === 'selective') {
+      setWindowScope('selective')
+      setWindowSelectedUserCount(ids.length)
+      ;(window as any).__latestAllowedUserIds = ids
+      const key = ids.slice(0,10).join(',')
+      const background = !!opts?.background
+      const shouldBuildPreview = ids.length > 0 && key !== lastPreviewIdsKey && !isEditingScopeUsers && !background
+      if (ids.length === 0) {
+        setWindowSelectedUsersPreview([])
+      } else if (shouldBuildPreview) {
+        try {
+          const resUsers = await fetch('/api/users', { cache: 'no-store' })
+          if (resUsers.ok) {
+            const dataUsers = await resUsers.json()
+            if (Array.isArray(dataUsers?.users)) {
+              const previewNames: string[] = []
+              const idsSet = new Set(ids.slice(0,10))
+              dataUsers.users.forEach((u: any) => { if (idsSet.has(u.id)) previewNames.push(u.username || `user-${u.id}`) })
+              setWindowSelectedUsersPreview(previewNames)
+              setLastPreviewIdsKey(key)
+            }
+          }
+        } catch { /* ignore preview errors */ }
+      }
+    } else {
+      setWindowScope('global')
+      setWindowSelectedUserCount(null)
+      setWindowSelectedUsersPreview([])
+    }
+  }
+  const checkWindowStatus = async (opts?: { background?: boolean }) => {
     if (!isClient) return
-
-    const status = await getUploadWindowStatus()
-    setIsWindowOpen(status.isOpen)
-    setCurrentDeadline(status.deadline)
+    try {
+      const status = await fetchWindowState()
+      await applyWindowState(status, opts)
+    } catch {
+      try {
+        const status = await getUploadWindowStatus()
+        await applyWindowState({ isOpen: status.isOpen, deadline: status.deadline, scope: 'global', allowedUserIds: [] }, opts)
+      } catch { /* ignore */ }
+    } finally {
+      setLastStatusCheckAt(new Date())
+    }
   }
 
   const checkDatabaseConnection = async () => {
@@ -394,25 +490,29 @@ export default function AdminDashboard({ onLogout, username = 'Administrator' }:
   }
 
   const handleOpenWindow = async () => {
-    if (!uploadDeadlineDate || !uploadDeadlineTime || !uploadMessage || !uploadYear) {
-      return
-    }
-
+    if (!uploadDeadlineDate || !uploadDeadlineTime || !uploadMessage || !uploadYear) return
+    if (uploadScope === 'selective' && selectedUserIdsForScope.length === 0) return
     setOpeningUploadWindow(true)
-    // Combine date and time into a single ISO string
-    const deadlineDateTime = new Date(`${uploadDeadlineDate}T${uploadDeadlineTime}:00`)
-    const deadline = deadlineDateTime.toISOString()
-
-    await openUploadWindow(deadline, uploadMessage, uploadYear)
-    setShowUploadWindow(false)
-    await checkWindowStatus()
-    setOpeningUploadWindow(false)
+    try {
+      const deadlineDateTime = new Date(`${uploadDeadlineDate}T${uploadDeadlineTime}:00`)
+      const deadline = deadlineDateTime.toISOString()
+      const payload: any = { isOpen: true, deadline, message: uploadMessage, year: uploadYear, scope: uploadScope }
+      if (uploadScope === 'selective') payload.userIds = selectedUserIdsForScope
+      const res = await fetch('/api/upload-window', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        alert(err.error || 'Failed to open upload window')
+        return
+      }
+      await checkWindowStatus({ background: false })
+      setShowUploadWindow(false)
+    } finally { setOpeningUploadWindow(false) }
   }
 
   const handleCloseWindow = async () => {
     setClosingUploadWindow(true)
     await closeUploadWindow()
-    await checkWindowStatus()
+    await checkWindowStatus({ background: false })
     setClosingUploadWindow(false)
   }
 
@@ -465,6 +565,68 @@ export default function AdminDashboard({ onLogout, username = 'Administrator' }:
     setCurrentYearState(year)
     setCurrentYear(year)
   }
+
+  // Toggle a user selection for selective upload scope
+  const toggleScopeUser = (id: number) => {
+    setSelectedUserIdsForScope(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+    setIsEditingScopeUsers(true)
+    if (editingDebounceRef.__editTimer) clearTimeout(editingDebounceRef.__editTimer)
+    editingDebounceRef.__editTimer = setTimeout(() => setIsEditingScopeUsers(false), 2500)
+  }
+
+  const refreshScopeUsers = () => {
+    if (loadingUsersForScope) return
+    setLoadingUsersForScope(true)
+    setUsersLoadError(null)
+    fetch('/api/users').then(r => r.json()).then(data => {
+      if (Array.isArray(data?.users)) {
+        // Only include non-admin roles
+        const filteredRaw = data.users.filter((u: any) => (u.role || u.Role || '').toLowerCase() !== 'admin')
+        const mapped = filteredRaw.map((u: any): { id:number; username:string } => ({ id: u.id, username: u.username || `user-${u.id}` }))
+        setAllUsersForScope(mapped)
+        // Cache in sessionStorage
+        try { sessionStorage.setItem('selectiveUsersCacheV1', JSON.stringify(mapped)) } catch { /* ignore */ }
+        setSelectedUserIdsForScope(prev => prev.filter(id => mapped.some((m: {id:number; username:string}) => m.id === id)))
+      } else {
+        setUsersLoadError('Failed to load users list')
+      }
+    }).catch(e => setUsersLoadError(e instanceof Error ? e.message : 'Unknown error')).finally(() => setLoadingUsersForScope(false))
+  }
+
+  const loadCachedScopeUsers = () => {
+    if (typeof window === 'undefined') return false
+    try {
+      const raw = sessionStorage.getItem('selectiveUsersCacheV1')
+      if (!raw) return false
+      const parsed = JSON.parse(raw)
+      if (!Array.isArray(parsed)) return false
+      // Defensive re-filter (in case criteria change)
+      const sanitized = parsed.filter((u: any) => u && typeof u.id === 'number' && typeof u.username === 'string')
+      if (sanitized.length === 0) return false
+      setAllUsersForScope(sanitized)
+      // Drop any selected IDs not present
+      setSelectedUserIdsForScope(prev => prev.filter(id => sanitized.some((m: any) => m.id === id)))
+      return true
+    } catch { return false }
+  }
+
+  // Auto-load users when switching to selective scope (first time)
+  useEffect(() => {
+    if (uploadScope === 'selective' && allUsersForScope.length === 0 && !loadingUsersForScope && !usersLoadError) {
+      if (!loadCachedScopeUsers()) {
+        refreshScopeUsers()
+      }
+    }
+  }, [uploadScope])
+
+  // Also auto-load when opening the upload window modal if selective and list empty
+  useEffect(() => {
+    if (showUploadWindow && uploadScope === 'selective' && allUsersForScope.length === 0 && !loadingUsersForScope && !usersLoadError) {
+      if (!loadCachedScopeUsers()) {
+        refreshScopeUsers()
+      }
+    }
+  }, [showUploadWindow])
 
   // Removed legacy deployment handler
 
@@ -670,10 +832,22 @@ export default function AdminDashboard({ onLogout, username = 'Administrator' }:
                             <Clock className="h-4 w-4 text-green-600" />
                           </div>
                           <div>
-                            <p className="font-medium text-green-900">Active Upload Window</p>
-                            <p className="text-sm text-green-700">
-                              Deadline: {currentDeadline ? new Date(currentDeadline).toLocaleString() : "N/A"}
+                            <p className="font-medium text-green-900 flex items-center gap-2">Active Upload Window
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${windowScope==='global' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-blue-100 text-blue-700 border-blue-200'}`}>
+                                {windowScope === 'global' ? 'All Users' : 'Selective'}
+                              </span>
                             </p>
+                            <p className="text-sm text-green-700">
+                              Deadline: {currentDeadline ? new Date(currentDeadline).toLocaleString() : 'N/A'}
+                            </p>
+                            {windowScope === 'selective' && (
+                              <div className="mt-1 space-y-1">
+                                <p className="text-xs text-blue-700">Allowed Users: {windowSelectedUserCount ?? 0}</p>
+                                {windowSelectedUsersPreview.length > 0 && (
+                                  <p className="text-[10px] text-gray-600">{windowSelectedUsersPreview.join(', ')}{(windowSelectedUserCount||0) > windowSelectedUsersPreview.length ? '…' : ''}</p>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                         <Button
@@ -756,6 +930,124 @@ export default function AdminDashboard({ onLogout, username = 'Administrator' }:
                         </div>
                       </div>
 
+                      {/* Scope Selection */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Upload Scope</Label>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="radio"
+                              className="h-4 w-4"
+                              name="upload-scope"
+                              value="global"
+                              checked={uploadScope === 'global'}
+                              onChange={() => setUploadScope('global')}
+                            />
+                            <span>All Users</span>
+                          </label>
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="radio"
+                              className="h-4 w-4"
+                              name="upload-scope"
+                              value="selective"
+                              checked={uploadScope === 'selective'}
+                              onChange={() => setUploadScope('selective')}
+                            />
+                            <span>Selected Users</span>
+                          </label>
+                        </div>
+                        {uploadScope === 'selective' && (
+                          <div className="mt-2 border rounded-md bg-white p-3 space-y-2">
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs text-gray-600">Choose which users can upload during this window.</p>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={refreshScopeUsers}
+                                    disabled={loadingUsersForScope}
+                                    className="text-[10px] px-2 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+                                  >{loadingUsersForScope ? 'Loading...' : 'Reload'}</button>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  placeholder="Search users..."
+                                  value={userScopeSearch}
+                                  onChange={(e) => setUserScopeSearch(e.target.value)}
+                                  className="h-8 text-xs"
+                                />
+                                {userScopeSearch && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setUserScopeSearch('')}
+                                    className="text-[10px] px-2 py-1 border rounded hover:bg-gray-50"
+                                  >Clear</button>
+                                )}
+                              </div>
+                            </div>
+                            {usersLoadError && <p className="text-xs text-red-600">{usersLoadError}</p>}
+                            {!usersLoadError && (
+                              <div className="max-h-48 overflow-auto border rounded divide-y relative bg-white">
+                                {loadingUsersForScope && allUsersForScope.length === 0 && (
+                                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/70">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-500"></div>
+                                    <p className="text-[11px] text-gray-600">Loading users...</p>
+                                    <div className="w-40 h-1.5 bg-gray-200 rounded overflow-hidden">
+                                      <div className="h-full bg-blue-500 animate-pulse"></div>
+                                    </div>
+                                  </div>
+                                )}
+                                {(() => {
+                                  const filtered = allUsersForScope.filter(u => u.username.toLowerCase().includes(userScopeSearch.toLowerCase()))
+                                  if (!loadingUsersForScope && allUsersForScope.length > 0 && filtered.length === 0) {
+                                    return <div className="px-2 py-3 text-xs text-gray-500">No users match search.</div>
+                                  }
+                                  if (!loadingUsersForScope && allUsersForScope.length === 0) {
+                                    return <div className="px-2 py-3 text-xs text-gray-500">No users returned from server. Try Reload.</div>
+                                  }
+                                  return filtered.map(u => {
+                                    const checked = selectedUserIdsForScope.includes(u.id)
+                                    return (
+                                      <label key={u.id} className="flex items-center gap-2 px-2 py-1 text-sm hover:bg-gray-50 cursor-pointer">
+                                        <input
+                                          type="checkbox"
+                                          className="h-4 w-4"
+                                          checked={checked}
+                                          onChange={() => toggleScopeUser(u.id)}
+                                        />
+                                        <span className="truncate">{u.username}</span>
+                                      </label>
+                                    )
+                                  })
+                                })()}
+                              </div>
+                            )}
+                            <div className="flex items-center justify-between text-[11px] text-gray-500">
+                              <span>{selectedUserIdsForScope.length} selected</span>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  className="underline"
+                                  onClick={() => setSelectedUserIdsForScope(allUsersForScope.map(u => u.id))}
+                                  disabled={allUsersForScope.length === 0 || selectedUserIdsForScope.length === allUsersForScope.length}
+                                >Select All</button>
+                                <button
+                                  type="button"
+                                  className="underline"
+                                  onClick={() => setSelectedUserIdsForScope([])}
+                                  disabled={selectedUserIdsForScope.length === 0}
+                                >Clear</button>
+                              </div>
+                            </div>
+                            {uploadScope === 'selective' && selectedUserIdsForScope.length === 0 && (
+                              <p className="text-[11px] text-amber-600 flex items-center gap-1">At least one user must be selected.</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
                       {/* Upload Message */}
                       <div className="space-y-2">
                         <Label htmlFor="upload-message" className="text-sm font-medium flex items-center justify-between">
@@ -783,7 +1075,7 @@ export default function AdminDashboard({ onLogout, username = 'Administrator' }:
                       <div className="flex justify-end">
                         <Button
                           onClick={handleOpenWindow}
-                          disabled={openingUploadWindow || !uploadDeadlineDate || !uploadDeadlineTime || !uploadMessage || !uploadYear}
+                          disabled={openingUploadWindow || !uploadDeadlineDate || !uploadDeadlineTime || !uploadMessage || !uploadYear || (uploadScope==='selective' && selectedUserIdsForScope.length===0)}
                           className="bg-green-600 hover:bg-green-700 flex items-center"
                         >
                           {openingUploadWindow ? (
@@ -1283,9 +1575,98 @@ export default function AdminDashboard({ onLogout, username = 'Administrator' }:
                     <div>
                       <p className="font-semibold mb-1">Message:</p>
                       <pre className="whitespace-pre-wrap bg-gray-100 p-2 rounded max-h-96 overflow-auto text-xs">{selectedLog.eventMessage}</pre>
-                    </div>
+                                       </div>
                     <div className="flex justify-end">
                       <Button variant="outline" onClick={() => setSelectedLog(null)}>Close</Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+
+            {/* Allowed Users Dialog for selective upload */}
+            {showAllowedUsersDialog && (
+              <Dialog open={showAllowedUsersDialog} onOpenChange={(open) => { if(!open) { setShowAllowedUsersDialog(false); setAllowedUsersSearch('') } else { loadAllowedUsersDetailed() } }}>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Allowed Users ({allowedUsersDetailed.length})</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Search username..."
+                        value={allowedUsersSearch}
+                        onChange={(e) => setAllowedUsersSearch(e.target.value)}
+                        className="h-8"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={allowedUsersLoading}
+                        onClick={loadAllowedUsersDetailed}
+                      >{allowedUsersLoading ? 'Reloading...' : 'Reload'}</Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          const header = 'id,username,role\n'
+                          const rows = allowedUsersDetailed.map(u => (
+                            `${u.id},"${(u.username||'').replace(/"/g,'""')}","${(u.role||'').replace(/"/g,'""')}`
+                          ))
+                          const csv = header + rows.join('\n') + '\n'
+                          try {
+                            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+                            const url = URL.createObjectURL(blob)
+                            const a = document.createElement('a')
+                            a.href = url
+                            a.download = 'allowed_users.csv'
+                            document.body.appendChild(a)
+                            a.click()
+                            a.remove()
+                            URL.revokeObjectURL(url)
+                          } catch (e) {
+                            alert('Failed to export CSV')
+                          }
+                        }}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        disabled={allowedUsersDetailed.length === 0}
+                      >Export CSV</Button>
+                    </div>
+                    {allowedUsersError && (
+                      <Alert variant="destructive"><AlertDescription>{allowedUsersError}</AlertDescription></Alert>
+                    )}
+                    <div className="border rounded max-h-72 overflow-auto bg-white">
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-100 sticky top-0">
+                          <tr>
+                            <th className="text-left px-2 py-1 w-16">ID</th>
+                            <th className="text-left px-2 py-1">Username</th>
+                            <th className="text-left px-2 py-1 w-24">Role</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {allowedUsersLoading && (
+                            <tr><td colSpan={3} className="px-2 py-4 text-center text-gray-500 text-xs">Loading...</td></tr>
+                          )}
+                          {!allowedUsersLoading && allowedUsersDetailed.filter(u => u.username.toLowerCase().includes(allowedUsersSearch.toLowerCase())).map(u => (
+                            <tr key={u.id} className="border-t">
+                              <td className="px-2 py-1 text-xs text-gray-600">{u.id}</td>
+                              <td className="px-2 py-1 text-xs font-medium text-gray-800">{u.username}</td>
+                              <td className="px-2 py-1 text-xs text-gray-600">{u.role || '-'}</td>
+                            </tr>
+                          ))}
+                          {!allowedUsersLoading && allowedUsersDetailed.length > 0 && allowedUsersDetailed.filter(u => u.username.toLowerCase().includes(allowedUsersSearch.toLowerCase())).length === 0 && (
+                            <tr><td colSpan={3} className="px-2 py-4 text-center text-gray-500 text-xs">No matches.</td></tr>
+                          )}
+                          {!allowedUsersLoading && allowedUsersDetailed.length === 0 && !allowedUsersError && (
+                            <tr><td colSpan={3} className="px-2 py-4 text-center text-gray-500 text-xs">No allowed users.</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="flex justify-end">
+                      <Button variant="outline" size="sm" onClick={() => { setShowAllowedUsersDialog(false); setAllowedUsersSearch('') }}>Close</Button>
                     </div>
                   </div>
                 </DialogContent>
