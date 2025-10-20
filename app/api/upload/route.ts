@@ -94,7 +94,6 @@ export async function POST(request: NextRequest) {
           recordCount: tableName ? jsonData[tableName].length : Object.keys(jsonData).length,
           status: "failed",
           errorMessage: errorText,
-          jsonData: JSON.stringify(jsonData),
           pdfBuffer: pdfBase64 ? Buffer.from(pdfBase64, 'base64') : null,
         })
 
@@ -130,7 +129,6 @@ export async function POST(request: NextRequest) {
       recordCount,
       status: "In-Review",
       errorMessage: null,
-      jsonData: JSON.stringify(jsonData),
       pdfBuffer: pdfBase64 ? Buffer.from(pdfBase64, 'base64') : null,
     })
 
@@ -147,7 +145,6 @@ export async function POST(request: NextRequest) {
       recordCount: 0,
       status: "failed",
       errorMessage: error instanceof Error ? error.message : "Unknown error",
-      jsonData: null,
       pdfBuffer: null,
     })
 
@@ -178,7 +175,6 @@ async function storeUploadRecord({
   recordCount,
   status,
   errorMessage,
-  jsonData,
   pdfBuffer,
 }: {
   username: string
@@ -188,7 +184,6 @@ async function storeUploadRecord({
   recordCount: number
   status: "success" | "failed" | "In-Review" | "Rejected"
   errorMessage: string | null
-  jsonData: string | null
   pdfBuffer: Buffer | null
 }) {
   let pool: sql.ConnectionPool | null = null
@@ -210,7 +205,7 @@ async function storeUploadRecord({
         status NVARCHAR(20) NOT NULL,
         error_message NVARCHAR(MAX) NULL,
         census_year NVARCHAR(10) NULL,
-        json_data NVARCHAR(MAX) NULL,
+  -- json_data NVARCHAR(MAX) NULL, -- Removed: do not store full JSON payload in DB
         pdf_file VARBINARY(MAX) NULL
       )
     `
@@ -231,11 +226,11 @@ async function storeUploadRecord({
     const insertQuery = `
       INSERT INTO upload_records (
         username, filename, file_size_bytes, table_name, record_count, 
-        status, error_message, census_year, json_data, pdf_file
+        status, error_message, census_year, pdf_file
       )
       VALUES (
         @username, @filename, @fileSize, @tableName, @recordCount, 
-        @status, @errorMessage, @censusYear, @jsonData, @pdfFile
+        @status, @errorMessage, @censusYear, @pdfFile
       )
     `
 
@@ -249,7 +244,7 @@ async function storeUploadRecord({
       .input("status", sql.NVarChar, status)
       .input("errorMessage", sql.NVarChar, errorMessage)
       .input("censusYear", sql.NVarChar, currentCensusYear)
-      .input("jsonData", sql.NVarChar, jsonData)
+  // jsonData removed: do not store full JSON payload in DB
       .input("pdfFile", sql.VarBinary(sql.MAX), pdfBuffer)
       .query(insertQuery)
 
