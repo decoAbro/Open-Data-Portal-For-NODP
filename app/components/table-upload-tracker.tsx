@@ -3773,10 +3773,7 @@ const hasAnyUnknowns =
         throw new Error("Please select a JSON file")
       }
 
-      // Validate file size (10MB limit)
-      if (file.size > 100 * 1024 * 1024) {
-        throw new Error("File size must be less than 100MB")
-      }
+      // No file size validation: allow large uploads (server-side limits still apply)
 
       // Read and parse JSON
       const fileContent = await file.text()
@@ -4453,7 +4450,7 @@ const hasAnyUnknowns =
                                   <p className="font-medium mb-1">Requirements:</p>
                                   <ul className="list-disc list-inside space-y-1">
                                     <li>File must be in JSON format</li>
-                                    <li>Maximum file size: 100MB</li>
+                                    {/* file size limit removed - server may enforce limits */}
                                     <li>Must contain data for "{tableName}" table</li>
                                     <li>Data must include census_year: {currentYear}</li>
                                     <li>
