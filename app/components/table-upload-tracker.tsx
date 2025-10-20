@@ -3947,10 +3947,10 @@ const hasAnyUnknowns =
 
   // Handle confirmed upload
   const handleConfirmedUpload = async () => {
-    if (!selectedFile || !parsedJsonData || !selectedTable) return
+    if (!selectedFile || !parsedJsonData || !selectedTable) return;
 
-    setUploading(true)
-    setUploadError("")
+    setUploading(true);
+    setUploadError("");
 
     try {
       // Generate PDF as base64 for upload
@@ -3959,7 +3959,7 @@ const hasAnyUnknowns =
         pdfBase64 = await getElementPDFBase64(pdfMetaRef.current);
       }
 
-      // Existing API call to upload data (now with pdfBase64)
+      // Only upload to /api/upload, not /api/upload-json
       const response = await fetch("/api/upload", {
         method: "POST",
         headers: {
@@ -3972,39 +3972,16 @@ const hasAnyUnknowns =
           tableName: selectedTable,
           pdfBase64,
         }),
-      })
-
-      // New API call to save uploaded JSON file to database
-      const dbResponse = await fetch("/api/upload-json", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          filename: selectedFile.name,
-          census_year: currentYear,
-          uploaded_by: username,
-          json_data: parsedJsonData,
-        }),
-      })
+      });
 
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(errorText || "Upload failed")
-      }
-      if (!dbResponse.ok) {
-        const errorText = await dbResponse.text()
-        throw new Error(errorText || "Database upload failed")
+        const errorText = await response.text();
+        throw new Error(errorText || "Upload failed");
       }
 
       // Get the API response message
       const responseText = await response.text();
-      const dbResponseText = await dbResponse.text();
-      
-      // Store the complete response without any filtering
-      const formattedMessage = responseText + "\n" + dbResponseText;
-      
-      // Record successful upload
+      const formattedMessage = responseText;
 
       // Re-fetch uploaded tables from the database (upload history API)
       try {
@@ -4032,7 +4009,7 @@ const hasAnyUnknowns =
         setUploadedTables([]);
         setTableStatuses({});
       }
-      
+
       // Show toast notification with a slight delay to ensure state is updated
       // Store the complete API response, just split into lines for readability
       const cleanedApiResponse = formattedMessage
@@ -4064,37 +4041,36 @@ const hasAnyUnknowns =
       }
 
       // Close dialogs and reset state
-      setShowPreviewDialog(false)
-      setSelectedTable(null)
-      setSelectedFile(null)
-      setParsedJsonData(null)
-      setInstitutionSummary(null)
-      setTeachersProfileSummary(null)
-      setEnrolAgeWiseSummary(null)
-      setFacilitiesSummary(null)
-      setictfacilitiesSummary(null)
-      setInstitutionattackSummary(null)
-      setInstitutionSecuritySummary(null)
-      setnonteachersProfileSummary(null)
-      setInstitutionsOtherFacilitiesSummary(null)
-      setEnrolmentECEExperienceSummary(null)
-      setEnrolmentRefugeeSummary(null)
-      setEnrolmentReligionSummary(null)
-      setEnrolmentDifficultySummary(null)
-      setCorporalPunishmentSummary(null)
-      setBuildingSummary(null)
-      setRepeaterSummary(null)
-      setTeachingNonTeachingCategorySummary(null)
-      setTeachingNonTeachingDesignationSummary(null)
-      setTeachersProfessionalQualificationSummary(null)
-      setTeachersAcademicQualificationSummary(null)
-      setECEFacilitiesSummary(null)
-      setStudentProfileSummary(null)
+      setShowPreviewDialog(false);
+      setSelectedTable(null);
+      setSelectedFile(null);
+      setParsedJsonData(null);
+      setInstitutionSummary(null);
+      setTeachersProfileSummary(null);
+      setEnrolAgeWiseSummary(null);
+      setFacilitiesSummary(null);
+      setictfacilitiesSummary(null);
+      setInstitutionattackSummary(null);
+      setInstitutionSecuritySummary(null);
+      setnonteachersProfileSummary(null);
+      setInstitutionsOtherFacilitiesSummary(null);
+      setEnrolmentECEExperienceSummary(null);
+      setEnrolmentRefugeeSummary(null);
+      setEnrolmentReligionSummary(null);
+      setEnrolmentDifficultySummary(null);
+      setCorporalPunishmentSummary(null);
+      setBuildingSummary(null);
+      setRepeaterSummary(null);
+      setTeachingNonTeachingCategorySummary(null);
+      setTeachingNonTeachingDesignationSummary(null);
+      setTeachersProfessionalQualificationSummary(null);
+      setTeachersAcademicQualificationSummary(null);
+      setECEFacilitiesSummary(null);
+      setStudentProfileSummary(null);
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Upload failed";
       setUploadError(errorMessage);
-      
       // Show error toast for critical errors
       setNotificationContent({
         title: "Upload Error",
