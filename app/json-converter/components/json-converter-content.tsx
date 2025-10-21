@@ -102,7 +102,19 @@ export default function JsonConverterContent({
                 upload procedures.
               </p>
               <Button
-                onClick={downloadProtocolDocument}
+                onClick={() => {
+                  try {
+                    const fileUrl = "/data-upload-protocol.pdf";
+                    const link = document.createElement("a");
+                    link.href = fileUrl;
+                    link.download = "data-upload-protocol.pdf";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  } catch (err) {
+                    window.open("/data-upload-protocol.pdf", "_blank");
+                  }
+                }}
                 className="bg-green-600 hover:bg-green-700 text-white"
                 size="sm"
               >
