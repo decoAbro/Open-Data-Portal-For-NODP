@@ -749,6 +749,7 @@ const hasAnyUnknowns =
 
     // District ID mappings
     const districtMappings: { [key: string]: string } = {
+      "0": "Not Reported",
       "101": "Attock",
       "102": "Bahawalnagar",
       "103": "Bahawalpur",
@@ -915,6 +916,7 @@ const hasAnyUnknowns =
 
     // Tehsil ID mappings
     const tehsilMappings: { [key: string]: string } = {
+      "0": "Not Reported",
       "1011": "Attock",
       "1012": "Fateh Jang",
       "1013": "Hassanabdal",
