@@ -39,6 +39,8 @@ interface InstitutionSummary {
   byShift: { [key: string]: number }
   byKind: { [key: string]: number }
   byManagement: { [key: string]: number }
+  byDistrict: { [key: string]: number }
+  byTehsil: { [key: string]: number }
 }
 
 interface TeachersProfileSummary {
@@ -1584,10 +1586,22 @@ const hasAnyUnknowns =
       byMedium: {},
       byShift: {},
       byKind: {},
-      byManagement: {}
+      byManagement: {},
+      byDistrict: {},
+      byTehsil: {},
     }
 
     data.forEach((institution) => {
+      // Count by District_Id with proper mapping
+      const districtId = String(institution.district_Id || institution.District_Id || "Unknown")
+      const districtLabel = districtMappings[districtId] || `Unknown District Id (${districtId})`
+      summary.byDistrict[districtLabel] = (summary.byDistrict[districtLabel] || 0) + 1
+
+      // Count by Tehsil_Id with proper mapping
+      const tehsilId = String(institution.tehsil_Id || institution.Tehsil_Id || "Unknown")
+      const tehsilLabel = tehsilMappings[tehsilId] || `Unknown Tehsil Id (${tehsilId})`
+      summary.byTehsil[tehsilLabel] = (summary.byTehsil[tehsilLabel] || 0) + 1
+
       // Count by Level_Id with proper mapping
       const levelId = String(institution.level_Id || institution.Level_Id || "Unknown")
       const levelLabel = levelMappings[levelId] || `Unknown Level Id (${levelId})`
@@ -5365,6 +5379,8 @@ const hasAnyUnknowns =
                         {Object.keys(institutionSummary.byMedium).length} different mediums of instruction,
                         {Object.keys(institutionSummary.byShift).length} shift types,
                         {Object.keys(institutionSummary.byKind).length} kinds of institutions,
+                        {Object.keys(institutionSummary.byDistrict).length} different districts,
+                        {Object.keys(institutionSummary.byTehsil).length} different tehsils,
                         and {Object.keys(institutionSummary.byManagement).length} management types.
                       </p>
                     </div>
@@ -5526,6 +5542,38 @@ const hasAnyUnknowns =
                           .map(([management, count]) => (
                             <div key={management} className="flex justify-between text-sm">
                               <span style={management.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{management}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By District */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By District</div>
+                        {Object.entries(institutionSummary.byDistrict)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([district, count]) => (
+                            <div key={district} className="flex justify-between text-sm">
+                              <span style={district.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{district}:</span>
+                              <span>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                      {/* By Tehsil */}
+                      <div className="border rounded p-2">
+                        <div className="font-semibold mb-1">By Tehsil</div>
+                        {Object.entries(institutionSummary.byTehsil)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([tehsil, count]) => (
+                            <div key={tehsil} className="flex justify-between text-sm">
+                              <span style={tehsil.includes('Unknown') ? { color: 'red', fontWeight: 'bold' } : {}}>{tehsil}:</span>
                               <span>{count}</span>
                             </div>
                         ))}
@@ -5768,6 +5816,52 @@ const hasAnyUnknowns =
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* By Tehsil */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By Tehsil</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.byTehsil)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([tehsil, count]) => (
+                            <div key={tehsil} className="flex justify-between text-sm">
+                              <span className={`${tehsil.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{tehsil}:</span>
+                              <span className="font-medium">{count}</span>
+                            </div>
+                          ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By District */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">By District</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {Object.entries(institutionSummary.byDistrict)
+                          .sort(([a], [b]) => {
+                            if (a.includes('Unknown')) return -1;
+                            if (b.includes('Unknown')) return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map(([district, count]) => (
+                            <div key={district} className="flex justify-between text-sm">
+                              <span className={`${district.includes('Unknown') ? 'text-red-600 font-bold' : 'text-gray-600'}`}>{district}:</span>
+                              <span className="font-medium">{count}</span>
+                            </div>
+                          ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 <div className="bg-green-50 p-4 rounded-lg flex flex-col md:flex-row md:items-center md:justify-between" ref={summaryRef}>
@@ -5784,6 +5878,8 @@ const hasAnyUnknowns =
                       {Object.keys(institutionSummary.byMedium).length} different mediums of instruction,
                       {Object.keys(institutionSummary.byShift).length} shift types,
                       {Object.keys(institutionSummary.byKind).length} kinds of institutions,
+                      {Object.keys(institutionSummary.byDistrict).length} different districts,
+                      {Object.keys(institutionSummary.byTehsil).length} different tehsils,
                       and {Object.keys(institutionSummary.byManagement).length} management types.
                     </p>
                   </div>
