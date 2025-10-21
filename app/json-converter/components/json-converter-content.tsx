@@ -9,133 +9,41 @@ import QueryEditor from "./query-editor"
 import ResultsTable from "./results-table"
 import type { ConnectionConfig } from "../types"
 
-export default function JsonConverterContent() {
-  const [isConnected, setIsConnected] = useState(false)
-  const [connectionConfig, setConnectionConfig] = useState<ConnectionConfig | null>(null)
-  const [connectionError, setConnectionError] = useState<string | null>(null)
-  const [queryResults, setQueryResults] = useState<any[] | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [tableName, setTableName] = useState<string>("")
-  const [query, setQuery] = useState<string>("")
-  const [isQueryLoading, setIsQueryLoading] = useState(false)
+interface JsonConverterContentProps {
+  isConnected: boolean;
+  isLoading: boolean;
+  connectionConfig: ConnectionConfig | null;
+  connectionError: string | null;
+  queryResults: any[] | null;
+  tableName: string;
+  query: string;
+  handleConnect: (config: ConnectionConfig) => void;
+  handleDisconnect: () => void;
+  executeQuery: (sql: string) => void;
+  downloadJson: () => void;
+  saveQuery: () => void;
+  setQuery: (q: string) => void;
+  isQueryLoading: boolean;
+  downloadProtocolDocument: () => void;
+}
 
-  const handleConnect = async (config: ConnectionConfig) => {
-    setIsLoading(true)
-    setConnectionError(null)
-
-    try {
-      const response = await fetch("/api/json-converter/test-connection", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        setIsConnected(true)
-        setConnectionConfig(config)
-        setConnectionError(null)
-      } else {
-        setIsConnected(false)
-        setConnectionError(data.error || "Failed to connect to database")
-      }
-    } catch (error) {
-      setIsConnected(false)
-      setConnectionError("Connection error: " + (error instanceof Error ? error.message : "Unknown error"))
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleDisconnect = () => {
-    setIsConnected(false)
-    setConnectionConfig(null)
-    setQueryResults(null)
-    setTableName("")
-  }
-
-  const executeQuery = async (sql: string) => {
-    if (!connectionConfig) return
-
-    setIsQueryLoading(true)
-    setQueryResults(null)
-    setConnectionError(null)
-
-    try {
-      // Try to extract table name from query
-      const tableNameMatch = sql.match(/from\s+([^\s,;()]+)/i)
-      const extractedTableName = tableNameMatch ? tableNameMatch[1].replace(/[`"'[\]]/g, "") : "results"
-      setTableName(extractedTableName)
-
-      const response = await fetch("/api/json-converter/execute-query", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          config: connectionConfig,
-          query: sql,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        setQueryResults(data.results)
-      } else {
-        setConnectionError(data.error || "Failed to execute query")
-      }
-    } catch (error) {
-      setConnectionError("Query error: " + (error instanceof Error ? error.message : "Unknown error"))
-    } finally {
-      setIsQueryLoading(false)
-    }
-  }
-
-  const downloadJson = () => {
-    if (!queryResults || queryResults.length === 0) return
-
-    // Format the JSON according to the specified structure
-    const jsonData = {
-      [tableName]: queryResults,
-    }
-
-    // Create a blob and download link
-    const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement("a")
-    link.href = url
-    link.download = `${tableName}_export.json`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
-
-  const saveQuery = () => {
-    // Save the current query to localStorage
-    if (query) {
-      const savedQueries = JSON.parse(localStorage.getItem("saved-queries") || "[]")
-      savedQueries.push({
-        id: Date.now(),
-        query,
-        date: new Date().toISOString(),
-      })
-      localStorage.setItem("saved-queries", JSON.stringify(savedQueries))
-      alert("Query saved successfully!")
-    }
-  }
-
-  const downloadProtocolDocument = () => {
-    // Create a link to download the protocol document
-    const link = document.createElement("a")
-    link.href = "/documents/data-upload-protocol.pdf"
-    link.download = "Data-Upload-Protocol-Document.pdf"
-    link.target = "_blank"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
-
+export default function JsonConverterContent({
+  isConnected,
+  isLoading,
+  connectionConfig,
+  connectionError,
+  queryResults,
+  tableName,
+  query,
+  handleConnect,
+  handleDisconnect,
+  executeQuery,
+  downloadJson,
+  saveQuery,
+  setQuery,
+  isQueryLoading,
+  downloadProtocolDocument,
+}: JsonConverterContentProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Left Column - Connection */}
