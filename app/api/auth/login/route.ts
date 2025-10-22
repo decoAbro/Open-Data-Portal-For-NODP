@@ -64,9 +64,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Username and password are required" }, { status: 400 })
     }
 
-    // Check if user exists and get their details (attempt to include role if column exists)
-    let userQuery = "SELECT id, username, email, password, status, role FROM users WHERE username = @param1"
-    const userResult = await executeQuery(userQuery, [username])
+  // Check if user exists and get their details (case-sensitive username match)
+  let userQuery = "SELECT id, username, email, password, status, role FROM users WHERE username = @param1 COLLATE SQL_Latin1_General_CP1_CS_AS"
+  const userResult = await executeQuery(userQuery, [username])
 
     // Fallback: try without role column if first attempt failed due to invalid column
     if (userResult.rowCount === 0) {
