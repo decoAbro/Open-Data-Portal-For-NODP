@@ -165,15 +165,15 @@ async function testPostgresConnection(config: any) {
     console.log("PostgreSQL connection successful, fetching tables...")
 
     // Get list of tables for verification
-    const result = await client.query(`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
-      ORDER BY table_name
-    `)
+      const result = await client.query(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+        ORDER BY table_name
+      `)
 
-    const tables = result.rows.map((row) => row.table_name)
-    console.log(`Found ${tables.length} tables`)
+      const tables = result.rows.map((row: { table_name: string }) => row.table_name)
+      console.log(`Found ${tables.length} tables`)
 
     return {
       success: true,
